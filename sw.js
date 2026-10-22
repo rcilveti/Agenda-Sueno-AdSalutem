@@ -1,4 +1,4 @@
-/* Agenda de Sueño — service worker (v4.9.0)
+/* Agenda de Sueño — service worker (v4.9.1)
  * Hace que la aplicación funcione sin conexión una vez abierta por primera vez.
  *  - La página (navegación): primero la red, y si no hay conexión, la copia guardada.
  *    Así las actualizaciones llegan en cuanto hay red y sin red la app sigue abriéndose.
@@ -9,7 +9,7 @@
  * Debe publicarse en la MISMA carpeta que la página (p. ej. junto a index.html).
  */
 'use strict';
-const VERSION = '4.9.0';
+const VERSION = '4.9.1';
 const CACHE = 'agenda-sueno-' + VERSION;
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 const CDN = [
