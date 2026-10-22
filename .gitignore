@@ -1,0 +1,31 @@
+# ===================================================================
+#  DATOS DE PACIENTES: NUNCA EN ESTE REPOSITORIO (es público)
+#  Red de seguridad para git / GitHub Desktop. No sustituye a revisar
+#  qué se sube antes de confirmar un cambio.
+# ===================================================================
+
+# Diarios y copias que genera la aplicación
+agenda-sueno_*
+*_CIFRADO.txt
+copia_seguridad_*
+diario_*.csv
+*.csv
+
+# Informes y exportaciones (Word, Excel) con datos de pacientes
+agenda_sueno_*_analisis_completo_*
+agenda_sueno_*_informe_clinico_*
+base_datos_pacientes_*
+*.xlsx
+*.xls
+*.doc
+*.docx
+
+# PDF impresos desde la app: solo se publican los de la carpeta docs/
+*.pdf
+!docs/*.pdf
+
+# Desarrollo
+node_modules/
+package-lock.json
+.DS_Store
+Thumbs.db
