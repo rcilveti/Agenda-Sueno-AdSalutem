@@ -4,7 +4,7 @@ Diario de sueño de tres semanas en formato digital. Aplicación de un solo arch
 sin servidor ni base de datos, pensada para funcionar en móvil, tableta y ordenador,
 en castellano y en catalán.
 
-**Versión actual:** v4.9.2 (octubre de 2026) — MODO PILOTO (datos ficticios, sin cifrado)
+**Versión actual:** v4.9.5 (octubre de 2026) — MODO PILOTO (datos ficticios, sin cifrado)
 
 **Dirección:** https://rcilveti.github.io/Agenda-Sueno-AdSalutem/
 
@@ -37,7 +37,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
 | `docs/` | Guía del paciente (castellano y catalán) y documento técnico, en PDF |
-| `tests/`, `package.json` | Pruebas automáticas (44) |
+| `tests/`, `package.json` | Pruebas automáticas (52) |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
 
@@ -87,6 +87,28 @@ dispositivo, la aplicación **fusiona** día a día en vez de sobrescribir.
 - **Código QR** (inicio): lleva el acceso y los datos de ficha.
 - **Archivo** (CSV, ~2 KB) o **enlace** (devolución): el diario completo viaja por
   WhatsApp o correo al terminar.
+
+---
+
+## Novedades recientes
+
+**v4.9.5 — Calidades en escala de 1 a 5.** El paciente valora cada día su sueño, su
+despertar y su estado durante el día de 1 a 5 (antes, con un semáforo de tres niveles).
+Al tocar la casilla se abre un panel con las cinco opciones; en el PDF del diario, las
+casillas vacías muestran los números para rodearlos a mano. Los diarios registrados con
+el semáforo se siguen analizando en su escala, y si un diario mezcla ambas, las
+valoraciones antiguas se pasan a 1–5 de forma lineal. El formato de datos pasa a la
+versión 3 (el CSV guarda la escala de cada día). Los 16 casos de ejemplo se han vuelto a
+valorar con una regla común, para que se puedan comparar entre sí (anexo III del
+documento técnico).
+
+**v4.9.4 — Índice de regularidad (SRI) según el estándar RIRI.** El SRI solo se calcula
+con al menos 5 pares de días consecutivos con datos, se acompaña de los pares válidos y
+su porcentaje, y se valora como concordancia día a día (orientativa), sin semáforo.
+
+**v4.9.3 — Salud del sueño RU-SATED.** Índice compuesto de seis dimensiones (Regularidad,
+Satisfacción, Alerta, Horario, Eficiencia y Duración) en el análisis del profesional y en
+las exportaciones.
 
 ---
 

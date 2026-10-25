@@ -1,6 +1,6 @@
 {
   "name": "agenda-sueno-adsalutem",
-  "version": "4.9.2",
+  "version": "4.9.5",
   "private": true,
   "description": "Agenda de Sueño (diario de sueño digital) — pruebas automáticas",
   "scripts": {
