@@ -23,6 +23,7 @@ base_datos_pacientes_*
 # PDF impresos desde la app: solo se publican los de la carpeta docs/
 *.pdf
 !docs/*.pdf
+!v*/docs/*.pdf
 
 # Desarrollo
 node_modules/
