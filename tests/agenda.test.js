@@ -1,4 +1,4 @@
-// Pruebas automáticas de la Agenda de Sueño (v4.9.2). Ejecutar: npm test
+// Pruebas automáticas de la Agenda de Sueño (v4.9.2, actualizadas a la v4.9.5). Ejecutar: npm test
 // Requisitos: Node 20+ y jsdom (npm install). Zona horaria: Europe/Madrid (para el cambio de hora).
 'use strict';
 const test = require('node:test');
@@ -33,13 +33,13 @@ async function pasarPrimerAcceso(app, modo = 'privado') {
   return false;
 }
 
-test('arranque sin errores, versión 4.9.2 y modo piloto', async () => {
+test('arranque sin errores, versión 4.9.5 y modo piloto', async () => {
   const app = await loadApp();
   assert.deepEqual(app.errors, []);
-  assert.equal(app.ev('APP_VERSION'), '4.9.2');
-  assert.equal(app.ev('DATA_SCHEMA'), 2);
+  assert.equal(app.ev('APP_VERSION'), '4.9.5');
+  assert.equal(app.ev('DATA_SCHEMA'), 3);   // v4.9.5: el CSV lleva la escala de las calidades por día
   assert.equal(app.ev('MODO_PILOTO'), true);
-  assert.match(app.doc.getElementById('loginVersion').textContent, /4\.9\.2/);
+  assert.match(app.doc.getElementById('loginVersion').textContent, /4\.9\.5/);
 });
 
 test('escHtml escapa los caracteres peligrosos', async () => {
@@ -47,7 +47,7 @@ test('escHtml escapa los caracteres peligrosos', async () => {
   assert.equal(app.ev(`escHtml('<a href="x">&\\'')`), '&lt;a href=&quot;x&quot;&gt;&amp;&#39;');
 });
 
-test('ida y vuelta CSV de los 16 casos de demostración (incluidas marcas de tiempo)', async () => {
+test('ida y vuelta CSV de los 16 casos de demostración (incluidas marcas de tiempo y escala de calidad)', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   const ids = app.ev('DEMO_CASES.index.map(x=>x.id)');
@@ -57,11 +57,11 @@ test('ida y vuelta CSV de los 16 casos de demostración (incluidas marcas de tie
     // marcas de tiempo artificiales en dos días para comprobar que viajan en el CSV
     app.ev(`state[0].firstEnteredAt='2025-06-03T07:15:00.000Z';state[0].updatedAt='2025-06-03T07:20:00.000Z';state[5].deletedAt='2025-06-08T08:00:00.000Z';state[5].updatedAt='2025-06-08T08:00:00.000Z';`);
     const r = app.ev(`(()=>{const csv=buildUnifiedCsv();const imp=rawImportText(csv);
-      const a=state.map(d=>_contenidoDia(d)+'|'+(d.firstEnteredAt||'')+'|'+(d.updatedAt||'')+'|'+(d.deletedAt||''));
-      const b=imp.state.map(d=>_contenidoDia(d)+'|'+(d.firstEnteredAt||'')+'|'+(d.updatedAt||'')+'|'+(d.deletedAt||''));
+      const a=state.map(d=>_contenidoDia(d)+'|'+(d.firstEnteredAt||'')+'|'+(d.updatedAt||'')+'|'+(d.deletedAt||'')+'|'+(qDiaValorado(d)?qEscDia(d):''));
+      const b=imp.state.map(d=>_contenidoDia(d)+'|'+(d.firstEnteredAt||'')+'|'+(d.updatedAt||'')+'|'+(d.deletedAt||'')+'|'+(qDiaValorado(d)?qEscDia(d):''));
       return {ok:JSON.stringify(a)===JSON.stringify(b), meta:imp.meta, first:a.find((x,i)=>x!==b[i]), firstB:b.find((x,i)=>x!==a[i])};})()`);
     assert.ok(r.ok, `ida y vuelta distinta en ${id}: ${r.first} ≠ ${r.firstB}`);
-    assert.equal(r.meta.version_esquema, '2');
+    assert.equal(r.meta.version_esquema, '3');
     assert.equal(r.meta.id, id);
   }
   assert.deepEqual(app.errors, []);
@@ -383,17 +383,21 @@ test('código eliminado: insights(), askPatientDiaryFile() y el botón inexisten
   assert.doesNotMatch(SRC, /\$\("exportAllBtn"\)&&/);
 });
 
-test('catalán: interfaz del paciente, rejilla con letras del semáforo y guía', async () => {
+test('catalán: interfaz del paciente, casillas de calidad 1–5 (y letras en días de la escala antigua) y guía', async () => {
   const app = await loadApp();
+  // v4.9.5: un día valorado con la escala antigua (sin qsc) muestra su letra; uno nuevo, su número
+  app.ev(`initState();state[0].qs=1;state[1].qs=4;state[1].qsc=5;buildBody();`);
   app.ev(`setLang('ca')`);
   assert.equal(app.doc.querySelector('label[for="luser"]').textContent, "Usuari o codi d'accés");
   assert.match(app.doc.getElementById('headRow').innerHTML, /Qualitat/);
-  assert.ok([...app.doc.querySelectorAll('#gridBody .lt.red')].every(x => x.textContent === 'D'));
+  assert.equal(app.doc.querySelector('#gridBody tr[data-d="0"] .lkcell[data-q="qs"] .lkb').textContent, 'D');
+  assert.equal(app.doc.querySelector('#gridBody tr[data-d="1"] .lkcell[data-q="qs"] .lkb').textContent, '4');
+  assert.match(app.doc.querySelector('#gridBody tr[data-d="1"] .lkcell[data-q="qs"]').getAttribute('aria-label'), /Qualitat del son: 4 · Bona/);
   app.ev('showInstructions()');
   assert.match(app.doc.getElementById('instrOverlay').textContent, /El teu diari de son/);
   app.ev(`document.getElementById('instrOverlay').remove();setLang('es')`);
   assert.equal(app.doc.querySelector('label[for="luser"]').textContent, 'Usuario o código de acceso');
-  assert.ok([...app.doc.querySelectorAll('#gridBody .lt.red')].every(x => x.textContent === 'M'));
+  assert.equal(app.doc.querySelector('#gridBody tr[data-d="0"] .lkcell[data-q="qs"] .lkb').textContent, 'M');
   // todas las claves de I18N.es tienen traducción al catalán
   const falta = app.evj('Object.keys(I18N.es).filter(k=>I18N.ca[k]==null)');
   assert.deepEqual(falta, []);
