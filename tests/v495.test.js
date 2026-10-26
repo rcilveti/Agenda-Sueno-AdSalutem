@@ -104,13 +104,14 @@ test('CSV: guarda la escala por día; un CSV antiguo (sin la columna) se importa
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-pseudoinsomnio')`);
   const csv = app.ev('buildUnifiedCsv()');
-  assert.match(csv, /;escala_calidad\n/);
+  assert.match(csv, /;escala_calidad;min_latencia/);
   assert.match(csv, /^escala_calidad;5;niveles$/m);
   assert.match(csv, /^calidad_sueno_dias_malos;\d+;% dias 1-2$/m);
   const st = app.evj(`rawImportText(${JSON.stringify(csv)}).state`);
   assert.ok(st.filter(d => d.qs >= 1).every(d => d.qsc === 5));
   // el mismo archivo sin la columna (formato anterior): valores 4–5 no válidos en 1–3 y escala antigua
-  const viejo = csv.replace(/;escala_calidad\n/, '\n').replace(/^(\d+;.*);(5)?$/gm, '$1');
+  // (se quitan también las columnas de minutos de la v4.9.6)
+  const viejo = csv.replace(/;escala_calidad;min_latencia;min_despertares;min_despierto;min_final\n/, '\n').replace(/^(\d+;.*);(5)?;[^;\n]*;[^;\n]*;[^;\n]*;[^;\n]*$/gm, '$1');
   const st2 = app.evj(`rawImportText(${JSON.stringify(viejo)}).state`);
   assert.ok(st2.every(d => !d.qsc));
   assert.ok(st2.every(d => [d.qs, d.qd, d.qe].every(v => v >= 0 && v <= 3)));
@@ -123,7 +124,7 @@ test('casos de ejemplo: valoraciones completas en 1–5 y perfiles RU-SATED de l
     'caso-normal': 'R+S+A+T+E+D+', 'caso-ins-conciliacion': 'R+S-A-T+E-D-', 'caso-ins-mantenimiento': 'R+S-A-T+E-D-',
     'caso-retraso-fase': 'R+S-A-T-E+D-', 'caso-avance-fase': 'R+S+A+T-E+D+', 'caso-ritmo-irregular': 'R-S+A-T-E+D+',
     'caso-trabajo-turnos': 'R-S+A-T-E+D+', 'caso-bebe-hierro': 'R+S-A-T?E-D+', 'caso-nino-tea': 'R+S-A-T?E-D-',
-    'caso-anciana-80': 'R+S+A+T+E+D+', 'caso-pseudoinsomnio': 'R+S-A+T+E+D+', 'caso-menopausia': 'R+S-A-T+E-D-',
+    'caso-anciana-80': 'R+S+A+T+E+D+', 'caso-pseudoinsomnio': 'R+S-A+T+E+D-',   // v4.9.6: con los minutos, el TST del pseudoinsomnio baja de 7 h 'caso-menopausia': 'R+S-A-T+E-D-',
     'caso-spi-plmd': 'R+S-A-T+E-D-', 'caso-apnea-insomnio': 'R+S-A-T+E-D-', 'caso-tcsr-rem': 'R+S+A+T+E+D-',
     'caso-hipersomnia': 'R+S+A-T+E+D-'
   };

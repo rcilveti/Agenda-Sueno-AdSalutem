@@ -9,7 +9,7 @@
  * Debe publicarse en la MISMA carpeta que la página (p. ej. junto a index.html).
  */
 'use strict';
-const VERSION = '4.9.5';
+const VERSION = '4.9.6';
 const CACHE = 'agenda-sueno-' + VERSION;
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 const CDN = [

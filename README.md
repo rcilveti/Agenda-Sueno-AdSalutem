@@ -4,7 +4,7 @@ Diario de sueño de tres semanas en formato digital. Aplicación de un solo arch
 sin servidor ni base de datos, pensada para funcionar en móvil, tableta y ordenador,
 en castellano y en catalán.
 
-**Versión actual:** v4.9.5 (octubre de 2026) — MODO PILOTO (datos ficticios, sin cifrado)
+**Versión actual:** v4.9.6 (octubre de 2026) — MODO PILOTO (datos ficticios, sin cifrado)
 
 **Dirección:** https://rcilveti.github.io/Agenda-Sueno-AdSalutem/
 
@@ -91,6 +91,17 @@ dispositivo, la aplicación **fusiona** día a día en vez de sobrescribir.
 ---
 
 ## Novedades recientes
+
+**v4.9.6 — Modelo mixto: rejilla + minutos de la noche.** El profesional puede activar, para
+cada paciente, cuatro campos por noche como en el diario de consenso (Carney 2012): cuánto
+tardó en dormirse, cuántas veces se despertó, cuánto rato estuvo despierto en total y cuánto
+rato estuvo en la cama tras despertarse del todo. La rejilla sigue marcando el horario; con
+los minutos se recalculan la latencia, los despertares, el WASO, el despertar terminal, el
+tiempo total de sueño y la eficiencia. Recomendado en sueño fragmentado, insomnio y
+seguimiento de TCC-I. Una barra muestra la cumplimentación: si hay minutos en el 75 % de las
+noches o más, el análisis los usa; por debajo, usa la rejilla y avisa de que los despertares
+pueden estar infraestimados. El formato de datos pasa a la versión 4 (modo de registro y
+minutos por día). Diez casos de ejemplo llevan el modo mixto (anexo IV del documento técnico).
 
 **v4.9.5 — Calidades en escala de 1 a 5.** El paciente valora cada día su sueño, su
 despertar y su estado durante el día de 1 a 5 (antes, con un semáforo de tres niveles).

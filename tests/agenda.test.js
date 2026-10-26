@@ -1,4 +1,4 @@
-// Pruebas automáticas de la Agenda de Sueño (v4.9.2, actualizadas a la v4.9.5). Ejecutar: npm test
+// Pruebas automáticas de la Agenda de Sueño (v4.9.2, actualizadas a la v4.9.6). Ejecutar: npm test
 // Requisitos: Node 20+ y jsdom (npm install). Zona horaria: Europe/Madrid (para el cambio de hora).
 'use strict';
 const test = require('node:test');
@@ -33,13 +33,13 @@ async function pasarPrimerAcceso(app, modo = 'privado') {
   return false;
 }
 
-test('arranque sin errores, versión 4.9.5 y modo piloto', async () => {
+test('arranque sin errores, versión 4.9.6 y modo piloto', async () => {
   const app = await loadApp();
   assert.deepEqual(app.errors, []);
-  assert.equal(app.ev('APP_VERSION'), '4.9.5');
-  assert.equal(app.ev('DATA_SCHEMA'), 3);   // v4.9.5: el CSV lleva la escala de las calidades por día
+  assert.equal(app.ev('APP_VERSION'), '4.9.6');
+  assert.equal(app.ev('DATA_SCHEMA'), 4);   // v4.9.6: el CSV lleva el modo de registro y los minutos de la noche
   assert.equal(app.ev('MODO_PILOTO'), true);
-  assert.match(app.doc.getElementById('loginVersion').textContent, /4\.9\.5/);
+  assert.match(app.doc.getElementById('loginVersion').textContent, /4\.9\.6/);
 });
 
 test('escHtml escapa los caracteres peligrosos', async () => {
@@ -47,7 +47,7 @@ test('escHtml escapa los caracteres peligrosos', async () => {
   assert.equal(app.ev(`escHtml('<a href="x">&\\'')`), '&lt;a href=&quot;x&quot;&gt;&amp;&#39;');
 });
 
-test('ida y vuelta CSV de los 16 casos de demostración (incluidas marcas de tiempo y escala de calidad)', async () => {
+test('ida y vuelta CSV de los 16 casos de demostración (incluidas marcas de tiempo, escala de calidad y minutos de la noche)', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   const ids = app.ev('DEMO_CASES.index.map(x=>x.id)');
@@ -61,7 +61,8 @@ test('ida y vuelta CSV de los 16 casos de demostración (incluidas marcas de tie
       const b=imp.state.map(d=>_contenidoDia(d)+'|'+(d.firstEnteredAt||'')+'|'+(d.updatedAt||'')+'|'+(d.deletedAt||'')+'|'+(qDiaValorado(d)?qEscDia(d):''));
       return {ok:JSON.stringify(a)===JSON.stringify(b), meta:imp.meta, first:a.find((x,i)=>x!==b[i]), firstB:b.find((x,i)=>x!==a[i])};})()`);
     assert.ok(r.ok, `ida y vuelta distinta en ${id}: ${r.first} ≠ ${r.firstB}`);
-    assert.equal(r.meta.version_esquema, '3');
+    assert.equal(r.meta.version_esquema, '4');
+    assert.equal(r.meta.modo_registro, app.ev('mxActivo()') ? 'mixto' : 'rejilla');
     assert.equal(r.meta.id, id);
   }
   assert.deepEqual(app.errors, []);
