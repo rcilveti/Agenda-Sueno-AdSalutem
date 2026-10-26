@@ -8,6 +8,9 @@ en castellano y en catalán.
 
 **Dirección:** https://rcilveti.github.io/Agenda-Sueno-AdSalutem/
 
+**Versión de pruebas:** v4.9.6 (modelo mixto: rejilla + minutos de la noche) en
+https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.6/ — ver «Dos versiones a la vez».
+
 ---
 
 ## ⚠️ AVISO CRÍTICO DE PROTECCIÓN DE DATOS
@@ -111,6 +114,26 @@ Satisfacción, Alerta, Horario, Eficiencia y Duración) en el análisis del prof
 las exportaciones.
 
 ---
+
+## Dos versiones a la vez
+
+La raíz del sitio publica la versión en uso (v4.9.5). La carpeta `v4.9.6/` publica la versión de
+pruebas, con su propia página, service worker, manifiesto, documentación (`v4.9.6/docs/`) y pruebas
+automáticas (`v4.9.6/tests/`, que `npm test` ejecuta junto con las de la raíz).
+
+- **Mismo navegador, mismos datos.** Las dos versiones comparten el almacenamiento del navegador
+  (mismo dominio): en un dispositivo se ven los mismos pacientes y diarios en ambas. Conviene que
+  cada paciente use una sola versión; los del modo mixto, solo la v4.9.6. Si un diario en modo mixto
+  se abre y se guarda en la v4.9.5, se pierde la marca del modo (los minutos se conservan, pero la
+  v4.9.5 no los muestra ni los exporta).
+- **Enlaces y QR.** Cada versión genera los QR y los enlaces con su propia dirección: el paciente
+  entra en la versión desde la que se creó su acceso.
+- **Sin conexión.** Cada carpeta guarda su propia copia; ninguna borra la de la otra.
+- **Casos de ejemplo.** La v4.9.6 los vuelve a cargar con los minutos de la noche; la v4.9.5 los
+  verá así (son ficticios).
+
+Para pasar la v4.9.6 a la raíz cuando esté validada, basta con copiar el contenido de `v4.9.6/`
+a la raíz (y, si se quiere conservar la anterior, la v4.9.5 a `v4.9.5/`).
 
 ## Cómo se publica
 

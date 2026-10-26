@@ -1,0 +1,26 @@
+{
+  "name": "Agenda de Sueño 4.9.6 (pruebas) — AdSalutem",
+  "short_name": "Agenda 4.9.6",
+  "description": "Diario de sueño digital de tres semanas — versión de pruebas 4.9.6",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#143f5e",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
