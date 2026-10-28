@@ -3405,8 +3405,9 @@ function mostrarCredencialNueva(nombre,pin,expires,opts){
       <p style="margin:0 0 14px;font-size:.8rem;color:#42546a;line-height:1.5">
         <strong>Lo más sencillo:</strong> que el paciente escanee este QR con su móvil. Entrará
         directo y su ficha quedará rellena; solo tendrá que empezar a anotar las noches.
-        Si no puede escanearlo, puede escribir el código en «Usuario o código» desde cualquier móvil${_codigoConControl(pin)?'':' <b>en el que ya se haya escaneado el QR</b> (código anterior a la v4.9.1: usa «🔄 Código nuevo» para obtener uno que funcione en cualquier dispositivo)'}. Caduca el <strong>${cadStr}</strong> (2 meses).</p>
-      ${MODO_PILOTO?'':'<p style="margin:0 0 12px;font-size:.74rem;color:#8a5200;background:#fdf2e0;border-left:3px solid #e0941f;padding:6px 10px">El QR contiene el código de acceso y los datos de la ficha. Entrégalo en mano o por un canal seguro y pide al paciente que no lo comparta.</p>'}
+        Si no está en la consulta, <strong>«📤 Enviar»</strong> le manda un mensaje con un enlace que hace lo mismo que el QR.
+        También puede escribir el código en «Usuario o código» desde cualquier móvil${_codigoConControl(pin)?'':' <b>en el que ya se haya escaneado el QR</b> (código anterior a la v4.9.1: usa «🔄 Código nuevo» para obtener uno que funcione en cualquier dispositivo)'}, pero entonces la ficha no se rellena sola. Caduca el <strong>${cadStr}</strong> (2 meses).</p>
+      ${MODO_PILOTO?'':'<p style="margin:0 0 12px;font-size:.74rem;color:#8a5200;background:#fdf2e0;border-left:3px solid #e0941f;padding:6px 10px">El QR y el enlace del mensaje contienen el código de acceso y los datos de la ficha. Entrégalos en mano o por un canal seguro y pide al paciente que no los comparta.</p>'}
       <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
         <div style="flex:1 1 180px">
           <div style="font-size:.72rem;color:#6b7c90;text-transform:uppercase;letter-spacing:.05em">Código de acceso</div>
@@ -3439,9 +3440,11 @@ function mostrarCredencialNueva(nombre,pin,expires,opts){
   const armarMensaje=async()=>{
     let enlaceDiario='';
     try{ enlaceDiario='\n\nEnlace del diario (respaldo):\n'+(await buildDiaryLink()); }catch(e){}
+    // enlace de acceso directo: el mismo que codifica el QR (entra en el diario con la ficha ya rellena)
     return 'Hola '+nombre+'. Para tu diario de sueño de AdSalutem:\n\n'+
       (datosStr?('Datos: '+datosStr+'\n\n'):'')+
-      'Dirección de la aplicación:\n'+base+'\n\n'+
+      'Abre este enlace en tu móvil para entrar directamente en tu diario, con tu ficha ya rellena (es personal: no lo reenvíes):\n'+qrUrl+'\n\n'+
+      'Si el enlace no se abre, entra en la dirección de la aplicación y escribe tu código:\n'+base+'\n'+
       'Código de acceso: '+codigo+'\n'+
       '(escríbelo en «Usuario o código»; la contraseña puede quedar en blanco; caduca el '+cadStr+')\n\n'+
       'Instala la aplicación en tu móvil cuando te lo ofrezca y rellena el diario cada mañana.'+enlaceDiario;

@@ -264,3 +264,31 @@ test('acceso del paciente: el QR lleva la ventana de sueño y el paciente la ve 
   assert.ok(pac.doc.querySelectorAll('#gridBody tr[data-d="9"] .tw').length > 0, 'ventana dibujada para el paciente');
   assert.deepEqual(pac.errors, []);
 });
+
+test('acceso: el mensaje de «Enviar» lleva el enlace directo, que abre el diario con la ficha y la ventana', async () => {
+  let mensaje = null;
+  const doc = await loadApp({ prompt: (m, d) => { mensaje = d; return null; } });
+  await loginDoctor(doc);
+  await doc.ev(`selectPatient('caso-tcci')`);
+  await doc.ev(`(async()=>{const c=await crearCredencialPaciente('caso-tcci','TCC-I');mostrarCredencialNueva('TCC-I',c.pin,c.expires);})()`);
+  doc.doc.getElementById('credMsgBtn').click();
+  for (let i = 0; i < 40 && !mensaje; i++) await doc.sleep(50);
+  assert.ok(mensaje, 'mensaje preparado');
+  const url = (mensaje.match(/https?:\/\/\S+#acc=\S+/) || [])[0];
+  assert.ok(url, 'el mensaje lleva el enlace de acceso directo');
+  assert.match(url, /&vt=7%3A0030-0630%2C14%3A0000-0630$/);
+  assert.match(mensaje, /Código de acceso: [A-Z0-9]{4}-[A-Z0-9]{4}/);
+  // el paciente abre el enlace en su móvil
+  const pac = await loadApp({ url, bootDelay: 1500 });
+  for (let i = 0; i < 30; i++) {
+    const dev = pac.doc.getElementById('devPriv'); if (dev) { dev.click(); await pac.sleep(50); }
+    const chk = pac.doc.getElementById('consentChk');
+    if (chk) { chk.checked = true; chk.dispatchEvent(new pac.win.Event('change')); pac.doc.getElementById('consentYes').click(); await pac.sleep(800); break; }
+    await pac.sleep(60);
+  }
+  assert.equal(pac.ev('session&&session.role'), 'patient');
+  assert.equal(pac.ev('getBirthInput().value'), '1968-03-14');
+  assert.equal(pac.ev('getStartInput().value'), '2025-06-02');
+  assert.equal(pac.ev('ventanasValidas(loadedVentanas).length'), 2);
+  assert.deepEqual(pac.errors, []);
+});
