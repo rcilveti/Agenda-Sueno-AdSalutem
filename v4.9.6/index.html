@@ -139,6 +139,37 @@
   .clinreport-card h4{color:var(--brand-deep)}
   .clin-final{background:#eef5ee;border:1px solid #bcd8bf;border-radius:8px;padding:12px 14px;margin-top:14px}
   .clin-final h4{margin:0 0 6px;color:#1f6b3a !important}
+  /* medida del PDF del análisis (_ajustarHojasPdf): mismas medidas que la impresión, con el ancho de la hoja */
+  #analisisContent.medir-pdf{width:calc(182mm - 40px)!important;max-width:none!important;min-width:0!important;font-size:15px}
+  #analisisContent.medir-pdf details.card>summary{padding:14px 14px;min-height:48px}
+  #analisisContent.medir-pdf .secnote,#analisisContent.medir-pdf .noprint{display:none!important}
+  #analisisContent.medir-pdf>details.secblock[open]>summary h2{font-size:12pt!important;margin:0!important}
+  #analisisContent.medir-pdf>details.secblock[open]>.dbody>.sub{font-size:7.5pt!important;line-height:1.35!important;margin:0 0 2mm!important}
+  #analisisContent.medir-pdf .pg-resdia .scroll{overflow:visible!important}
+  #analisisContent.medir-pdf .pg-resdia table{font-size:7.5pt!important;width:100%!important;table-layout:fixed}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(1){width:12%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(2){width:7%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(3){width:7.4%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(4){width:5.6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(5){width:5.4%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(6){width:6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(7){width:5.6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(8){width:5.6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(9){width:6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(10){width:4.6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(11){width:7%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(12){width:5%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(13){width:5.8%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(14){width:5.4%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(15){width:6.6%}
+  #analisisContent.medir-pdf .pg-resdia table th:nth-child(16){width:5%}
+  #analisisContent.medir-pdf .pg-resdia table th{font-size:6.1pt!important;text-transform:none!important;letter-spacing:0!important;padding:1.2mm .3mm!important;line-height:1.15!important;white-space:normal}
+  #analisisContent.medir-pdf .pg-resdia table td{padding:1.5mm .3mm!important;line-height:1.2!important;white-space:normal}
+  #analisisContent.medir-pdf .pg-informe .clinrep{font-size:9.2pt!important;line-height:1.45!important}
+  #analisisContent.medir-pdf .pg-informe .dbody>.sub{font-size:7pt!important}
+  #analisisContent.medir-pdf .pg-informe .clinrep h4{font-size:9pt!important;margin:2.2mm 0 .8mm!important}
+  #analisisContent.medir-pdf .pg-informe .clinrep p{margin:0 0 1.1mm!important}
+  #analisisContent.medir-pdf .pg-informe .clinrep li{margin:0 0 1mm!important}
   .card h2{font-size:1.02rem;font-weight:600}
   .card .sub{font-size:.8rem;color:var(--mist);margin:3px 0 14px}
 
@@ -492,8 +523,51 @@
     body[data-print="analisis"] details.secblock:not([open]){display:none!important}
     body[data-print="analisis"] details.secblock[open]>.dbody{display:block!important}
     body[data-print="analisis"] details.secblock:not([open])>.dbody{display:none!important}
-    /* cada apartado desplegado empieza en una página nueva */
-    body[data-print="analisis"] details.secblock[open]{break-before:page;page-break-before:always;break-inside:auto;page-break-inside:auto}
+    /* maquetación por páginas (_maquetarPdfAnalisis): solo los bloques marcados .pg-salto empiezan página */
+    body[data-print="analisis"] details.secblock[open]{break-before:auto;page-break-before:auto;break-inside:auto;page-break-inside:auto}
+    body[data-print="analisis"] #analisisContent>.pg-salto{break-before:page!important;page-break-before:always!important}
+    body[data-print="analisis"] #analisisContent>details.secblock[open]:not(.pg-salto){margin-top:3mm!important}
+    /* página 2: tendencias en una sola hoja */
+    body[data-print="analisis"] .pg-tend{break-inside:avoid;page-break-inside:avoid}
+    body[data-print="analisis"] .pg-tend .trends{grid-template-columns:repeat(2,1fr)!important;gap:3mm!important}
+    body[data-print="analisis"] .pg-tend .trend{break-inside:avoid;page-break-inside:avoid;padding:2mm 2.5mm!important}
+    body[data-print="analisis"] .pg-tend .trend h4{font-size:8.5pt!important;margin:0!important}
+    body[data-print="analisis"] .pg-tend .trend .tsub{font-size:6.5pt!important}
+    /* páginas 3 a 5: tablas y tarjetas algo más compactas para que cada grupo quepa en su hoja */
+    body[data-print="analisis"] .pg-compacta table{font-size:7.5pt!important}
+    body[data-print="analisis"] .pg-compacta table th,body[data-print="analisis"] .pg-compacta table td{padding:1mm 1.6mm!important;line-height:1.25!important}
+    body[data-print="analisis"] .pg-compacta .kpi .v{font-size:11pt!important}
+    /* tamaños (también en la medida previa, ver TAM) */
+    body[data-print="analisis"] #analisisContent>details.secblock[open]>summary h2{font-size:12pt!important;margin:0!important}
+    body[data-print="analisis"] #analisisContent>details.secblock[open]>.dbody>.sub{font-size:7.5pt!important;line-height:1.35!important;margin:0 0 2mm!important}
+    body[data-print="analisis"] .pg-resdia .scroll{overflow:visible!important}
+    body[data-print="analisis"] .pg-resdia table{font-size:7.5pt!important;width:100%!important;table-layout:fixed}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(1){width:12%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(2){width:7%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(3){width:7.4%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(4){width:5.6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(5){width:5.4%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(6){width:6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(7){width:5.6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(8){width:5.6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(9){width:6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(10){width:4.6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(11){width:7%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(12){width:5%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(13){width:5.8%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(14){width:5.4%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(15){width:6.6%}
+    body[data-print="analisis"] .pg-resdia table th:nth-child(16){width:5%}
+    body[data-print="analisis"] .pg-resdia table th{font-size:6.1pt!important;text-transform:none!important;letter-spacing:0!important;padding:1.2mm .3mm!important;line-height:1.15!important;white-space:normal}
+    body[data-print="analisis"] .pg-resdia table td{padding:1.5mm .3mm!important;line-height:1.2!important;white-space:normal}
+    body[data-print="analisis"] .pg-informe .clinrep{font-size:9.2pt!important;line-height:1.45!important}
+    body[data-print="analisis"] .pg-informe .dbody>.sub{font-size:7pt!important}
+    body[data-print="analisis"] .pg-informe .clinrep h4{font-size:9pt!important;margin:2.2mm 0 .8mm!important}
+    body[data-print="analisis"] .pg-informe .clinrep p{margin:0 0 1.1mm!important}
+    body[data-print="analisis"] .pg-informe .clinrep li{margin:0 0 1mm!important}
+    body[data-print="analisis"] .pg-resdia{break-inside:avoid;page-break-inside:avoid}
+    body[data-print="analisis"] .pg-informe .clinrep h4{break-after:avoid;page-break-after:avoid}
+    body[data-print="analisis"] .pg-informe .clin-final{break-before:page;page-break-before:always;margin-top:0!important}
     /* la cabecera del apartado no se separa de su contenido (evita páginas con solo el título) */
     body[data-print="analisis"] details.secblock[open]>summary{break-after:avoid;page-break-after:avoid;break-inside:avoid}
     body[data-print="analisis"] details.secblock[open]>.dbody{break-before:avoid;page-break-before:avoid;break-inside:auto;page-break-inside:auto}
@@ -6252,15 +6326,68 @@ function printView(which){
   }
   else{fillAgendaPrintHead();setTimeout(()=>window.print(),100);}
 }
-// v4.9.1: prepara el PDF del análisis: el análisis longitudinal (si está desplegado) pasa detrás
-// de las métricas principales, para que estas ocupen solas la primera página, y se añade la
-// rejilla del diario como anexo final.
+// v4.9.1: prepara el PDF del análisis y añade la rejilla del diario como anexo final.
+// Maquetación por páginas: los bloques se colocan en este orden y cada grupo empieza página nueva si
+// tiene algún apartado desplegado (los plegados no se imprimen, como hasta ahora). Los cuadros de
+// métricas (horarios, ritmo circadiano) van con su página; si sus apartados están plegados, siguen a la
+// página anterior. Después de imprimir, renderAnalysis() devuelve el análisis a su orden habitual.
+const PDF_ANALISIS_PAGINAS=[
+  {b:['#resConsulta','kg:Duración y continuidad'], inicio:true},
+  {b:['Tendencias a lo largo del registro'], cls:'pg-tend'},
+  {b:['kg:Horarios del sueño','Indicadores de regularidad'], cls:'pg-compacta'},
+  {b:['Calidad percibida','Salud del sueño (índice compuesto RU-SATED)'], cls:'pg-compacta'},
+  {b:['kg:Ritmo circadiano','Cronotipo y estimación de DLMO','Comparativa laborables vs. festivos'], cls:'pg-compacta'},
+  {b:['Resumen por día, semana y total'], cls:'pg-resdia'},
+  {b:['Noches fuera de su patrón habitual','Factores anotados'], cls:'pg-compacta'},
+  {b:['Informe clínico provisional'], cls:'pg-informe'},
+  {b:['#longitBlock']}, {b:['Acontecimientos reportados']}, {b:['Referencias']}
+];
+function _maquetarPdfAnalisis(){
+  const c=$("analisisContent"); if(!c)return;
+  const hijos=[...c.children];
+  const buscar=k=>{
+    if(k[0]==='#') return hijos.find(e=>e.id===k.slice(1))||null;
+    if(k.indexOf('kg:')===0) return hijos.find(e=>e.classList.contains('kgroup')&&((e.querySelector('.kgh')||{}).textContent||'').trim().indexOf(k.slice(3))===0)||null;
+    return hijos.find(e=>e.tagName==='DETAILS'&&e.dataset.sectitle===k)||null;
+  };
+  const seImprime=e=>e.tagName!=='DETAILS'||e.open;
+  hijos.forEach(e=>e.classList.remove('pg-salto','pg-tend','pg-compacta','pg-resdia','pg-informe'));
+  for(const g of PDF_ANALISIS_PAGINAS){
+    const els=g.b.map(buscar).filter(Boolean);
+    els.forEach(e=>{ c.appendChild(e); if(g.cls)e.classList.add(g.cls); });
+    const primero=els.find(seImprime);
+    if(!g.inicio && primero && els.some(e=>e.tagName==='DETAILS'&&e.open)) primero.classList.add('pg-salto');
+  }
+}
 function prepararImpresionAnalisis(){
   const c=$("analisisContent"); if(!c)return;
-  const grupos=c.querySelectorAll(':scope>.kgroup');
-  const lon=$("longitBlock");
-  if(lon&&grupos.length){ grupos[grupos.length-1].after(lon); }
+  _maquetarPdfAnalisis();
   construirAnexoRejilla();
+  _ajustarHojasPdf();
+}
+// La valoración del informe clínico (todo lo anterior a las conclusiones) y el resumen por día deben caber en
+// una hoja. Se miden con el ancho de la hoja y la letra del PDF; si no caben, se reducen con zoom (mín. 0,7).
+const PDF_ALTO_HOJA_MM=255;   // 297 mm − 2 × 14 mm de márgenes − pie de página
+function _ajustarHojasPdf(){
+  const c=$("analisisContent"), an=$("analisis"); if(!c||!an)return;
+  const pxmm=96/25.4, prevDisp=an.style.display;
+  if(getComputedStyle(an).display==='none') an.style.display='block';
+  c.classList.add('medir-pdf');
+  try{
+    const inf=c.querySelector(':scope>details.pg-informe[open]');
+    const rep=inf&&inf.querySelector('.clinrep'), fin=rep&&rep.querySelector(':scope>.clin-final');
+    if(rep&&fin){
+      let w=rep.querySelector(':scope>.clin-parte1');
+      if(!w){ w=document.createElement('div'); w.className='clin-parte1'; while(rep.firstChild&&rep.firstChild!==fin) w.appendChild(rep.firstChild); rep.insertBefore(w,fin); }
+      w.style.zoom='';
+      const alto=(w.getBoundingClientRect().bottom-inf.getBoundingClientRect().top)/pxmm;
+      if(alto>PDF_ALTO_HOJA_MM) w.style.zoom=String(Math.max(0.7,Math.floor(PDF_ALTO_HOJA_MM/alto*1000)/1000));
+    }
+    const rd=c.querySelector(':scope>details.pg-resdia[open]');
+    if(rd){ rd.style.zoom=''; const alto=rd.getBoundingClientRect().height/pxmm;
+      if(alto>PDF_ALTO_HOJA_MM) rd.style.zoom=String(Math.max(0.7,Math.floor(PDF_ALTO_HOJA_MM/alto*1000)/1000)); }
+  }catch(e){ console.error('ajuste del PDF:',e); }
+  finally{ c.classList.remove('medir-pdf'); an.style.display=prevDisp; }
 }
 function construirAnexoRejilla(){
   const c=$("analisisContent"); if(!c)return;
