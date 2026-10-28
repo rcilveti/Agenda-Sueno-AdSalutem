@@ -4,7 +4,7 @@
   "private": true,
   "description": "Agenda de Sueño (diario de sueño digital) — pruebas automáticas",
   "scripts": {
-    "test": "TZ=Europe/Madrid node --test --test-concurrency=1 tests/*.test.js v4.9.6/tests/*.test.js"
+    "test": "TZ=Europe/Madrid node --test --test-concurrency=1 tests/*.test.js v4.9.6/tests/*.test.js v4.9.7/tests/*.test.js"
   },
   "devDependencies": {
     "jsdom": "^24.1.3"

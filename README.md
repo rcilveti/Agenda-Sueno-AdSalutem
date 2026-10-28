@@ -8,8 +8,13 @@ en castellano y en catalán.
 
 **Dirección:** https://rcilveti.github.io/Agenda-Sueno-AdSalutem/
 
-**Versión de pruebas:** v4.9.6 (modelo mixto: rejilla + minutos de la noche) en
-https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.6/ — ver «Dos versiones a la vez».
+**Versiones de pruebas** (ver «Varias versiones a la vez»):
+
+- v4.9.6 (modelo mixto: rejilla + minutos de la noche) en
+  https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.6/
+- v4.9.7 (sobre la v4.9.5: recordatorio diario, registro con preguntas, factores del día,
+  ventana de sueño e hitos, tendencias, patrón propio y resumen para la consulta) en
+  https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.7/
 
 ---
 
@@ -40,7 +45,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
 | `docs/` | Guía del paciente (castellano y catalán) y documento técnico, en PDF |
-| `tests/`, `package.json` | Pruebas automáticas (52) |
+| `tests/`, `package.json` | Pruebas automáticas (52 de la raíz; las de `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
 
@@ -95,6 +100,24 @@ dispositivo, la aplicación **fusiona** día a día en vez de sobrescribir.
 
 ## Novedades recientes
 
+**v4.9.7 (pruebas, en `v4.9.7/`) — Adherencia, registro guiado y herramientas para el
+clínico.** Sobre la v4.9.5 (sin el modelo mixto de la v4.9.6):
+
+- *Recordatorio diario*: el paciente añade al calendario de su móvil un aviso cada mañana
+  del registro (archivo `.ics` generado en el propio dispositivo, sin datos personales, o
+  Google Calendar en Android), y un aviso naranja le indica al abrir la app la noche que falta.
+- *Registro con preguntas* (🧭): cinco preguntas (acostarse, latencia, despertares, despertar
+  final, levantarse) que pintan la rejilla conservando las duraciones; las respuestas a minuto
+  se guardan con el día.
+- *Factores del día*: columna con 17 etiquetas rápidas (ruido, dolor, cafeína, alcohol,
+  estrés, turno…), comparadas en el análisis con las noches sin ellas.
+- *Plan terapéutico*: ventana de sueño prescrita (marco verde en la rejilla, adherencia a
+  ±30 min; viaja en el QR) e hitos del tratamiento.
+- *Para el clínico*: resumen para la consulta (imprimible en una hoja), tendencias noche a
+  noche y noches fuera del patrón habitual del propio paciente (mediana y dispersión robusta
+  de sus noches comparables, por periodos entre hitos).
+- Formato de datos versión 5; 17 casos de ejemplo (nuevo: insomnio en TCC-I).
+
 **v4.9.5 — Calidades en escala de 1 a 5.** El paciente valora cada día su sueño, su
 despertar y su estado durante el día de 1 a 5 (antes, con un semáforo de tres niveles).
 Al tocar la casilla se abre un panel con las cinco opciones; en el PDF del diario, las
@@ -115,25 +138,30 @@ las exportaciones.
 
 ---
 
-## Dos versiones a la vez
+## Varias versiones a la vez
 
-La raíz del sitio publica la versión en uso (v4.9.5). La carpeta `v4.9.6/` publica la versión de
-pruebas, con su propia página, service worker, manifiesto, documentación (`v4.9.6/docs/`) y pruebas
-automáticas (`v4.9.6/tests/`, que `npm test` ejecuta junto con las de la raíz).
+La raíz del sitio publica la versión en uso (v4.9.5). Las carpetas `v4.9.6/` y `v4.9.7/` publican
+las versiones de pruebas, cada una con su propia página, service worker, manifiesto, documentación
+(`docs/`) y pruebas automáticas (`tests/`, que `npm test` ejecuta junto con las de la raíz). Las dos
+parten de la v4.9.5 por separado: la v4.9.7 no incluye el modelo mixto de la v4.9.6.
 
-- **Mismo navegador, mismos datos.** Las dos versiones comparten el almacenamiento del navegador
-  (mismo dominio): en un dispositivo se ven los mismos pacientes y diarios en ambas. Conviene que
+- **Mismo navegador, mismos datos.** Las versiones comparten el almacenamiento del navegador
+  (mismo dominio): en un dispositivo se ven los mismos pacientes y diarios en todas. Conviene que
   cada paciente use una sola versión; los del modo mixto, solo la v4.9.6. Si un diario en modo mixto
   se abre y se guarda en la v4.9.5, se pierde la marca del modo (los minutos se conservan, pero la
-  v4.9.5 no los muestra ni los exporta).
+  v4.9.5 no los muestra ni los exporta); la v4.9.7 conserva la marca, pero no usa los minutos.
+- **Plan terapéutico de la v4.9.7.** Si un diario con ventana de sueño o hitos se abre y se guarda
+  en la v4.9.5 o en la v4.9.6, se pierden la ventana y los hitos de la ficha. Los factores del día y
+  las respuestas con preguntas se conservan, aunque esas versiones no los muestran ni los exportan.
 - **Enlaces y QR.** Cada versión genera los QR y los enlaces con su propia dirección: el paciente
   entra en la versión desde la que se creó su acceso.
 - **Sin conexión.** Cada carpeta guarda su propia copia; ninguna borra la de la otra.
-- **Casos de ejemplo.** La v4.9.6 los vuelve a cargar con los minutos de la noche; la v4.9.5 los
-  verá así (son ficticios).
+- **Casos de ejemplo.** La v4.9.6 los vuelve a cargar con los minutos de la noche y la v4.9.7, con
+  factores, hitos, respuestas con preguntas y un caso nuevo de insomnio en TCC-I (17 casos); las
+  demás versiones los verán así (son ficticios).
 
-Para pasar la v4.9.6 a la raíz cuando esté validada, basta con copiar el contenido de `v4.9.6/`
-a la raíz (y, si se quiere conservar la anterior, la v4.9.5 a `v4.9.5/`).
+Para pasar una versión de pruebas a la raíz cuando esté validada, basta con copiar el contenido de
+su carpeta a la raíz (y, si se quiere conservar la anterior, la v4.9.5 a `v4.9.5/`).
 
 ## Cómo se publica
 
