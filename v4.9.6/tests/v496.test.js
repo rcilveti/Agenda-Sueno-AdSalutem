@@ -265,3 +265,23 @@ test('lectura de consenso: una noche en dos tramos no duplica el sueño y los av
   assert.equal(m.tst, 480 - 30 - 170 - 5);                             // sin sumar dos veces el tramo de 06:00–07:00
   assert.equal(Math.round(m.se), Math.round(275 / 480 * 100));
 });
+
+test('acceso: el mensaje de «Enviar» lleva el enlace directo, que abre el diario con la ficha', async () => {
+  let mensaje = null;
+  const doc = await loadApp({ prompt: (m, d) => { mensaje = d; return null; } });
+  await loginDoctor(doc);
+  await doc.ev(`selectPatient('caso-menopausia')`);
+  await doc.ev(`(async()=>{const c=await crearCredencialPaciente('caso-menopausia','Menopausia');mostrarCredencialNueva('Menopausia',c.pin,c.expires);})()`);
+  doc.doc.getElementById('credMsgBtn').click();
+  for (let i = 0; i < 40 && !mensaje; i++) await doc.sleep(50);
+  assert.ok(mensaje, 'mensaje preparado');
+  const url = (mensaje.match(/https?:\/\/\S+#acc=\S+/) || [])[0];
+  assert.ok(url, 'el mensaje lleva el enlace de acceso directo');
+  assert.match(mensaje, /Código de acceso: [A-Z0-9]{4}-[A-Z0-9]{4}/);
+  const pac = await loadApp({ url, bootDelay: 1500 });
+  assert.ok(await pasarPrimerAcceso(pac));
+  assert.equal(pac.ev('session&&session.role'), 'patient');
+  assert.equal(pac.ev('getBirthInput().value'), '1973-05-08');
+  assert.equal(pac.ev('getStartInput().value'), '2025-06-02');
+  assert.deepEqual(pac.errors, []);
+});
