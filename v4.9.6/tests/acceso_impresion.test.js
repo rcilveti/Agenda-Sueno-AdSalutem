@@ -146,3 +146,41 @@ test('PDF del diario: la 2.ª hoja lleva su propia cabecera y la rejilla ajustab
   assert.match(app.doc.getElementById('agendaGridHead').textContent, /Agenda de Sueño — diario de 3 semanas · Caso · Sueño normal/);
   assert.ok(app.doc.querySelector('.gridscroll').classList.contains('pg-fit'));
 });
+
+// ---------- PDF del análisis completo maquetado por páginas ----------
+const ORDEN_PDF = `[...document.querySelectorAll('#analisisContent>*')].filter(e=>e.tagName!=='DETAILS'||e.open)
+  .filter(e=>!e.classList.contains('secnote')&&!e.classList.contains('noprint'))
+  .map(e=>(e.classList.contains('pg-salto')?'¶ ':'')+(e.dataset.sectitle||(e.classList.contains('kgroup')?'kg:'+e.querySelector('.kgh').textContent.trim():'')||e.id||e.className))`;
+async function imprimirAnalisis(app, abiertos) {
+  app.win.print = () => {};
+  app.ev(`document.querySelector('nav.tabs button[data-view="analisis"]').click(); renderAnalysis();
+    document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ const k=d.dataset.sectitle; secOpenState[k]=${JSON.stringify(abiertos)}===null||${JSON.stringify(abiertos)}.includes(k); });
+    printView('analisis')`);
+  await app.sleep(400);
+}
+test('PDF del análisis por páginas: cada grupo desplegado empieza hoja y el informe se parte antes de las conclusiones', async () => {
+  const app = await loadApp();
+  await login(app, 'medico', 'clinica');
+  await app.ev(`selectPatient('caso-ins-mantenimiento')`);
+  await imprimirAnalisis(app, null);   // todos los apartados desplegados
+  assert.deepEqual(app.evj(ORDEN_PDF), ["print-head", "kg:Duración y continuidad del sueño", "¶ kg:Horarios del sueño", "Indicadores de regularidad", "¶ Calidad percibida", "Salud del sueño (índice compuesto RU-SATED)", "¶ kg:Ritmo circadiano", "Cronotipo y estimación de DLMO", "Comparativa laborables vs. festivos", "¶ Resumen por día, semana y total", "¶ Informe clínico provisional", "¶ Acontecimientos reportados", "¶ Referencias", "annexGrid"]);
+  // informe en dos hojas: la valoración, y en la segunda conclusiones, recomendaciones y plan
+  assert.ok(app.ev(`!!document.querySelector('.pg-informe .clinrep>.clin-parte1+.clin-final')`));
+  assert.match(app.ev(`document.querySelector('.pg-informe .clin-final').textContent`), /Conclusiones clínicas[\s\S]*Recomendaciones[\s\S]*Propuesta de plan terapéutico/);
+  assert.ok(app.ev(`document.querySelector('.pg-resdia')!==null && document.querySelector('.pg-resdia').querySelectorAll('tbody tr').length===25`));
+  // al terminar, el análisis vuelve a su orden y sin marcas de página
+  app.win.dispatchEvent(new app.win.Event('afterprint'));
+  await app.sleep(100);
+  assert.equal(app.ev(`document.querySelectorAll('#analisisContent .pg-salto,#analisisContent .clin-parte1').length`), 0);
+  assert.deepEqual(app.errors, []);
+});
+
+test('PDF del análisis por páginas: solo salen los apartados desplegados; los cuadros sin apartado siguen a la hoja anterior', async () => {
+  const app = await loadApp();
+  await login(app, 'medico', 'clinica');
+  await app.ev(`selectPatient('caso-ins-mantenimiento')`);
+  await imprimirAnalisis(app, ['Calidad percibida', 'Informe clínico provisional']);
+  assert.deepEqual(app.evj(ORDEN_PDF), ["print-head", "kg:Duración y continuidad del sueño", "kg:Horarios del sueño", "¶ Calidad percibida",
+    "kg:Ritmo circadiano", "¶ Informe clínico provisional", "annexGrid"]);
+  assert.deepEqual(app.errors, []);
+});
