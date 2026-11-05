@@ -123,7 +123,8 @@ test('PDF del análisis: no despliega apartados, mueve el longitudinal tras las 
   app.ev(`secOpenState['Calidad percibida']=true; printView('analisis')`);
   await app.sleep(400);
   const abiertos = app.evj(`[...document.querySelectorAll('#analisisContent details.secblock')].filter(d=>d.open).map(d=>d.dataset.sectitle)`);
-  assert.deepEqual(abiertos, ['Calidad percibida']);
+  // v4.9.7: el resumen para la consulta va abierto (encabeza el análisis); el resto, como estaban
+  assert.deepEqual(abiertos, ['__resumen__', 'Calidad percibida']);
   const orden = app.evj(`[...document.querySelectorAll('#analisisContent>*')].map(e=>e.id||e.className.split(' ')[0])`);
   assert.ok(orden.indexOf('longitBlock') > orden.lastIndexOf('kgroup'), 'el bloque longitudinal debe ir tras las métricas');
   assert.equal(orden[orden.length - 1], 'annexGrid');
@@ -163,7 +164,7 @@ test('PDF del análisis por páginas: cada grupo desplegado empieza hoja y el in
   await login(app, 'medico', 'clinica');
   await app.ev(`selectPatient('caso-ins-mantenimiento')`);
   await imprimirAnalisis(app, null);   // todos los apartados desplegados
-  assert.deepEqual(app.evj(ORDEN_PDF), ["print-head", "kg:Duración y continuidad del sueño", "¶ kg:Horarios del sueño", "Indicadores de regularidad", "¶ Calidad percibida", "Salud del sueño (índice compuesto RU-SATED)", "¶ kg:Ritmo circadiano", "Cronotipo y estimación de DLMO", "Comparativa laborables vs. festivos", "¶ Resumen por día, semana y total", "¶ Informe clínico provisional", "¶ Acontecimientos reportados", "¶ Referencias", "annexGrid"]);
+  assert.deepEqual(app.evj(ORDEN_PDF), ["print-head", "__resumen__", "kg:Duración y continuidad del sueño", "¶ Tendencias a lo largo del registro", "¶ kg:Horarios del sueño", "Indicadores de regularidad", "¶ Calidad percibida", "Salud del sueño (índice compuesto RU-SATED)", "¶ kg:Ritmo circadiano", "Cronotipo y estimación de DLMO", "Comparativa laborables vs. festivos", "¶ Resumen por día, semana y total", "¶ Noches fuera de su patrón habitual", "Acontecimientos anotados", "¶ Informe clínico provisional", "¶ Acontecimientos reportados", "¶ Referencias", "annexGrid"]);
   // informe en dos hojas: la valoración, y en la segunda conclusiones, recomendaciones y plan
   assert.ok(app.ev(`!!document.querySelector('.pg-informe .clinrep>.clin-parte1+.clin-final')`));
   assert.match(app.ev(`document.querySelector('.pg-informe .clin-final').textContent`), /Conclusiones clínicas[\s\S]*Recomendaciones[\s\S]*Propuesta de plan terapéutico/);

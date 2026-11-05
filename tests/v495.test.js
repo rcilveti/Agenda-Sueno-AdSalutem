@@ -45,38 +45,39 @@ test('SRI: exige 5 pares de días consecutivos, informa de los pares válidos y 
 });
 
 // ---------- v4.9.5: escala Likert 1–5 ----------
-test('rejilla: la casilla de calidad abre el panel 1–5 y guarda el valor con su escala', async () => {
+test('rejilla: la casilla de calidad abre el paso 2 del editor y la valoración 1–5 se guarda con su escala (v4.9.9)', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-normal')`);
-  app.ev(`editLocked=false;updateEditLock();buildBody();`);
-  const cell = app.doc.querySelector('#gridBody tr[data-d="3"] .lkcell[data-q="qd"]');
-  cell.click();
-  const pop = app.doc.getElementById('qPop');
-  assert.equal(pop.style.display, 'block');
-  assert.equal(pop.querySelectorAll('.lkopt').length, 5);
-  assert.match(pop.querySelector('.lkq').textContent, /descansado\/a/);
-  pop.querySelector('.lkopt[data-v="2"]').click();
-  assert.equal(pop.style.display, 'none');
+  app.doc.querySelector('#gridBody tr[data-d="3"] .lkcell[data-q="qd"]').click();
+  assert.equal(app.doc.getElementById('ed').hidden, false, 'editor abierto');
+  assert.equal(app.doc.getElementById('pasoValor').hidden, false, 'en el paso de la valoración');
+  const fila = app.doc.querySelector('#edValor .vfila[data-k="qd"]');
+  assert.equal(fila.querySelectorAll('.vop').length, 5);
+  assert.match(fila.textContent, /descansado\/a/);
+  fila.querySelector('.vop[data-v="2"]').click();
+  app.doc.getElementById('edGuardar2').click();
+  assert.equal(app.doc.getElementById('ed').hidden, true);
   assert.deepEqual(app.evj('[state[3].qd,state[3].qsc]'), [2, 5]);
   assert.equal(app.doc.querySelector('#gridBody tr[data-d="3"] .lkcell[data-q="qd"] .lkb').textContent, '2');
-  // con la rejilla bloqueada no se abre
-  app.ev(`editLocked=true;updateEditLock();`);
-  app.ev(`qCerrarPanel()`);
-  app.doc.querySelector('#gridBody tr[data-d="4"] .lkcell[data-q="qs"]').click();
-  assert.notEqual(pop.style.display, 'block');
+  // con el teclado también se abre (Intro)
+  app.doc.querySelector('#gridBody tr[data-d="4"] .lkcell[data-q="qs"]').dispatchEvent(new app.win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  assert.equal(app.doc.getElementById('ed').hidden, false);
+  assert.equal(app.ev('EditorNoche.estado().i'), 4);
   assert.deepEqual(app.errors, []);
 });
 
-test('compatibilidad: un día antiguo (1–3) se convierte a 1–5 al editarlo con el panel', async () => {
+test('compatibilidad: un día antiguo (1–3) llega al editor en 1–5 y se guarda en 1–5', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-normal')`);
-  app.ev(`editLocked=false;updateEditLock();state[2].qs=1;state[2].qd=2;state[2].qe=3;delete state[2].qsc;buildBody();`);
+  app.ev(`state[2].qs=1;state[2].qd=2;state[2].qe=3;delete state[2].qsc;buildBody();`);
   assert.equal(app.doc.querySelector('#gridBody tr[data-d="2"] .lkcell[data-q="qs"] .lkb').textContent, 'M');
   app.doc.querySelector('#gridBody tr[data-d="2"] .lkcell[data-q="qd"]').click();
-  app.doc.querySelector('#qPop .lkopt[data-v="4"]').click();
-  // las otras dos se pasan de forma lineal: 1→1, 3→5
+  // se pasan de forma lineal: 1→1, 2→3, 3→5
+  assert.deepEqual(app.evj(`['qs','qd','qe'].map(k=>EditorNoche.estado().q[k])`), [1, 3, 5]);
+  app.doc.querySelector('#edValor .vfila[data-k="qd"] .vop[data-v="4"]').click();
+  app.doc.getElementById('edGuardar2').click();
   assert.deepEqual(app.evj('[state[2].qs,state[2].qd,state[2].qe,state[2].qsc]'), [1, 4, 5, 5]);
 });
 
@@ -104,13 +105,14 @@ test('CSV: guarda la escala por día; un CSV antiguo (sin la columna) se importa
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-pseudoinsomnio')`);
   const csv = app.ev('buildUnifiedCsv()');
-  assert.match(csv, /;escala_calidad\n/);
+  assert.match(csv, /;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento;siestas_anotadas\n/);
   assert.match(csv, /^escala_calidad;5;niveles$/m);
   assert.match(csv, /^calidad_sueno_dias_malos;\d+;% dias 1-2$/m);
   const st = app.evj(`rawImportText(${JSON.stringify(csv)}).state`);
   assert.ok(st.filter(d => d.qs >= 1).every(d => d.qsc === 5));
   // el mismo archivo sin la columna (formato anterior): valores 4–5 no válidos en 1–3 y escala antigua
-  const viejo = csv.replace(/;escala_calidad\n/, '\n').replace(/^(\d+;.*);(5)?$/gm, '$1');
+  // (v4.9.7 y v4.9.9: el archivo lleva además etiquetas, guiado, acont_tipos y tratamiento, que también faltan en el formato anterior)
+  const viejo = csv.replace(/;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento;siestas_anotadas\n/, '\n').replace(/^(\d+;.*);(5)?;[^;\n]*;[^;\n]*;[^;\n]*;[^;\n]*;[^;\n]*$/gm, '$1');
   const st2 = app.evj(`rawImportText(${JSON.stringify(viejo)}).state`);
   assert.ok(st2.every(d => !d.qsc));
   assert.ok(st2.every(d => [d.qs, d.qd, d.qe].every(v => v >= 0 && v <= 3)));
@@ -125,7 +127,7 @@ test('casos de ejemplo: valoraciones completas en 1–5 y perfiles RU-SATED de l
     'caso-trabajo-turnos': 'R-S+A-T-E+D+', 'caso-bebe-hierro': 'R+S-A-T?E-D+', 'caso-nino-tea': 'R+S-A-T?E-D-',
     'caso-anciana-80': 'R+S+A+T+E+D+', 'caso-pseudoinsomnio': 'R+S-A+T+E+D+', 'caso-menopausia': 'R+S-A-T+E-D-',
     'caso-spi-plmd': 'R+S-A-T+E-D-', 'caso-apnea-insomnio': 'R+S-A-T+E-D-', 'caso-tcsr-rem': 'R+S+A+T+E+D-',
-    'caso-hipersomnia': 'R+S+A-T+E+D-'
+    'caso-hipersomnia': 'R+S+A-T+E+D-', 'caso-tcci': 'R+S-A-T+E-D-'
   };
   for (const [id, perfil] of Object.entries(esperado)) {
     await app.ev(`selectPatient(${JSON.stringify(id)})`);
