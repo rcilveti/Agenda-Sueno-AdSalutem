@@ -715,3 +715,14 @@ test('una sola versión por diario: la v4.9.9 guarda su versión y una versión 
   assert.equal(rec().ver, '5.0.0');
   assert.ok(app.doc.getElementById('avisoVersion'));
 });
+
+test('márgenes: Análisis y Pacientes van en la columna centrada; «Exportar e importar», dentro de la Agenda', async () => {
+  const app = await loadApp();
+  const d = app.doc;
+  for (const id of ['agenda', 'analisis', 'pacientes']) assert.equal(d.getElementById(id).parentElement.className, 'wrap', id);
+  assert.equal(d.getElementById('ioModule').parentElement.id, 'agenda');
+  // en pantallas anchas, la cabecera y las pestañas se alinean con la columna (solo en pantalla, no al imprimir)
+  const css = [...d.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /@media screen and \(min-width:1313px\)\{\s*header\.app,nav\.tabs\{padding-left:calc\(\(100% - 1280px\) \/ 2 \+ 16px\)/);
+  assert.deepEqual(app.errors, []);
+});
