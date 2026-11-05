@@ -4,15 +4,17 @@ Diario de sueño de tres semanas en formato digital. Aplicación de un solo arch
 sin servidor ni base de datos, pensada para funcionar en móvil, tableta y ordenador,
 en castellano y en catalán.
 
-**Versión actual:** v4.9.5 (octubre de 2026) — MODO PILOTO (datos ficticios, sin cifrado)
+**Versión actual:** v4.9.9 (noviembre de 2026) — MODO PILOTO (datos ficticios, sin cifrado)
 
 **Dirección:** https://rcilveti.github.io/Agenda-Sueno-AdSalutem/
 
-**Versiones de pruebas** (ver «Varias versiones a la vez»):
+**Otras versiones** (ver «Varias versiones a la vez»):
 
-- v4.9.6 (modelo mixto: rejilla + minutos de la noche) en
+- v4.9.5 (la anterior versión en uso: rejilla pintada a mano) en
+  https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.5/
+- v4.9.6 (pruebas: modelo mixto, rejilla + minutos de la noche) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.6/
-- v4.9.7 (sobre la v4.9.5: recordatorio diario, registro con preguntas, factores del día,
+- v4.9.7 (pruebas: recordatorio diario, registro con preguntas, factores del día,
   ventana de sueño e hitos, tendencias, patrón propio y resumen para la consulta) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.7/
 
@@ -44,8 +46,9 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `sw.js` | Hace que la app funcione sin conexión y recibe las actualizaciones. Debe estar junto a `index.html` |
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
-| `docs/` | Guía del paciente (castellano y catalán) y documento técnico, en PDF |
-| `tests/`, `package.json` | Pruebas automáticas (52 de la raíz; las de `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
+| `docs/` | Auditoría de la v4.9.9 (`auditoria_v4.9.9.md`). La guía del paciente y el documento técnico en PDF de la v4.9.5 están en `v4.9.5/docs/` |
+| `tests/`, `package.json` | Pruebas automáticas (88 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
+| `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
 
@@ -79,8 +82,9 @@ el acceso `paciente` / `demo`.
    diario, sin volver a escribir el código. Solo si pulsa «Cerrar sesión» se le vuelve
    a pedir, y aun así el código aparece ya escrito (un toque en «Entrar»). En ordenadores
    y en dispositivos compartidos la sesión nunca queda abierta.
-4. El paciente rellena el diario cada mañana (edición día a día, con autoguardado y
-   hora de registro de cada día).
+4. El paciente anota cada mañana la noche que acaba de pasar: toca la noche en la lista
+   de su diario y la anota en el **editor de la noche** (horas, despertares, acontecimientos,
+   valoración y notas). Se autoguarda y queda la hora de registro de cada noche.
 5. Al terminar, pulsa **«Enviar mi diario»** y lo devuelve por WhatsApp o correo; el
    profesional lo carga en su base con un toque.
 
@@ -99,6 +103,27 @@ dispositivo, la aplicación **fusiona** día a día en vez de sobrescribir.
 ---
 
 ## Novedades recientes
+
+**v4.9.9 — Editor de la noche y pantalla nueva del paciente.** Sobre la v4.9.7, con la regla del MCTQ
+de la v4.9.8 (que no se llegó a publicar):
+
+- *Regla del MCTQ*: cada fecha se marca como laborable o festiva y cada noche cuenta como el día en
+  que te levantas (la del viernes al sábado es una noche antes de festivo).
+- *Editor de la noche*, única forma de anotar: acostarse y levantarse de 15 en 15 minutos;
+  latencia, despertares y tiempo final en cama en escalones (5 min hasta media hora, luego 45, 60
+  y de 30 en 30); acontecimientos con su hora y su tipo (🚽 baño, 💢 dolor, 🔊 ruido, 🌡️ calor o
+  frío, 😟 preocupación, 🫁 tos, 👶 niño, 🍼 toma, 🏷️ otro); valoración 1–5 obligatoria; tratamiento
+  y observaciones opcionales. La rejilla se pinta sola y queda para consultar e imprimir.
+- *Métricas a minuto* de las noches anotadas en el editor (las de diarios anteriores, con la rejilla).
+- *Pantalla del paciente en el móvil*: cabecera sencilla y sin QR, fecha de inicio e instrucciones en
+  una tarjeta, las 21 noches en una lista por semanas con su barra y sus caras, y «Guardar» y
+  «Enviar a mi médico» juntos abajo.
+- Se mantienen de la v4.9.7 el recordatorio, el aviso de noche pendiente, las tendencias, el patrón
+  propio y el resumen para la consulta. Se retiran el registro con preguntas, los factores del día,
+  la ventana de sueño y los hitos (sus datos se conservan).
+- CSV con dos columnas nuevas (`acont_tipos`, `tratamiento`); el formato de datos sigue en la versión 5.
+- Auditoría completa en `docs/auditoria_v4.9.9.md` (incluye los pendientes: siestas y noches que
+  empiezan antes de las 20:00 en pediatría, vaciar una noche y el editor en catalán).
 
 **v4.9.7 (pruebas, en `v4.9.7/`) — Adherencia, registro guiado y herramientas para el
 clínico.** Sobre la v4.9.5 (sin el modelo mixto de la v4.9.6):
@@ -140,10 +165,15 @@ las exportaciones.
 
 ## Varias versiones a la vez
 
-La raíz del sitio publica la versión en uso (v4.9.5). Las carpetas `v4.9.6/` y `v4.9.7/` publican
-las versiones de pruebas, cada una con su propia página, service worker, manifiesto, documentación
-(`docs/`) y pruebas automáticas (`tests/`, que `npm test` ejecuta junto con las de la raíz). Las dos
-parten de la v4.9.5 por separado: la v4.9.7 no incluye el modelo mixto de la v4.9.6.
+La raíz del sitio publica la versión en uso (v4.9.9). La carpeta `v4.9.5/` guarda la versión anterior
+y las carpetas `v4.9.6/` y `v4.9.7/`, las versiones de pruebas; cada una con su propia página, service
+worker, manifiesto, documentación (`docs/`) y pruebas automáticas (`tests/`, que `npm test` ejecuta
+junto con las de la raíz). La v4.9.6 y la v4.9.7 parten de la v4.9.5 por separado.
+
+- **Diarios de la v4.9.9 en otra versión.** Si un diario anotado en la v4.9.9 se abre y se guarda en
+  la v4.9.5, la v4.9.6 o la v4.9.7, se pierden los acontecimientos con su tipo, el tratamiento y las
+  respuestas del editor (la rejilla se conserva). Al revés no hay pérdidas: la v4.9.9 lee los diarios
+  de todas las versiones anteriores.
 
 - **Mismo navegador, mismos datos.** Las versiones comparten el almacenamiento del navegador
   (mismo dominio): en un dispositivo se ven los mismos pacientes y diarios en todas. Conviene que
@@ -161,7 +191,8 @@ parten de la v4.9.5 por separado: la v4.9.7 no incluye el modelo mixto de la v4.
   demás versiones los verán así (son ficticios).
 
 Para pasar una versión de pruebas a la raíz cuando esté validada, basta con copiar el contenido de
-su carpeta a la raíz (y, si se quiere conservar la anterior, la v4.9.5 a `v4.9.5/`).
+su carpeta a la raíz (y, si se quiere conservar la anterior, guardarla antes en su propia carpeta, como
+`v4.9.5/`).
 
 ## Cómo se publica
 
@@ -185,7 +216,7 @@ guarden una copia de su diario antes.
 
 ### Pruebas en el ordenador (opcional)
 
-Con Node.js 20 o superior: `npm install` y después `npm test` (unos 3 minutos).
+Con Node.js 20 o superior: `npm install` y después `npm test` (unos 15 minutos).
 
 ---
 
