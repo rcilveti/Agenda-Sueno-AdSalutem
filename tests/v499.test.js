@@ -752,7 +752,9 @@ test('A · añadir a la pantalla de inicio desde el enlace: la app recibe lo ano
   const url = nav.win.location.href;
   assert.match(url, /#acc=[^&]+&sn=[A-Za-z0-9_-]+$/, 'la dirección lleva el acceso y la copia del diario');
   // el manifiesto (lo que usa Android al instalar) lleva la misma dirección
-  const man = JSON.parse(await blobs[blobs.length - 1].text());
+  // (se lee con FileReader: Blob.text() no existe en jsdom 24, el de las pruebas en GitHub)
+  const leer = blob => new Promise((ok, mal) => { const fr = new nav.win.FileReader(); fr.onload = () => ok(fr.result); fr.onerror = mal; fr.readAsText(blob); });
+  const man = JSON.parse(await leer(blobs[blobs.length - 1]));
   assert.equal(man.start_url, url);
   // la app instalada (otro almacenamiento, como en iOS) abre esa dirección: entra sola y recupera las dos noches
   const app = await loadApp({ userAgent: IPHONE, standalone: true, url });
