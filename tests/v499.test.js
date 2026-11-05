@@ -628,8 +628,10 @@ test('eje desde las 18:00: la noche de un bebé que se acuesta a las 19:00 se ve
   app.ev('abrirEditorNoche(1)'); for (let i = 0; i < 6; i++) app.doc.getElementById('edMenos').click();
   assert.equal(app.ev('EditorNoche.estado().m.B'), 0);
   app.ev('EditorNoche.cerrar(false)');
-  // una noche normal se sigue viendo de 20:00 a 08:00
+  // una noche normal se abre encuadrada (v4.9.9, noviembre): de media hora antes de acostarse (23:50 → 23:00) a media hora después de levantarse (07:30)
   app.ev(`AgendaPuente.guardar(2,${JSON.stringify(NOCHE)})`); app.ev('abrirEditorNoche(2)');
+  assert.deepEqual(app.evj('[EditorNoche.estado().v0,EditorNoche.estado().v1]'), [300, 810]);
+  app.doc.getElementById('z2008').click();   // «20–08» vuelve al horario habitual
   assert.deepEqual(app.evj('[EditorNoche.estado().v0,EditorNoche.estado().v1]'), [120, 840]);
   assert.deepEqual(app.errors, []);
 });
@@ -725,4 +727,157 @@ test('márgenes: Análisis y Pacientes van en la columna centrada; «Exportar e 
   const css = [...d.querySelectorAll('style')].map(s => s.textContent).join('\n');
   assert.match(css, /@media screen and \(min-width:1313px\)\{\s*header\.app,nav\.tabs\{padding-left:calc\(\(100% - 1280px\) \/ 2 \+ 16px\)/);
   assert.deepEqual(app.errors, []);
+});
+
+// ---------- cambios de noviembre de 2026 (misma v4.9.9) ----------
+async function primerAcceso(app) {
+  for (let i = 0; i < 40; i++) {
+    const dev = app.doc.getElementById('devPriv'); if (dev) { dev.click(); await app.sleep(50); }
+    const chk = app.doc.getElementById('consentChk');
+    if (chk) { chk.checked = true; chk.dispatchEvent(new app.win.Event('change')); app.doc.getElementById('consentYes').click(); await app.sleep(600); return true; }
+    await app.sleep(60);
+  }
+  return false;
+}
+const ACC = ['ABCD2345', '2099-01-01T00:00:00.000Z', 'pac-instala', 'Paciente Instala', 'F', '1985-05-05', '2026-10-01'].map(encodeURIComponent).join('~');
+const BASE = 'https://rcilveti.github.io/Agenda-Sueno-AdSalutem/';
+
+test('A · añadir a la pantalla de inicio desde el enlace: la app recibe lo anotado en el navegador y una copia antigua no lo pisa', async () => {
+  const blobs = [];
+  const nav = await loadApp({ userAgent: IPHONE, url: BASE + '#acc=' + ACC, beforeParse(w) { w.URL.createObjectURL = b => { blobs.push(b); return 'blob:m' + blobs.length; }; } });
+  assert.ok(await primerAcceso(nav));
+  assert.equal(nav.ev('session.patientId'), 'pac-instala');
+  nav.ev(`AgendaPuente.guardar(0,${JSON.stringify(NOCHE)})`); nav.ev(`AgendaPuente.guardar(1,${JSON.stringify(NOCHE)})`);
+  await nav.sleep(1600);
+  const url = nav.win.location.href;
+  assert.match(url, /#acc=[^&]+&sn=[A-Za-z0-9_-]+$/, 'la dirección lleva el acceso y la copia del diario');
+  // el manifiesto (lo que usa Android al instalar) lleva la misma dirección
+  const man = JSON.parse(await blobs[blobs.length - 1].text());
+  assert.equal(man.start_url, url);
+  // la app instalada (otro almacenamiento, como en iOS) abre esa dirección: entra sola y recupera las dos noches
+  const app = await loadApp({ userAgent: IPHONE, standalone: true, url });
+  assert.ok(await primerAcceso(app));
+  await app.sleep(1200);
+  assert.equal(app.ev('session.patientId'), 'pac-instala');
+  assert.equal(app.ev('_diasConDatos(state)'), 2);
+  assert.deepEqual(app.evj('state[1].gd'), nav.evj('state[1].gd'));
+  assert.equal(app.ev('startDate&&getStartInput().value'), '2026-10-01');
+  assert.equal(app.win.location.hash, '', 'en la app, la dirección se limpia');
+  assert.ok(app.dialogs.every(d => d[0] !== 'confirm'), 'sin preguntas');
+  // en la app se anota otra noche; al volver a abrir el icono (con la copia antigua) no se pierde nada
+  app.ev(`AgendaPuente.guardar(2,${JSON.stringify(Object.assign({}, NOCHE, { qs: 2 }))})`);
+  await app.sleep(1200);
+  const otra = await loadApp({ userAgent: IPHONE, standalone: true, url, storage: app.storage() });
+  await otra.sleep(1200);
+  assert.equal(otra.ev('session&&session.patientId'), 'pac-instala');
+  assert.equal(otra.ev('_diasConDatos(state)'), 3);
+  assert.equal(otra.ev('state[2].qs'), 2);
+  // una copia de otro paciente no se mezcla
+  assert.equal(await otra.ev(`(async()=>{ const z=await _comprimir(buildUnifiedCsv().replace(/\\nid;pac-instala/,'\\nid;otro-paciente')); return _aplicarInstantanea(z); })()`), false);
+  assert.deepEqual(nav.errors.concat(app.errors, otra.errors), []);
+});
+
+test('A · en el ordenador y en la app instalada la dirección no lleva el diario', async () => {
+  const pc = await loadApp({ url: BASE + '#acc=' + ACC });
+  assert.ok(await primerAcceso(pc));
+  pc.ev(`AgendaPuente.guardar(0,${JSON.stringify(NOCHE)})`); await pc.sleep(1300);
+  assert.doesNotMatch(pc.win.location.href, /sn=/);
+  const app = await loadApp({ userAgent: IPHONE, standalone: true, url: BASE + '#acc=' + ACC });
+  assert.ok(await primerAcceso(app));
+  app.ev(`AgendaPuente.guardar(0,${JSON.stringify(NOCHE)})`); await app.sleep(1300);
+  assert.doesNotMatch(app.win.location.href, /sn=/);
+});
+
+test('B · PDF del análisis: código del paciente en la cabecera y un solo logo', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-tcci')`);
+  app.ev('renderAnalysis()');
+  let ph = app.doc.querySelector('#analisisContent .print-head');
+  assert.equal(ph.querySelector('img'), null, 'sin el segundo logo');
+  assert.match(ph.textContent, /Paciente: Caso · Mujer 57a \(insomnio en TCC-I\) · Código: sin asignar/);
+  const pin = await app.ev(`(async()=>{ const c=await crearCredencialPaciente('caso-tcci','TCC-I'); return c.pin||c.code||c; })()`);
+  app.ev('renderAnalysis()');
+  ph = app.doc.querySelector('#analisisContent .print-head');
+  assert.match(ph.textContent, new RegExp('Código: ' + app.ev(`_fmtCodigo(${JSON.stringify(String(pin))})`)));
+  // la cabecera de la aplicación (con el logo) sigue saliendo en el PDF
+  assert.ok(app.doc.querySelector('#brandHeader img'));
+});
+
+test('C · editor: se abre ajustado, escala con el color del día, «Despertar final», tos 😷 y el estado del día previo', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  const n = Object.assign({}, NOCHE, { gd: { b: '23:15', s: 20, w: [], f: '06:45', r: '07:00' }, ev: [], tA: 'L', tB: 'F' });
+  app.ev(`AgendaPuente.guardar(4,${JSON.stringify(n)})`);
+  app.ev('abrirEditorNoche(4)');
+  const E = app.evj('EditorNoche.estado()');
+  assert.deepEqual([E.v0, E.v1], [270, 810], 'de 22:30 a 07:30: la noche encuadrada');
+  const fondo = app.doc.getElementById('edHoras').getAttribute('style');
+  assert.match(fondo, /var\(--labor\)/); assert.match(fondo, /var\(--festiu\)/);
+  assert.match(app.doc.getElementById('edCats').textContent, /Despertar final/);
+  assert.doesNotMatch(app.doc.getElementById('edCats').textContent, /Final en cama/);
+  // los botones de acostarse, latencia, despertar final y levantarse llevan el icono de su tirador
+  assert.deepEqual(app.evj(`['B','S','F','R','W','X'].map(k=>{ const i=document.querySelector('#edCats [data-cat="'+k+'"] i.ic'); return i?i.textContent:null; })`), ['↓', 'z', '☀', '↑', null, null]);
+  // los despertares, del color del fondo de la escala (sin sueño), no del ámbar de los festivos
+  const cssEd = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(cssEd, /#ed \.hueco\{[^}]*background:var\(--labor\);border:2px solid var\(--wake\)/);
+  assert.match(cssEd, /--wake:#2f7a4d;/, 'borde de los despertares en verde oscuro, no en naranja');
+  assert.match(app.doc.querySelector('#edCats [data-cat="W"] i').getAttribute('style'), /#2f7a4d/);
+  app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
+  assert.match(app.doc.getElementById('lecQ').textContent, /Despertar final · hacia las/);
+  assert.equal(app.doc.getElementById('lecH').textContent, '06:45');
+  assert.match(app.doc.getElementById('lecE').textContent, /15 min en la cama antes de levantarte/);
+  assert.equal(app.ev(`EditorNoche.EV['Tos'].e`), '😷');
+  assert.equal(app.ev(`EditorNoche.icoEv('Tos')`).includes('😷'), true);
+  app.ev(`EditorNoche.irPaso('valor')`);
+  const dA = app.ev(`(()=>{ const d=dateFor(4); return ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d.getDay()]+' '+d.getDate(); })()`);
+  const qe = app.doc.querySelector('#edValor .vfila[data-k="qe"]').textContent;
+  assert.ok(qe.includes('Estado durante el día · ' + dA), qe);
+  assert.match(qe, new RegExp('¿Cómo te encontraste el ' + dA + ' de \\S+, durante el día\\?'));
+  // en catalán
+  app.ev(`EditorNoche.cerrar(false); setLang('ca'); abrirEditorNoche(4); EditorNoche.irPaso('valor')`);
+  assert.match(app.doc.querySelector('#edValor .vfila[data-k="qe"]').textContent, /Estat durant el dia · \S+ \d+/);
+  app.ev(`EditorNoche.irPaso('noche')`);
+  assert.match(app.doc.getElementById('edCats').textContent, /Despertar final/);
+  app.ev(`EditorNoche.cerrar(false); setLang('es')`);
+  assert.deepEqual(app.errors, []);
+});
+
+test('C · siestas: el bloque se arrastra hacia su hora y su borde derecho cambia la duración', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev('abrirEditorNoche(3); EditorNoche.irPaso("siestas")');
+  app.ev(`document.getElementById('sAdd').click()`);
+  // la barra va de 06:00 a 22:00: con 960 px, 1 px = 1 min
+  app.ev(`Element.prototype.getBoundingClientRect=function(){ return this.classList&&this.classList.contains('sbar')?{left:0,top:0,width:960,height:46,right:960,bottom:46}:{left:0,top:0,width:0,height:0,right:0,bottom:0}; }`);
+  const ptr = (tipo, el, x) => app.ev(`(()=>{ const e=new MouseEvent(${JSON.stringify(tipo)},{bubbles:true,cancelable:true,clientX:${x}}); Object.defineProperty(e,'pointerId',{value:1}); (${el}).dispatchEvent(e); })()`);
+  const s0 = app.evj('EditorNoche.estado().sie[0]');
+  assert.equal(s0.d, 30);
+  ptr('pointerdown', `document.querySelector('#edSies .sb-s[data-s="0"]')`, 100);
+  ptr('pointermove', `document.getElementById('edSies')`, 147);   // +47 min → +45 (de 15 en 15)
+  assert.equal(app.ev(`document.querySelector('#edSies .sb-guia').textContent`), app.ev(`(${s0.a}+45)`) >= 0 ? String(Math.floor((s0.a + 45) / 60)).padStart(2, '0') + ':' + String((s0.a + 45) % 60).padStart(2, '0') : '');
+  ptr('pointerup', `document.getElementById('edSies')`, 147);
+  let s1 = app.evj('EditorNoche.estado().sie[0]');
+  assert.deepEqual([s1.a, s1.d], [s0.a + 45, 30]);
+  ptr('pointerdown', `document.querySelector('#edSies .sb-s[data-s="0"] .sb-fin')`, 300);
+  ptr('pointermove', `document.getElementById('edSies')`, 328);   // 30 + 28 → 60 (escalón más próximo)
+  ptr('pointerup', `document.getElementById('edSies')`, 328);
+  s1 = app.evj('EditorNoche.estado().sie[0]');
+  assert.deepEqual([s1.a, s1.d], [s0.a + 45, 60]);
+  assert.match(app.doc.querySelector('#edSies .slista').textContent, /1 h/);
+  // no se sale de su sitio: arrastrarla muy pronto la deja a las 06:00
+  ptr('pointerdown', `document.querySelector('#edSies .sb-s[data-s="0"]')`, 500);
+  ptr('pointermove', `document.getElementById('edSies')`, -900);
+  ptr('pointerup', `document.getElementById('edSies')`, -900);
+  assert.equal(app.ev('EditorNoche.estado().sie[0].a'), 360);
+  assert.deepEqual(app.errors, []);
+});
+
+test('C · pantalla del paciente: «Cómo se anota», «Recordatorio» y «Ajustes» en una sola fila', async () => {
+  const app = await loadApp();
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /\.pacv-links\{display:flex;gap:6px;flex-wrap:nowrap\}/);
+  assert.equal(app.doc.querySelectorAll('.pacv-links button').length, 3);
 });

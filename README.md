@@ -47,7 +47,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
 | `docs/` | Documentación de la v4.9.9: documento técnico (`Agenda_Sueno_v4.9.9_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v4.9.9_castellano.pdf`) y en catalán (`Guia_del_pacient_v4.9.9_catala.pdf`) y auditoría (`auditoria_v4.9.9.md`). Las de versiones anteriores están en `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
-| `tests/`, `package.json` | Pruebas automáticas (95 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
+| `tests/`, `package.json` | Pruebas automáticas (101 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
 | `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
@@ -111,16 +111,22 @@ de la v4.9.8 (que no se llegó a publicar):
   que te levantas (la del viernes al sábado es una noche antes de festivo).
 - *Editor de la noche*, única forma de anotar, en cuatro pasos (noche · siestas · valoración ·
   notas) y con un eje de 18:00 a 20:00 del día siguiente (sirve para niños que se acuestan antes de
-  las 20:00): acostarse y levantarse de 15 en 15 minutos; latencia, despertares y tiempo final en
-  cama en escalones (5 min hasta media hora, luego 45, 60 y de 30 en 30); acontecimientos con su
-  hora y su tipo (🚽 baño, 💢 dolor, 🔊 ruido, 🌡️ calor o frío, 😟 preocupación, 🫁 tos, 👶 niño,
-  🍼 toma, 🏷️ otro); siestas del día anterior a la noche (hora y duración, opcional); valoración 1–5
-  obligatoria; tratamiento y observaciones opcionales. La rejilla se pinta sola y queda para
-  consultar e imprimir. El editor está también en catalán.
+  las 20:00), que se abre con la noche ya encuadrada y con el fondo de la escala horaria del color
+  de cada día (laborable o festivo): acostarse y levantarse de 15 en 15 minutos; latencia,
+  despertares y despertar final en escalones (5 min hasta media hora, luego 45, 60 y de 30 en 30);
+  acontecimientos con su hora y su tipo (🚽 baño, 💢 dolor, 🔊 ruido, 🌡️ calor o frío,
+  😟 preocupación, 😷 tos, 👶 niño, 🍼 toma, 🏷️ otro); siestas del día anterior a la noche, que se
+  arrastran con el dedo (hora y duración, opcional); valoración 1–5 obligatoria (el estado del día,
+  con la fecha del día previo); tratamiento y observaciones opcionales. La rejilla se pinta sola y
+  queda para consultar e imprimir. El editor está también en catalán.
 - *Métricas a minuto* de las noches anotadas en el editor (las de diarios anteriores, con la rejilla).
 - *Pantalla del paciente en el móvil*: cabecera sencilla y sin QR, fecha de inicio e instrucciones en
-  una tarjeta, las 21 noches en una lista por semanas con su barra y sus caras, y «Guardar» y
-  «Enviar a mi médico» juntos abajo.
+  una tarjeta (con «Cómo se anota», «Recordatorio» y «Ajustes» en una sola fila), las 21 noches en
+  una lista por semanas con su barra y sus caras, y «Guardar» y «Enviar a mi médico» juntos abajo.
+- *Del navegador a la app instalada*: lo anotado en el navegador del móvil pasa a la app al
+  añadirla a la pantalla de inicio (en iPhone tienen almacenamientos separados): la dirección lleva
+  una copia comprimida del diario, que la app fusiona noche a noche.
+- *PDF del análisis*: la cabecera lleva el código de acceso del paciente y un solo logo.
 - Se mantienen de la v4.9.7 el recordatorio, el aviso de noche pendiente, las tendencias, el patrón
   propio y el resumen para la consulta. Se retiran el registro con preguntas, los factores del día,
   la ventana de sueño y los hitos (sus datos se conservan).

@@ -35,7 +35,7 @@ La v4.9.9 parte de la v4.9.8 (regla del MCTQ) y cambia la forma de anotar:
 
 | Comprobación | Alcance |
 |---|---|
-| Pruebas automáticas (jsdom) | **95 pruebas, 95 superadas**: 68 heredadas y adaptadas, y 27 nuevas de la v4.9.9 (`tests/v499.test.js`). Las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` siguen pasando con el parche de versión |
+| Pruebas automáticas (jsdom) | **101 pruebas, 101 superadas**: 68 heredadas y adaptadas, y 33 nuevas de la v4.9.9 (`tests/v499.test.js`). Las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` siguen pasando con el parche de versión |
 | Navegador real (Playwright, Chromium) | iPhone 13 y iPhone SE, en vertical y en horizontal; escritorio a 1400 px; editor en castellano y en catalán. Sin errores de JavaScript ni desbordamiento horizontal |
 | Impresión | PDF del diario (2 hojas en horizontal) y PDF del análisis |
 | Métricas a mano | Una noche conocida y un diario de 21 noches con laborables y festivos (apartado 5) |
@@ -219,4 +219,37 @@ Los pendientes 1, 2, 4, 5, 9 y 10 se resolvieron tras la auditoría (apartado 8)
 
 - **Documento técnico v4.9.9** (`docs/Agenda_Sueno_v4.9.9_documento_tecnico.pdf`). Incluye el editor, los acontecimientos y las siestas, la pantalla del paciente, la regla del MCTQ, una sola versión por diario, el anexo II (del editor a la rejilla y siestas) y un anexo IV nuevo con los casos regenerados.
 - **Guía del paciente v4.9.9**, en castellano y en catalán (`docs/Guia_del_paciente_v4.9.9_castellano.pdf`, `docs/Guia_del_pacient_v4.9.9_catala.pdf`).
+
+## 9. Cambios de noviembre (misma versión 4.9.9)
+
+### A · Del navegador a la app instalada, sin perder datos
+
+- **Problema:** si el paciente abría el enlace (WhatsApp o QR), anotaba alguna noche y después añadía el diario a la pantalla de inicio, la app arrancaba de cero. En iPhone, la app instalada no comparte el almacenamiento de Safari, y el navegador interno de WhatsApp tampoco el de Safari o Chrome. El acceso sí pasaba a la app (desde la v4.7.3), pero no los datos.
+- **Solución:** mientras el diario se usa en el navegador del móvil, cada vez que se guarda:
+  - la dirección (sin añadir historial) lleva, tras el acceso `#acc=…`, una copia comprimida del diario `&sn=…`;
+  - el manifiesto (lo que usa Android al instalar) lleva la misma dirección.
+- «Añadir a pantalla de inicio» o «Abrir en el navegador» capturan esa dirección. Al abrirse, la app fusiona la copia noche a noche con lo que ya tenga: gana la última modificación, como al importar un enlace.
+- Una copia antigua (la del icono) nunca borra lo anotado después en la app. Solo se acepta la copia del mismo paciente y, si la fecha de inicio es distinta, solo cuando la app aún no tiene noches.
+- En el ordenador y en la app instalada la dirección no lleva el diario. La copia va en la parte de la dirección que no se envía a ningún servidor.
+- Comprobado en jsdom (iPhone, almacenamientos separados) y en Chromium: el navegador anota dos noches, la app instalada las recibe con la fecha de inicio y, tras anotar una tercera en la app, al volver a abrir el icono siguen las tres.
+
+### B · PDF del análisis completo
+
+- La cabecera del informe lleva el código de acceso del paciente («sin asignar» si no tiene).
+- Se quita el segundo logo de AdSalutem: queda solo el de la cabecera de la aplicación.
+
+### C · Pantalla del paciente y editor
+
+1. «Cómo se anota», «Recordatorio» y «Ajustes» van en una sola fila; la letra se ajusta al ancho. Comprobado de 360 a 430 px, en castellano y en catalán (a 320 px se recortan un poco).
+2. Editor:
+   - Se abre con la noche ya encuadrada (como «Ajustar»).
+   - El fondo de la escala horaria lleva el color del tipo de cada día: azul, laborable; ámbar, festivo.
+   - «Final en cama» pasa a «Despertar final». Su lectura muestra la hora del despertar final y, debajo, el rato en la cama hasta levantarse.
+   - La tos se muestra con 😷: 🫁 (de 2020) no se ve en muchos móviles y ordenadores.
+   - Las siestas se arrastran con el dedo: el bloque mueve la hora (de 15 en 15 min) y su borde derecho cambia la duración (escalones). Se mantienen los botones − y +.
+   - En la valoración, «Estado durante el día» indica que se refiere al día previo, con su día y su fecha («Estado durante el día · viernes 6 de junio»).
+   - Los despertares se ven del azul del fondo de la escala (despierto, sin sueño) y en verde oscuro (borde, tirador, cota y punto de su botón): el relleno y el borde naranjas se confundían con el ámbar de los días festivos.
+   - Los botones «Acostarse», «Latencia», «Despertar final» y «Levantarse» llevan en pequeño el icono de su tirador en la barra (↓, z, ☀, ↑). Caben los seis en un iPhone SE apaisado.
+
+Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al día. Seis pruebas nuevas.
 

@@ -869,8 +869,8 @@
   }
 /* ===== v4.9.9: EDITOR DE LA NOCHE (prototipo v7, pasos de 15 min) ===== */
 #ed{--ink:#1b2330; --slate:#42546a; --mist:#6f7e90; --paper:#eef1f4; --card:#ffffff; --line:#d9dee4;
-  --brand:#1f5f8b; --brand-deep:#143f5e; --sleep:#2f6f9e; --bed:#d7e6f2; --wake:#e9a23b; --wake-soft:#fff3df;
-  --festiu:#fdeccf; --festiu-edge:#e0941f; --good:#3f8a5f;
+  --brand:#1f5f8b; --brand-deep:#143f5e; --sleep:#2f6f9e; --bed:#d7e6f2; --wake:#2f7a4d; --wake-soft:#fff3df;   /* v4.9.9: despertares en verde oscuro (el naranja se confundía con los festivos) */
+  --festiu:#fdeccf; --festiu-edge:#e0941f; --labor:#e3ecf4; --good:#3f8a5f;
   --f-ui:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
   --f-num:ui-monospace,'SF Mono','Cascadia Mono','Segoe UI Mono',Menlo,Consolas,monospace;;font-family:var(--f-ui);line-height:1.45;color:var(--ink)}
 #ed *,#ed *::before,#ed *::after{box-sizing:border-box}
@@ -878,7 +878,7 @@
 #ed button,#ed textarea{font-family:inherit;letter-spacing:normal;text-transform:none}
 /* ---------- editor horizontal ---------- */
 #ed{position:fixed;inset:0;z-index:50;background:rgba(14,30,44,.55)}
-#ed .ed-caja{position:relative;--zoom:#7a5cc0;--lat:#2f6f9e;--wk:#d58a1f;--term:#5b6b80;
+#ed .ed-caja{position:relative;--zoom:#7a5cc0;--lat:#2f6f9e;--wk:#2f7a4d;--term:#5b6b80;
   position:absolute;left:0;top:0;width:100%;height:100%;background:var(--card);display:flex;flex-direction:column;container-type:size;
   padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));gap:5px;overflow:hidden}
 #ed .ed-caja.girada{transform-origin:0 0}/* en un ordenador, ventana centrada en lugar de pantalla completa */
@@ -918,6 +918,8 @@
 #ed .ed-cats::-webkit-scrollbar{display:none}
 #ed .cat{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;height:30px;padding:0 12px;font:600 .8rem var(--f-ui);cursor:pointer;color:var(--slate);display:inline-flex;align-items:center;gap:6px}
 #ed .cat i{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* v4.9.9: acostarse, latencia, despertar final y levantarse llevan, en pequeño, el icono de su tirador en la barra */
+#ed .cat i.ic{width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:800 .64rem/1 var(--f-ui);flex:none}
 #ed .cat.on{border-color:var(--brand-deep);background:var(--brand-deep);color:#fff}
 #ed .cat.on i{box-shadow:0 0 0 2px #fff}/* barra del horario visible (morada): arrastrar = desplazar, bordes = ampliar o reducir */
 
@@ -946,7 +948,7 @@
 #ed .banda .db.F.med{border-left-color:var(--festiu-edge)}
 #ed .zonas{position:absolute;inset:0;pointer-events:none;border-radius:inherit;overflow:hidden}
 #ed .zonas b{position:absolute;top:0;bottom:0;background:rgba(253,236,207,.7)}
-#ed .horas{position:relative;height:16px}
+#ed .horas{position:relative;height:16px;border-radius:5px}
 #ed .horas span{position:absolute;transform:translateX(-50%);font:600 .7rem var(--f-num);color:var(--slate);white-space:nowrap}
 #ed .horas span.ini{transform:none}#ed .horas span.fin{transform:translateX(-100%)}
 #ed .pista{position:relative;flex:1 1 auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;border-radius:8px;background:#f6f8fa;border:1px solid var(--line);overflow:visible}
@@ -957,8 +959,8 @@
 #ed .lineas i.med{border-left:2px solid #9fb6c9}
 #ed .cama{position:absolute;top:24%;bottom:24%;background:var(--bed);border-radius:6px}
 #ed .sueno{position:absolute;top:38%;bottom:38%;background:var(--sleep);border-radius:4px}
-#ed .hueco{position:absolute;top:34%;bottom:34%;background:var(--wake-soft);border:2px solid var(--wake);border-radius:4px;cursor:grab}
-#ed .hueco.sel{box-shadow:0 0 0 3px rgba(233,162,59,.35)}
+#ed .hueco{position:absolute;top:34%;bottom:34%;background:var(--labor);border:2px solid var(--wake);border-radius:4px;cursor:grab}   /* v4.9.9: despierto = sin sueño (como el fondo de la escala); el ámbar queda para los festivos */
+#ed .hueco.sel{box-shadow:0 0 0 3px rgba(47,122,77,.3)}
 #ed .tir{position:absolute;top:0;bottom:0;width:0;z-index:3}
 #ed .tir .lin{position:absolute;left:-1px;width:2px;background:var(--c);opacity:.9}
 #ed .tir .bola{position:absolute;left:-15px;width:30px;height:30px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font:800 .8rem var(--f-ui);cursor:grab;outline:none}
@@ -985,7 +987,7 @@
 #ed .tir.medio.ini .tri{right:2px;clip-path:polygon(0 0,100% 50%,0 100%)}
 #ed .tir.medio.fin .tri{left:2px;clip-path:polygon(100% 0,0 50%,100% 100%)}
 #ed .tir.medio.sel .bola{transform:none}
-#ed .tir.medio.sel .tri{background:#a8650a;transform:scale(1.25)}
+#ed .tir.medio.sel .tri{background:#1f5535;transform:scale(1.25)}
 #ed .tir.medio .bola:focus-visible{box-shadow:none;filter:drop-shadow(0 0 2px #ffbf47) drop-shadow(0 0 2px #ffbf47)}
 #ed .guia{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--brand-deep);pointer-events:none;z-index:2}/* tiradores fuera del horario visible: aviso en el borde (tocar = ir allí) */
 
@@ -1111,7 +1113,7 @@
   #ed .ed-herr .seg-et,#ed .zoom-fila .seg-et,#ed .et-add{display:none}
   #ed .ed-cab{gap:10px}
   #ed .dchip{height:30px;padding:0 7px;gap:5px}#ed .dchip b{font-size:.8rem}#ed .ed-dias{gap:4px}
-  #ed .cat{height:28px;padding:0 7px;font-size:.73rem;gap:4px}#ed .cat i{width:8px;height:8px}#ed .ed-cats{gap:4px}
+  #ed .cat{height:28px;padding:0 7px;font-size:.73rem;gap:4px}#ed .cat i{width:8px;height:8px}#ed .cat i.ic{width:15px;height:15px;font-size:.58rem}#ed .ed-cats{gap:4px}
   #ed .seg button{padding:0 8px;font-size:.74rem;height:28px}
   #ed .lectura{min-width:12.5em;max-width:12.5em}#ed .lectura .e{display:none}/* ancho fijo: −/+ no se mueven al cambiar de categoría */   
   #ed .resumen{font-size:.74rem}
@@ -1119,6 +1121,7 @@
 
 @container (max-width:600px){
   #ed .dchip{padding:0 6px}#ed .dchip .cam{display:none}
+  #ed .cat{padding:0 6px;gap:3px}#ed .cat i.ic{width:13px;height:13px;font-size:.52rem}#ed .ed-cats{gap:3px}   /* con los iconos, que quepan los seis */
   #ed .ed-cab{gap:8px}
   #ed .lectura{min-width:10.5em;max-width:10.5em}
   #ed .ajuste .bt{padding:0 8px;min-width:40px}
@@ -1154,6 +1157,16 @@
 #ed .sbar{position:relative;height:30px;background:#f1f4f7;border-radius:8px;margin:14px 0 2px}
 #ed .sbar .sb-h{position:absolute;top:-15px;transform:translateX(-50%);font:600 .66rem var(--f-num);color:var(--mist)}
 #ed .sbar .sb-s{position:absolute;top:6px;bottom:6px;background:var(--sleep);border-radius:4px;min-width:3px}
+/* v4.9.9: siestas arrastrables (el bloque mueve la hora; el borde derecho, la duración) */
+#ed .sbar.con{height:46px;touch-action:none;user-select:none;-webkit-user-select:none}
+#ed .sbar .sb-s{top:5px;bottom:5px;min-width:22px;cursor:grab;display:flex;align-items:center;overflow:visible;box-shadow:0 1px 3px rgba(20,63,94,.25)}
+#ed .sbar .sb-s::before{content:'';position:absolute;inset:-6px -4px}   /* zona de toque algo mayor que el bloque */
+#ed .sbar .sb-s.sel{cursor:grabbing;background:var(--brand-deep);outline:2px solid #9cc3e4;outline-offset:1px}
+#ed .sbar .sb-t{padding-left:5px;font:700 .66rem var(--f-num);color:#fff;white-space:nowrap;overflow:hidden;pointer-events:none}
+#ed .sbar .sb-fin{position:absolute;right:-12px;top:-5px;bottom:-5px;width:22px;z-index:1;cursor:ew-resize;display:flex;align-items:center;justify-content:center}
+#ed .sbar .sb-fin::after{content:'';width:6px;height:60%;border-radius:3px;background:#fff;border:1.5px solid var(--brand-deep)}
+#ed .sbar .sb-guia{position:absolute;top:-17px;transform:translateX(-50%);background:var(--brand-deep);color:#fff;border-radius:5px;padding:0 5px;font:700 .66rem/15px var(--f-num);white-space:nowrap;z-index:2}
+#ed .sies-arr{margin:0;font-size:.74rem;color:var(--mist)}
 #ed .sbar .sb-cama{position:absolute;top:0;bottom:0;background:var(--bed);border-radius:0 8px 8px 0}
 #ed .sbar .sb-flecha{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:.85rem;color:var(--brand-deep)}
 #ed .slista{display:grid;gap:6px}
@@ -1165,7 +1178,7 @@
 #ed .sfila .bt{height:34px;min-width:38px;padding:0 10px}
 #ed .sninguna{font-size:.82rem;color:var(--slate);margin:0}
 #ed .sacc{display:flex;align-items:center;gap:10px}
-@container (max-height:380px){ #ed .sies{gap:5px} #ed .sbar{height:22px;margin-top:12px} #ed .sfila{padding:3px 0} #ed .sfila .bt{height:30px} }
+@container (max-height:380px){ #ed .sies{gap:5px} #ed .sbar{height:22px;margin-top:12px} #ed .sbar.con{height:40px} #ed .sies-arr{font-size:.7rem} #ed .sfila{padding:3px 0} #ed .sfila .bt{height:30px} }
 @container (max-width:640px){ #ed .sfila{gap:6px 8px} #ed .sfila .sl{display:none} #ed .sfila .sn{min-width:0} #ed .sfila .sv{min-width:3.2em} }
 
 
@@ -1194,8 +1207,10 @@
   .pacv-ini{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600;color:#143f5e;font-size:.92rem}
   .pacv-ini input[type=date]{font-size:.95rem!important;padding:5px 9px!important}
   .pacv-txt{margin:8px 0 6px;font-size:.88rem;color:#42546a;line-height:1.45}
-  .pacv-links{display:flex;gap:6px;flex-wrap:wrap}
-  .pacv-links button{border:1px solid #d6dee6;background:#f7f9fb;border-radius:999px;padding:6px 11px;font:inherit;font-size:.8rem;color:#1b2330;cursor:pointer}
+  .pacv-links{display:flex;gap:6px;flex-wrap:nowrap}   /* v4.9.9: los tres en una sola fila */
+  .pacv-links button{border:1px solid #d6dee6;background:#f7f9fb;border-radius:999px;padding:6px 11px;font:inherit;font-size:.8rem;color:#1b2330;cursor:pointer;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .print-head h2.aph-sin-logo{margin-top:24px!important}   /* v4.9.9: sin el segundo logo, se conserva su hueco (misma paginación del PDF) */
+  @media (max-width:430px){ .pacv-links{gap:5px} .pacv-links button{flex:1 1 auto;padding:6px 6px;font-size:clamp(.6rem,calc((100vw - 84px) / 27),.8rem)} }   /* la letra se ajusta al ancho para que quepan los tres */
   .pacv-sem{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6f7e90;margin:12px 2px 4px}
   .pacv-noches{display:flex;flex-direction:column;gap:7px}
   .nb-eje{position:relative;height:14px;margin:0 13px;font-size:.62rem;color:#8a97a6}
@@ -1663,7 +1678,7 @@ es:{
   'set.fill':'Forma de rellenar','set.fillPaint':'Pintar la rejilla','set.fillAsk':'Responder preguntas',
   'set.fillDesc':'Con «Responder preguntas», al abrir un día con ✏️ aparecen 5 preguntas sencillas y la rejilla se pinta sola.',
   'set.reminder':'Recordatorio diario',
-  'rem.btn':'⏰ Recordatorio','rem.title':'Recordatorio diario',
+  'snap.ok':'Se han recuperado las noches que anotaste en el navegador','rem.btn':'⏰ Recordatorio','rem.title':'Recordatorio diario',
   'rem.intro':'Añade un aviso cada mañana en el calendario de tu móvil durante las tres semanas del registro. No se envía ningún dato: el archivo solo contiene el aviso.',
   'rem.hora':'Hora del aviso','rem.semanal':'Recordarme también, cada semana, que envíe el diario a mi profesional',
   'rem.ics':'📅 Añadir al calendario (iPhone, Outlook…)','rem.google':'Google Calendar (Android)',
@@ -1844,7 +1859,7 @@ ca:{
   'set.fill':'Manera d\'omplir','set.fillPaint':'Pintar la graella','set.fillAsk':'Respondre preguntes',
   'set.fillDesc':'Amb «Respondre preguntes», en obrir un dia amb ✏️ apareixen 5 preguntes senzilles i la graella es pinta sola.',
   'set.reminder':'Recordatori diari',
-  'rem.btn':'⏰ Recordatori','rem.title':'Recordatori diari',
+  'snap.ok':'S’han recuperat les nits que vas anotar al navegador','rem.btn':'⏰ Recordatori','rem.title':'Recordatori diari',
   'rem.intro':'Afegeix un avís cada matí al calendari del teu mòbil durant les tres setmanes del registre. No s\'envia cap dada: el fitxer només conté l\'avís.',
   'rem.hora':'Hora de l\'avís','rem.semanal':'Recorda\'m també, cada setmana, que enviï el diari al meu professional',
   'rem.ics':'📅 Afegir al calendari (iPhone, Outlook…)','rem.google':'Google Calendar (Android)',
@@ -2459,6 +2474,8 @@ async function enterApp(){
     // v4.5.8: el paciente entra por QR con su ficha y diario ya creados, así que se abre
     // directamente su diario. Ya no se le pide cargar ningún archivo (eso confundía).
     await loadPatient(patient);
+    if(_snapPendiente){ const sn=_snapPendiente; _snapPendiente=null; await _aplicarInstantanea(sn); }   // v4.9.9
+    else if(!_esAppInstalada()) _programarInstantanea();   // v4.9.9: la dirección lleva desde ya la copia del diario
     updateDeviceNotice();updateBackupBadge();
     if(hasAnyData()){
       _lastBackupSnapshot=buildUnifiedCsv();  // lo ya guardado no cuenta como cambio pendiente
@@ -4395,6 +4412,7 @@ function scheduleAutoSave(){
           sex:prev.sex||null,cat:prevCat,catDetail:prev.catDetail||null,state};
       }
       await saveRec(patient,rec);
+      if(role==='patient'&&typeof _programarInstantanea==='function')_programarInstantanea();   // v4.9.9
       // v4.2.5: cada modificación deja el diario pendiente de volcarse a un archivo.
       if(role==='patient'&&typeof markDirtyForBackup==='function')markDirtyForBackup();
       const b=$("saveBtn"); if(b){b.textContent='Guardado ✓';setTimeout(()=>{if(b)b.textContent='Guardar datos del diario';},1400);}
@@ -4869,13 +4887,15 @@ function renderAnalysis(){
   const _cat=(typeof getCatValue==='function'?getCatValue():null)||loadedCat||'';
   const _start=getStartInput().value||'';
   const _datos=['Paciente: <b>'+escHtml(_nom)+'</b>'];
+  { const cr=(typeof _credencialDePaciente==='function')?_credencialDePaciente(patient):null;   // v4.9.9: código del paciente
+    _datos.push('Código: <b>'+(cr&&cr.pin?escHtml(_fmtCodigo(cr.pin)):'sin asignar')+'</b>'); }
   if(_sex)_datos.push(escHtml(SEX_LABEL[_sex]||_sex));
   if(_birth)_datos.push('Nac.: '+escHtml(_birth)+(age!=null?' ('+age+' años)':''));
   if(_cat)_datos.push('Categoría: '+escHtml(CAT_LABEL[_cat]||_cat));
   if(_start)_datos.push('Inicio: '+escHtml(_start));
   _datos.push('3 semanas · '+new Date().toLocaleDateString('es-ES'));
 
-  let html=`<div class="print-head" style="display:none"><img src="${ADSAL_LOGO}" alt="AdSalutem" class="aph-logo" style="height:22px;margin-bottom:2px"><h2 style="font-size:1.05rem;color:#143f5e;margin:1px 0">Agenda de Sueño — Informe de análisis</h2><p style="font-size:.78rem;color:#42546a;margin:0">${_datos.join(' · ')}</p></div>
+  let html=`<div class="print-head" style="display:none"><h2 class="aph-sin-logo"  style="font-size:1.05rem;color:#143f5e;margin:1px 0">Agenda de Sueño — Informe de análisis</h2><p style="font-size:.78rem;color:#42546a;margin:0">${_datos.join(' · ')}</p></div>
   ${age==null?'<div class="secnote" style="margin-bottom:12px">No consta la fecha de nacimiento del paciente. Los puntos de corte de duración, eficiencia, WASO y latencias se muestran con umbrales de adulto (18-64). Introduce la fecha de nacimiento en la barra superior para ajustarlos por edad.</div>':'<div class="secnote" style="margin-bottom:12px;border-left-color:var(--good)">Paciente de <b>'+age+' años</b>'+(pediatric?' (edad pediátrica)':'')+'. Los puntos de corte por edad (duración, eficiencia, WASO y latencias) se han ajustado según la literatura normativa (NSF 2015; Ohayon 2004; Scholle 2011).'+(pediatric?' En menores, el rango de duración se evalúa sobre el sueño de 24 h (sueño nocturno + siestas).':'')+'</div>'}
   ${(()=>{const n=withData.length;const ok=n>=14;
     // v4.9.0: además de cuántos días hay, cuántos se registraron a tiempo (≤ 12 h tras levantarse)
@@ -7457,7 +7477,7 @@ $("installBtn")&&$("installBtn").addEventListener('click',async()=>{
 // v4.7.3: sustituye el manifest por uno dinámico cuyo start_url conserva el acceso (#acc=…).
 // Así, cuando el paciente instala la app tras escanear el QR, el icono recuerda su PIN y al
 // abrirlo se re-registra automáticamente, aunque la app instalada tenga otro almacenamiento.
-function _instalarManifestConAcceso(accParam){
+function _instalarManifestConAcceso(accParam,frag){   // frag (v4.9.9): fragmento completo, con la copia del diario
   try{
     // v4.9.0: todas las URL del manifiesto son ABSOLUTAS. El manifiesto se sirve como blob:,
     // y las URL relativas (scope "./") no se resuelven contra un blob, de modo que el navegador
@@ -7467,7 +7487,7 @@ function _instalarManifestConAcceso(accParam){
       id:baseDir,
       name:"Agenda de Sueño — AdSalutem", short_name:"Agenda Sueño",
       description:"Diario de sueño digital de tres semanas",
-      start_url:new URL(location.pathname+location.search+'#acc='+accParam,location.origin).href,
+      start_url:new URL(location.pathname+location.search+'#'+(frag||('acc='+accParam)),location.origin).href,
       scope:baseDir, display:"standalone", orientation:"any",
       background_color:"#ffffff", theme_color:"#143f5e", lang:LANG,
       icons:[
@@ -7479,7 +7499,8 @@ function _instalarManifestConAcceso(accParam){
     const url=URL.createObjectURL(blob);
     let link=document.querySelector('link[rel="manifest"]');
     if(!link){link=document.createElement('link');link.rel='manifest';document.head.appendChild(link);}
-    link.href=url;
+    const ant=link.href; link.href=url;
+    if(ant&&ant.indexOf('blob:')===0){ try{ URL.revokeObjectURL(ant); }catch(e){} }
   }catch(e){console.error('_instalarManifestConAcceso:',e);}
 }
 // Lee el fragmento #acc=código~expira~id~nombre~sexo~nacimiento~inicio
@@ -7527,6 +7548,7 @@ function _limpiarFragmento(){ try{history.replaceState(null,'',location.pathname
 async function _prepararAccesoDesdeEnlace(){
   try{
     const h=location.hash||'';
+    { const msn=h.match(/[#&]sn=([^&]+)/); _snapPendiente=msn?msn[1]:null; }   // v4.9.9: copia del diario (antes de limpiar la dirección)
     const instalada=_esAppInstalada();
     let raw=null, desdeQR=false;
     const macc=h.match(/[#&]acc=([^&]+)/);
@@ -7591,6 +7613,52 @@ async function _prepararAccesoDesdeEnlace(){
 }
 
 let _accesoAutologin=false;
+// ===== v4.9.9: EL DIARIO VIAJA EN LA DIRECCIÓN MIENTRAS SE USA EN EL NAVEGADOR DEL MÓVIL =====
+// En iOS, la app añadida a la pantalla de inicio no comparte el almacenamiento del navegador (y el navegador interno
+// de WhatsApp tampoco el de Safari o Chrome): al instalarla, lo ya anotado no llegaba y el diario empezaba de cero.
+// Mientras el paciente usa el diario en el navegador del móvil, cada vez que se guarda, la dirección (sin añadir
+// historial) y el manifiesto llevan, tras el acceso (#acc=…), una copia comprimida del diario (&sn=…). «Añadir a
+// pantalla de inicio» o «Abrir en el navegador» la capturan; al abrirse, la app la fusiona noche a noche con lo que ya
+// tenga (gana la última modificación), así que una copia antigua nunca borra lo anotado después en la app.
+let _snapPendiente=null, _snapTimer=null;
+function _programarInstantanea(){ clearTimeout(_snapTimer); _snapTimer=setTimeout(_actualizarInstantanea,250); }
+async function _actualizarInstantanea(){
+  try{
+    if(!(session&&session.role==='patient')||!patient||_esAppInstalada()||!_esMovil()) return false;
+    const h=location.hash||''; let raw=null;
+    const macc=h.match(/[#&]acc=([^&]+)/); if(macc) raw=macc[1]; else { try{ raw=await rawGet('agenda_ultimo_acceso'); }catch(e){} }
+    if(!raw||_parseAcc(raw).id&&makeId(_parseAcc(raw).id)!==patient) return false;
+    const z=await _comprimir(buildUnifiedCsv()); if(!z) return false;
+    const mvt=h.match(/[#&]vt=([^&]+)/);
+    const frag='acc='+raw+(mvt?'&vt='+mvt[1]:'')+'&sn='+z;
+    try{ history.replaceState(history.state,'',location.pathname+location.search+'#'+frag); }catch(e){}
+    _instalarManifestConAcceso(raw,frag);
+    return true;
+  }catch(e){ console.error('copia en la dirección:',e); return false; }
+}
+// Fusiona la copia que trae la dirección con el diario de este dispositivo (solo si es del mismo paciente).
+async function _aplicarInstantanea(b64){
+  try{
+    if(!b64||!(session&&session.role==='patient')||!patient) return false;
+    let csv; try{ csv=await _descomprimir(b64); }catch(e){ return false; }
+    if(!csv||csv.indexOf('SECCION=')<0) return false;
+    const {meta,state:entra}=rawImportText(csv);
+    if(!meta||!meta.id||makeId(meta.id)!==patient||!Array.isArray(entra)) return false;
+    const rec=await load(patient)||{patient,name:(session&&session.name)||patient};
+    const local=Array.isArray(rec.state)?rec.state:state, iniSnap=meta.inicio_registro||null, iniLocal=rec.start||null;
+    if(!_diasConDatos(entra)&&!(iniSnap&&!iniLocal)) return false;   // nada que traer (ni noches ni la fecha de inicio)
+    // con otra fecha de inicio, las noches no se corresponden: solo se adopta la copia si aquí no hay nada anotado
+    if(iniSnap&&iniLocal&&iniSnap!==iniLocal&&_diasConDatos(local)) return false;
+    const {merged}=fusionarDiarios(entra,local);
+    const firma=st=>JSON.stringify((st||[]).map(d=>[_contenidoDia(d||blankDay()),(d&&d.updatedAt)||null]));
+    const cambiaIni=!!(iniSnap&&iniSnap!==iniLocal);
+    if(!cambiaIni&&firma(merged)===firma(local)) return false;
+    await saveRec(patient,Object.assign({},rec,{start:iniSnap||iniLocal,state:merged}));
+    await loadPatient(patient);
+    setTimeout(()=>toast(t('snap.ok')),700);
+    return true;
+  }catch(e){ console.error('copia en la dirección:',e); return false; }
+}
 // ¿la app está abierta como aplicación instalada (no en el navegador)?
 function _esAppInstalada(){
   return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
@@ -7741,12 +7809,12 @@ es:{
   'notas.ok':'Noche <b>✓</b> · {s} · valoración <b>3 de 3</b> · <b>{n}</b> acontec.','notas.falta':'Falta valorar <b>{f}</b>',
   noGuardar:'No se ha podido guardar: revisa las horas de la noche.',
   'av.desp':'No queda sueño a la vista donde añadir otro despertar','av.ev':'No queda sitio a la vista para otro acontecimiento',
-  'c.B':'Acostarse','c.S':'Latencia','c.W':'Despertares','c.F':'Final en cama','c.Fc':'Final','c.R':'Levantarse','c.X':'Acontecimientos','c.Xc':'Acontec.',
+  'c.B':'Acostarse','c.S':'Latencia','c.W':'Despertares','c.F':'Despertar final','c.Fc':'Desp. final','c.R':'Levantarse','c.X':'Acontecimientos','c.Xc':'Acontec.',
   despN:'Despertar {n}', unos:'unos {n} min', unosCama:'unos {n} min en la cama',
-  'a.S':'Tardé en dormirme','a.F':'En la cama al final','a.Wd':'Despertar {n}: duración', despertar:'despertar', ver:'Ver {c} {h}',
+  'a.S':'Tardé en dormirme','a.F':'Despertar final','a.Wd':'Despertar {n}: duración', despertar:'despertar', ver:'Ver {c} {h}',
   'l.B':'↓ Acostarse · hacia las','l.R':'↑ Levantarse · hacia las','l.cama':'En la cama unas {d}',
   'l.S':'Tardaste en dormirte unos','l.Sx':'Basta una aproximación',
-  'l.F':'En la cama al final, unos','l.Fx':'Tras despertarte del todo, antes de levantarte',
+  'l.F':'Despertar final · hacia las','l.Fx':'Después, unos {d} en la cama antes de levantarte',
   'l.X0':'Acontecimientos','l.X0x':'Ninguno. Si pasó algo, pulsa «+ Añadir».',
   'l.X':'{nom} · hacia las','l.Xx':'Acontecimiento {n}: arrástralo hacia su hora',
   'l.W0':'Despertares','l.W0x':'Ninguno. Pulsa «+ Añadir» si te despertaste.',
@@ -7762,6 +7830,9 @@ es:{
   'sie.n':'Siesta {n}', 'sie.hacia':'hacia las', 'sie.durante':'durante', 'sie.add':'+ Añadir siesta',
   'sie.ninguna':'Sin siestas ese día. Si dormiste alguna, pulsa «+ Añadir siesta».', 'sie.0':'Sin siestas', 'sie.1':'1 siesta', 'sie.n2':'{n} siestas',
   'sie.lleno':'No queda sitio para otra siesta antes de la noche', 'sie.bar':'Siestas del día y hora de acostarse', 'sie.cama':'acostarse',
+  'sie.arr':'Arrastra cada siesta hacia su hora; estira su borde derecho para cambiar cuánto duró.', 'sie.blq':'Siesta {n}: {h}, {d}. Arrástrala para cambiar la hora',
+  'sie.blqFin':'Siesta {n}: duración {d}. Arrastra para cambiarla',
+  'qe.t':'Estado durante el día · {d}', 'qe.q':'¿Cómo te encontraste el {d}, durante el día?',
 },
 ca:{
   ceja:'Nit', titulo:'Nit', 'pasos.aria':'Passos',
@@ -7796,12 +7867,12 @@ ca:{
   'notas.ok':'Nit <b>✓</b> · {s} · valoració <b>3 de 3</b> · <b>{n}</b> esdev.','notas.falta':'Falta valorar <b>{f}</b>',
   noGuardar:'No s’ha pogut desar: revisa les hores de la nit.',
   'av.desp':'No queda son a la vista on afegir un altre despertar','av.ev':'No queda lloc a la vista per a un altre esdeveniment',
-  'c.B':'Anar al llit','c.S':'Latència','c.W':'Despertars','c.F':'Final al llit','c.Fc':'Final','c.R':'Llevar-se','c.X':'Esdeveniments','c.Xc':'Esdev.',
+  'c.B':'Anar al llit','c.S':'Latència','c.W':'Despertars','c.F':'Despertar final','c.Fc':'Desp. final','c.R':'Llevar-se','c.X':'Esdeveniments','c.Xc':'Esdev.',
   despN:'Despertar {n}', unos:'uns {n} min', unosCama:'uns {n} min al llit',
-  'a.S':'Vaig trigar a adormir-me','a.F':'Al llit al final','a.Wd':'Despertar {n}: durada', despertar:'despertar', ver:'Veure {c} {h}',
+  'a.S':'Vaig trigar a adormir-me','a.F':'Despertar final','a.Wd':'Despertar {n}: durada', despertar:'despertar', ver:'Veure {c} {h}',
   'l.B':'↓ Anar al llit · cap a les','l.R':'↑ Llevar-se · cap a les','l.cama':'Al llit unes {d}',
   'l.S':'Vas trigar a adormir-te uns','l.Sx':'N’hi ha prou amb una aproximació',
-  'l.F':'Al llit al final, uns','l.Fx':'Després de despertar-te del tot, abans de llevar-te',
+  'l.F':'Despertar final · cap a les','l.Fx':'Després, uns {d} al llit abans de llevar-te',
   'l.X0':'Esdeveniments','l.X0x':'Cap. Si va passar alguna cosa, prem «+ Afegir».',
   'l.X':'{nom} · cap a les','l.Xx':'Esdeveniment {n}: arrossega’l cap a la seva hora',
   'l.W0':'Despertars','l.W0x':'Cap. Prem «+ Afegir» si et vas despertar.',
@@ -7817,6 +7888,9 @@ ca:{
   'sie.n':'Migdiada {n}', 'sie.hacia':'cap a les', 'sie.durante':'durant', 'sie.add':'+ Afegir migdiada',
   'sie.ninguna':'Sense migdiades aquell dia. Si en vas fer alguna, prem «+ Afegir migdiada».', 'sie.0':'Sense migdiades', 'sie.1':'1 migdiada', 'sie.n2':'{n} migdiades',
   'sie.lleno':'No queda lloc per a una altra migdiada abans de la nit', 'sie.bar':'Migdiades del dia i hora d’anar al llit', 'sie.cama':'anar al llit',
+  'sie.arr':'Arrossega cada migdiada cap a la seva hora; estira’n la vora dreta per canviar quant va durar.', 'sie.blq':'Migdiada {n}: {h}, {d}. Arrossega-la per canviar l’hora',
+  'sie.blqFin':'Migdiada {n}: durada {d}. Arrossega per canviar-la',
+  'qe.t':'Estat durant el dia · {d}', 'qe.q':'Com et vas trobar el {d}, durant el dia?',
 }};
 const T=(k,v)=>{ let s=TX[lang()][k]; if(s==null) s=TX.es[k]; if(s==null) s=k; if(v) s=String(s).replace(/\{(\w+)\}/g,(m,n)=>v[n]!=null?v[n]:m); return s; };
 
@@ -7891,7 +7965,7 @@ const EV={
   'Ruido':{e:'🔊',nom:'Ruido',ca:'Soroll',dia:'ruido'},
   'Calor o frío':{e:'🌡️',nom:'Calor/frío',ca:'Calor/fred',dia:'temp'},
   'Estrés o preocupación':{e:'😟',nom:'Preocupación',ca:'Preocupació',dia:'estres'},
-  'Tos':{e:'🫁',nom:'Tos',ca:'Tos',dia:'tos'},
+  'Tos':{e:'😷',nom:'Tos',ca:'Tos',dia:'tos'},   // v4.9.9: 😷 (🫁, de 2020, no se ve en muchos dispositivos)
   'Otro':{e:'🏷️',nom:'Otro',ca:'Altre',dia:'otro'}
 };
 const evDe=q=>EV[q]||EV.Otro;
@@ -7935,13 +8009,13 @@ const $=id=>document.getElementById(id);
 const CATS=[
   {k:'B',ic:'↓',c:'#143f5e',pos:'arriba'},
   {k:'S',ic:'z',c:'#2f6f9e',pos:'abajo'},
-  {k:'W',ic:'!',c:'#d58a1f',pos:'medio'},
+  {k:'W',ic:'!',c:'#2f7a4d',pos:'medio'},   // v4.9.9: verde oscuro (el naranja se confundía con el fondo de los festivos)
   {k:'F',corto:1,ic:'☀',c:'#2f6f9e',pos:'abajo'},
   {k:'R',ic:'↑',c:'#143f5e',pos:'arriba'},
   {k:'X',corto:1,ic:'',c:'#7b818a',pos:'evento'},
 ];
 const catNom=c=>T('c.'+c.k), catCorto=c=>T('c.'+c.k+'c');
-const COL={lat:'#2f6f9e',w:'#c27a12',term:'#5b6b80'};
+const COL={lat:'#2f6f9e',w:'#2b6e46',term:'#5b6b80'};
 const PASOS=['noche','siestas','valor','notas'];
 let E=null;   // estado: {i, m, dA/dB fechas y tA/tB tipos de los dos días, nueva, paso, v0, v1 (horario visible), sel:{k, w, borde}, sie}
 let girada=false, arrastre=null, zArr=null;
@@ -7964,13 +8038,12 @@ function abrir(i){
   }
   const paso=leerPaso(), m=normalizar(aModelo(g),paso);
   const dA=n.fecha, dB=sigIso(n.fecha);
-  const v0=m.B<150?Math.max(0,Math.floor((m.B-30)/30)*30):120;
-  E={i,m,dA,dB,tA:n.tA,tB:n.tB,nueva:!n.gd,paso,v0,v1:Math.max(v0+ZOOM_MIN,m.R<=810?840:Math.min(DIA,Math.ceil((m.R+60)/60)*60)),sel:{k:'B',w:0,borde:'a'},
+  E={i,m,dA,dB,tA:n.tA,tB:n.tB,nueva:!n.gd,paso,v0:120,v1:840,sel:{k:'B',w:0,borde:'a'},
     pasoEd:0,visto:[true,false,false,false],faltaAviso:false,
     ev:(n.ev||[]).map(x=>{ let a=u(x.t); if(a<m.B-60) a+=1440; return {a:Math.max(0,Math.min(DIA-30,r30(a))),q:x.q||'Otro'}; }).sort((a,b)=>a.a-b.a),
     sie:(n.sie||n.sieRejilla||[]).map(x=>({a:minDia(x.t),d:Math.max(5,Math.round(+x.d||0))})).filter(x=>x.a!=null).sort((a,b)=>a.a-b.a),
     q:{qs:n.qs||0,qd:n.qd||0,qe:n.qe||0}, trat:n.trat||'', obs:n.obs||'', g0:n.gd||null, evOrig:n.ev||[], sieOrig:n.sie||null};
-  if(E.v1>DIA){ E.v1=DIA; E.v0=Math.max(0,DIA-(E.v1-E.v0)); }
+  encuadrar();   // v4.9.9: se abre con la noche ya ajustada a la pantalla (como «Ajustar»)
   E.m0=JSON.stringify(E.m); E.ev0=JSON.stringify(E.ev); E.sie0=JSON.stringify(E.sie);
   traducir();
   $('edReloj').hidden=!(E.nueva||!relojVisto);
@@ -8013,7 +8086,7 @@ function renderDias(){
 const faltan=()=>E?QK.filter(k=>!E.q[k]):[];
 const nombresFaltan=f=>{ const t=f.map(k=>qv()[k].t.toLowerCase()); return t.length>1?t.slice(0,-1).join(', ')+T('y')+t[t.length-1]:t[0]; };
 function renderValor(){
-  const f=faltan(), Q=qv();
+  const f=faltan(), Q=qvDia();
   $('edValor').innerHTML=`<p class="valor-intro">${T('valor.intro')}</p>`+QK.map(k=>{ const v=E.q[k];
     return `<div class="vfila${E.faltaAviso&&!v?' falta':''}" data-k="${k}" role="group" aria-label="${Q[k].t}${E.faltaAviso&&!v?T('faltaP'):''}"><div class="vq"><b>${Q[k].t}<span class="ftag">${T('falta')}</span></b><span>${Q[k].q}</span></div><div class="vops">${Q[k].o.map((o,i)=>`<button type="button" class="vop${v===i+1?' on':''}" data-v="${i+1}" aria-pressed="${v===i+1}" aria-label="${i+1}: ${o}">${cara(i+1)}<span class="vn">${i+1}</span><span class="vl">${o}</span></button>`).join('')}</div></div>`; }).join('');
   const est=$('edValorEstado');
@@ -8022,6 +8095,8 @@ function renderValor(){
   else { est.className='estado'; est.innerHTML=T('valor.n',{n:3-f.length}); }
   pintarPasos();
 }
+// v4.9.9: «Estado durante el día» se refiere al día previo a la noche (el día A), con su día y su fecha
+function qvDia(){ const Q=Object.assign({},qv()), d=esc(diaLargo(E.dA)); Q.qe=Object.assign({},Q.qe,{t:T('qe.t',{d}),q:T('qe.q',{d})}); return Q; }
 const sieTxt=()=>{ const n=E.sie.length; if(!n) return T('sie.0'); const tot=E.sie.reduce((a,x)=>a+x.d,0); return (n===1?T('sie.1'):T('sie.n2',{n}))+' · '+dur(tot); };
 function renderNotas(){
   if(document.activeElement!==$('edTrat')) $('edTrat').value=E.trat;
@@ -8066,7 +8141,11 @@ function renderSiestas(){
   const L=E.sie, b0=6*60, b1=22*60, pc=v=>((Math.max(b0,Math.min(b1,v))-b0)/(b1-b0)*100).toFixed(2)+'%', cama=ORIGEN+E.m.B;
   let barra='';
   for(let h=8;h<=20;h+=4) barra+=`<span class="sb-h" style="left:${pc(h*60)}">${pad(h)}</span>`;   // la barra va de las 06:00 a las 22:00
-  L.forEach(x=>{ barra+=`<i class="sb-s" style="left:${pc(x.a)};width:calc(${pc(x.a+x.d)} - ${pc(x.a)})"></i>`; });
+  // v4.9.9: cada siesta se arrastra con el dedo: el bloque, hacia su hora; su borde derecho, para la duración
+  L.forEach((x,i)=>{ const sel=sArr&&sArr.i===i, n=i+1;
+    barra+=`<div class="sb-s${sel?' sel':''}" data-s="${i}" tabindex="-1" aria-label="${esc(T('sie.blq',{n,h:hhmm(x.a),d:dur(x.d)}))}" style="left:${pc(x.a)};width:calc(${pc(x.a+x.d)} - ${pc(x.a)})">`+
+      `${x.d>=60?`<span class="sb-t">${hhmm(x.a)}</span>`:''}<span class="sb-fin" aria-label="${esc(T('sie.blqFin',{n,d:dur(x.d)}))}"></span></div>`; });
+  if(sArr){ const x=L[sArr.i]; if(x) barra+=`<span class="sb-guia" style="left:${pc(x.a+(sArr.modo==='d'?x.d:0))}">${sArr.modo==='d'?dur(x.d):hhmm(x.a)}</span>`; }
   if(cama<b1) barra+=`<i class="sb-cama" style="left:${pc(cama)};width:calc(100% - ${pc(cama)})" title="${T('sie.cama')} ${reloj(E.m.B)}"></i><b class="sb-flecha" style="left:${pc(cama)}">↓</b>`;
   const fila=(x,i)=>{ const n=T('sie.n',{n:i+1});
     return `<div class="sfila" data-s="${i}" role="group" aria-label="${esc(n)}"><b class="sn">${esc(n)}</b>`+
@@ -8074,12 +8153,32 @@ function renderSiestas(){
       `<span class="sg"><span class="sl">${T('sie.durante')}</span><button type="button" class="bt" data-c="d" data-d="-1" aria-label="${esc(n)}: ${T('menos')}">−</button><b class="sv">${dur(x.d)}</b><button type="button" class="bt" data-c="d" data-d="1" aria-label="${esc(n)}: ${T('mas')}">+</button></span>`+
       `<button type="button" class="bt" data-c="x">${T('quitar')}</button></div>`; };
   $('edSies').innerHTML=`<p class="sies-intro">${T('sie.intro',{d:esc(diaLargo(E.dA))})}</p>`+
-    `<div class="sbar" role="img" aria-label="${T('sie.bar')}">${barra}</div>`+
+    `<div class="sbar${L.length?' con':''}" role="group" aria-label="${T('sie.bar')}">${barra}</div>`+(L.length?`<p class="sies-arr">${T('sie.arr')}</p>`:'')+
     `<div class="slista">${L.length?L.map(fila).join(''):`<p class="sninguna">${T('sie.ninguna')}</p>`}</div>`+
     `<div class="sacc"><button type="button" class="bt" id="sAdd">${T('sie.add')}</button><span class="aviso" id="sAviso"></span></div>`;
   $('edSiesEstado').innerHTML=`<b>${sieTxt()}</b>`;
   pintarPasos();
 }
+// arrastre de las siestas en su barra (06:00–22:00): la hora, de 15 en 15 min; la duración, en escalones. Se respetan
+// los límites de cada siesta (sin solaparse con las vecinas, desde las 06:00 y hasta un cuarto de hora antes de acostarse).
+let sArr=null;
+$('edSies').addEventListener('pointerdown',e=>{
+  const blk=e.target.closest('.sb-s'); if(!blk||!E) return;
+  const i=+blk.dataset.s, x=E.sie[i], bar=blk.parentElement; if(!x||!bar) return;
+  e.preventDefault();
+  sArr={id:e.pointerId,i,modo:e.target.closest('.sb-fin')?'d':'a',x0:e.clientX,a0:x.a,d0:x.d,mpp:(16*60)/bar.getBoundingClientRect().width};
+  try{ $('edSies').setPointerCapture(e.pointerId); }catch(err){}
+  renderSiestas();
+});
+$('edSies').addEventListener('pointermove',e=>{
+  if(!sArr||e.pointerId!==sArr.id||!E) return;
+  const x=E.sie[sArr.i]; if(!x) return; const {ini,fin}=sieLimites(sArr.i), dm=(e.clientX-sArr.x0)*sArr.mpp;
+  if(sArr.modo==='a'){ const a=Math.max(ini,Math.min(fin-x.d,r15(sArr.a0+dm))); if(a===x.a) return; x.a=a; }
+  else { let d=escalon(Math.max(5,sArr.d0+dm),5); if(x.a+d>fin) d=hastaEscalon(fin-x.a,5); if(d==null||d===x.d) return; x.d=d; }
+  renderSiestas();
+});
+const soltarSie=e=>{ if(sArr&&e.pointerId===sArr.id){ sArr=null; if(E){ E.sie.sort((p,q)=>p.a-q.a); renderSiestas(); } } };
+$('edSies').addEventListener('pointerup',soltarSie); $('edSies').addEventListener('pointercancel',soltarSie);
 $('edSies').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!E) return;
   if(b.id==='sAdd'){ sieAñadir(); return; }
   const f=b.closest('.sfila'); if(!f) return; const i=+f.dataset.s, c=b.dataset.c;
@@ -8264,10 +8363,14 @@ function renderBanda(){
     h+=`<span class="db ${s.t}${s.a===MED?' med':''}" style="left:${pct(s.a)};width:${len(s.b-s.a)}">${txt}</span>`;
     if(s.t==='F') z+=`<b style="left:${pct(s.a)};width:${len(s.b-s.a)}"></b>`; });
   $('edBanda').innerHTML=h; $('edZonas').innerHTML=z;
+  // v4.9.9: el fondo de la escala horaria lleva el color del tipo de cada día (laborable o festivo)
+  const col=t=>t==='F'?'var(--festiu)':'var(--labor)', st=[];
+  segs.forEach(s=>{ st.push(`${col(s.t)} ${pct(s.a)}`,`${col(s.t)} ${pct(s.b)}`); });
+  $('edHoras').setAttribute('style',st.length?`background:linear-gradient(to right,${st.join(',')})`:'');
 }
 function render(){
   if(!E)return; const m=E.m, s=E.sel;
-  $('edCats').innerHTML=CATS.map(c=>`<button type="button" class="cat${s.k===c.k?' on':''}" data-cat="${c.k}"><i style="background:${c.c}"></i>${c.corto?`<span class="l">${catNom(c)}</span><span class="c">${catCorto(c)}</span>`:catNom(c)}</button>`).join('');
+  $('edCats').innerHTML=CATS.map(c=>`<button type="button" class="cat${s.k===c.k?' on':''}" data-cat="${c.k}">${'BSFR'.includes(c.k)?`<i class="ic" style="background:${c.c}" aria-hidden="true">${c.ic}</i>`:`<i style="background:${c.c}"></i>`}${c.corto?`<span class="l">${catNom(c)}</span><span class="c">${catCorto(c)}</span>`:catNom(c)}</button>`).join('');
   renderBanda();
   const hora=s.k==='B'||s.k==='R', horaW=(s.k==='W'&&s.borde==='m')||s.k==='X';
   $('edMenos').textContent=hora?'−'+E.paso+'′':horaW?'−30′':'−'; $('edMas').textContent=hora?'+'+E.paso+'′':horaW?'+30′':'+';
@@ -8279,7 +8382,7 @@ function render(){
   tramosSueno(m).forEach(([a,b])=>{ h+=tramo('sueno',a,b); });
   m.W.forEach((x,i)=>{ h+=tramo('hueco'+(s.k==='W'&&s.w===i?' sel':''),x.a,x.b,`data-h="W" data-w="${i}" data-b="m" title="${esc(T('despN',{n:i+1}))}"`); });
   const lado=(k,v)=>{ const izq=k==='B', borde=75*span()/720; return izq?(v-E.v0<borde?'der':'izq'):(E.v1-v<=borde?'izq':'der'); };
-  const valTxt=(k,v,w)=>k==='S'?T('unos',{n:m.S-m.B}):k==='F'?T('unosCama',{n:m.R-m.F}):k==='W'?T('unos',{n:m.W[w].b-m.W[w].a}):T('hacia',{h:reloj(v)});
+  const valTxt=(k,v,w)=>k==='S'?T('unos',{n:m.S-m.B}):k==='F'?T('hacia',{h:reloj(v)}):k==='W'?T('unos',{n:m.W[w].b-m.W[w].a}):T('hacia',{h:reloj(v)});
   const tir=(k,v,etq,w,borde)=>{ const c=CATS.find(x=>x.k===k), sel=s.k===k&&(k!=='W'||(s.w===w&&s.borde===borde));
     const cls=c.pos+(k==='W'?(borde==='b'?' fin':' ini'):'')+(sel?' sel':'');
     const datos=`data-h="${k}"${w!=null?` data-w="${w}" data-b="${borde}"`:''}`;
@@ -8306,7 +8409,7 @@ function render(){
   let q,lh,ex;
   if(s.k==='B'){q=T('l.B');lh=reloj(m.B);ex=T('l.cama',{d:dur(x.tib)});}
   else if(s.k==='S'){q=T('l.S');lh=dur(x.sol);ex=T('l.Sx');}
-  else if(s.k==='F'){q=T('l.F');lh=dur(x.fin);ex=T('l.Fx');}
+  else if(s.k==='F'){q=T('l.F');lh=reloj(m.F);ex=T('l.Fx',{d:dur(x.fin)});}
   else if(s.k==='R'){q=T('l.R');lh=reloj(m.R);ex=T('l.cama',{d:dur(x.tib)});}
   else if(s.k==='X'){ const y=E.ev[s.w];
     if(!y){q=T('l.X0');lh='—';ex=T('l.X0x');}
@@ -8388,8 +8491,11 @@ $('edZoom').addEventListener('pointermove',e=>{
 });
 const soltarZ=e=>{ if(zArr&&e.pointerId===zArr.id) zArr=null; };
 $('edZoom').addEventListener('pointerup',soltarZ); $('edZoom').addEventListener('pointercancel',soltarZ);
-$('zNoche').addEventListener('click',()=>{ const m=E.m; let a=Math.max(0,Math.floor((m.B-30)/30)*30), b=Math.min(DIA,Math.ceil((m.R+30)/30)*30);
-  if(b-a<ZOOM_MIN){ b=Math.min(DIA,a+ZOOM_MIN); a=b-ZOOM_MIN; } E.v0=a; E.v1=b; render(); });
+// encuadra la noche (de media hora antes de acostarse a media hora después de levantarse, con sus acontecimientos)
+function encuadrar(){ const m=E.m, evs=(E.ev||[]).map(x=>x.a);
+  let a=Math.max(0,Math.floor((Math.min(m.B,...evs)-30)/30)*30), b=Math.min(DIA,Math.ceil((Math.max(m.R,...evs.map(x=>x+30))+30)/30)*30);
+  if(b-a<ZOOM_MIN){ b=Math.min(DIA,a+ZOOM_MIN); a=b-ZOOM_MIN; } E.v0=a; E.v1=b; }
+$('zNoche').addEventListener('click',()=>{ encuadrar(); render(); });
 $('z2008').addEventListener('click',()=>{ E.v0=120; E.v1=840; render(); });
 
 // teclado: flechas ±paso
