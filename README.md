@@ -46,7 +46,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `sw.js` | Hace que la app funcione sin conexión y recibe las actualizaciones. Debe estar junto a `index.html` |
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
-| `docs/` | Auditoría de la v4.9.9 (`auditoria_v4.9.9.md`). La guía del paciente y el documento técnico en PDF de la v4.9.5 están en `v4.9.5/docs/` |
+| `docs/` | Documentación de la v4.9.9: documento técnico (`Agenda_Sueno_v4.9.9_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v4.9.9_castellano.pdf`) y en catalán (`Guia_del_pacient_v4.9.9_catala.pdf`) y auditoría (`auditoria_v4.9.9.md`). Las de versiones anteriores están en `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
 | `tests/`, `package.json` | Pruebas automáticas (88 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
 | `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
@@ -109,11 +109,14 @@ de la v4.9.8 (que no se llegó a publicar):
 
 - *Regla del MCTQ*: cada fecha se marca como laborable o festiva y cada noche cuenta como el día en
   que te levantas (la del viernes al sábado es una noche antes de festivo).
-- *Editor de la noche*, única forma de anotar: acostarse y levantarse de 15 en 15 minutos;
-  latencia, despertares y tiempo final en cama en escalones (5 min hasta media hora, luego 45, 60
-  y de 30 en 30); acontecimientos con su hora y su tipo (🚽 baño, 💢 dolor, 🔊 ruido, 🌡️ calor o
-  frío, 😟 preocupación, 🫁 tos, 👶 niño, 🍼 toma, 🏷️ otro); valoración 1–5 obligatoria; tratamiento
-  y observaciones opcionales. La rejilla se pinta sola y queda para consultar e imprimir.
+- *Editor de la noche*, única forma de anotar, en cuatro pasos (noche · siestas · valoración ·
+  notas) y con un eje de 18:00 a 20:00 del día siguiente (sirve para niños que se acuestan antes de
+  las 20:00): acostarse y levantarse de 15 en 15 minutos; latencia, despertares y tiempo final en
+  cama en escalones (5 min hasta media hora, luego 45, 60 y de 30 en 30); acontecimientos con su
+  hora y su tipo (🚽 baño, 💢 dolor, 🔊 ruido, 🌡️ calor o frío, 😟 preocupación, 🫁 tos, 👶 niño,
+  🍼 toma, 🏷️ otro); siestas del día anterior a la noche (hora y duración, opcional); valoración 1–5
+  obligatoria; tratamiento y observaciones opcionales. La rejilla se pinta sola y queda para
+  consultar e imprimir. El editor está también en catalán.
 - *Métricas a minuto* de las noches anotadas en el editor (las de diarios anteriores, con la rejilla).
 - *Pantalla del paciente en el móvil*: cabecera sencilla y sin QR, fecha de inicio e instrucciones en
   una tarjeta, las 21 noches en una lista por semanas con su barra y sus caras, y «Guardar» y
@@ -121,9 +124,14 @@ de la v4.9.8 (que no se llegó a publicar):
 - Se mantienen de la v4.9.7 el recordatorio, el aviso de noche pendiente, las tendencias, el patrón
   propio y el resumen para la consulta. Se retiran el registro con preguntas, los factores del día,
   la ventana de sueño y los hitos (sus datos se conservan).
-- CSV con dos columnas nuevas (`acont_tipos`, `tratamiento`); el formato de datos sigue en la versión 5.
-- Auditoría completa en `docs/auditoria_v4.9.9.md` (incluye los pendientes: siestas y noches que
-  empiezan antes de las 20:00 en pediatría, vaciar una noche y el editor en catalán).
+- CSV con tres columnas nuevas (`acont_tipos`, `tratamiento`, `siestas_anotadas`); el formato de
+  datos sigue en la versión 5.
+- *Una sola versión por diario*: cada diario guarda la versión que lo guardó, y las versiones
+  anteriores (v4.9.5, v4.9.6 y v4.9.7) ya no sobrescriben un diario de la v4.9.9.
+- Casos de ejemplo regenerados con el editor (acontecimientos con tipo, siestas y tratamiento), sin
+  cambiar sus categorías clínicas.
+- Documento técnico y guía del paciente (castellano y catalán) en PDF en `docs/`; auditoría completa
+  en `docs/auditoria_v4.9.9.md`.
 
 **v4.9.7 (pruebas, en `v4.9.7/`) — Adherencia, registro guiado y herramientas para el
 clínico.** Sobre la v4.9.5 (sin el modelo mixto de la v4.9.6):
@@ -170,14 +178,15 @@ y las carpetas `v4.9.6/` y `v4.9.7/`, las versiones de pruebas; cada una con su 
 worker, manifiesto, documentación (`docs/`) y pruebas automáticas (`tests/`, que `npm test` ejecuta
 junto con las de la raíz). La v4.9.6 y la v4.9.7 parten de la v4.9.5 por separado.
 
-- **Diarios de la v4.9.9 en otra versión.** Si un diario anotado en la v4.9.9 se abre y se guarda en
-  la v4.9.5, la v4.9.6 o la v4.9.7, se pierden los acontecimientos con su tipo, el tratamiento y las
-  respuestas del editor (la rejilla se conserva). Al revés no hay pérdidas: la v4.9.9 lee los diarios
-  de todas las versiones anteriores.
+- **Una sola versión por diario.** Cada diario guarda la versión que lo guardó. La v4.9.5, la v4.9.6
+  y la v4.9.7 no sobrescriben un diario de la v4.9.9: muestran un aviso para abrirlo en la versión
+  principal (si lo hicieran, se perderían las siestas, los acontecimientos con su tipo, el tratamiento
+  y las respuestas del editor). Al revés no hay pérdidas: la v4.9.9 lee los diarios de todas las
+  versiones anteriores y, al guardarlos, pasan a ser de la v4.9.9.
 
 - **Mismo navegador, mismos datos.** Las versiones comparten el almacenamiento del navegador
   (mismo dominio): en un dispositivo se ven los mismos pacientes y diarios en todas. Conviene que
-  cada paciente use una sola versión; los del modo mixto, solo la v4.9.6. Si un diario en modo mixto
+  cada paciente use siempre la misma versión; los del modo mixto, solo la v4.9.6. Si un diario en modo mixto
   se abre y se guarda en la v4.9.5, se pierde la marca del modo (los minutos se conservan, pero la
   v4.9.5 no los muestra ni los exporta); la v4.9.7 conserva la marca, pero no usa los minutos.
 - **Plan terapéutico de la v4.9.7.** Si un diario con ventana de sueño o hitos se abre y se guarda
@@ -186,9 +195,10 @@ junto con las de la raíz). La v4.9.6 y la v4.9.7 parten de la v4.9.5 por separa
 - **Enlaces y QR.** Cada versión genera los QR y los enlaces con su propia dirección: el paciente
   entra en la versión desde la que se creó su acceso.
 - **Sin conexión.** Cada carpeta guarda su propia copia; ninguna borra la de la otra.
-- **Casos de ejemplo.** La v4.9.6 los vuelve a cargar con los minutos de la noche y la v4.9.7, con
-  factores, hitos, respuestas con preguntas y un caso nuevo de insomnio en TCC-I (17 casos); las
-  demás versiones los verán así (son ficticios).
+- **Casos de ejemplo.** La v4.9.6 los vuelve a cargar con los minutos de la noche; la v4.9.7, con
+  factores, hitos, respuestas con preguntas y un caso nuevo de insomnio en TCC-I (17 casos), y la
+  v4.9.9, regenerados con el editor. Como son diarios de la v4.9.9, las versiones anteriores los
+  muestran pero no los guardan (son ficticios).
 
 Para pasar una versión de pruebas a la raíz cuando esté validada, basta con copiar el contenido de
 su carpeta a la raíz (y, si se quiere conservar la anterior, guardarla antes en su propia carpeta, como

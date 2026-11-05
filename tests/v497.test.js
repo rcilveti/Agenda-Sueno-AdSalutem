@@ -45,7 +45,7 @@ test('patrón propio: se señalan las noches que se apartan de sus noches compar
   const L4 = app.evj('analysisData().desv.lista').filter(x => x.d === 4);
   assert.equal(L4[0].k, 'sol'); assert.equal(Math.round(L4[0].dev), 70);
   const L = app.evj('analysisData().desv.lista').filter(x => x.d === 12);
-  assert.equal(L[0].k, 'tst'); assert.equal(Math.round(L[0].dev), -115);   // a minuto (la rejilla daba −120)
+  assert.equal(L[0].k, 'tst'); assert.equal(Math.round(L[0].dev), -125);   // a minuto, caso regenerado con el editor (v4.9.9)
   // con menos de 7 noches no se calcula
   app.ev(`for(let d=6;d<21;d++){state[d].slots=new Array(48).fill(null);state[d].downs=[];state[d].ups=[];}`);
   assert.equal(app.evj('analysisData().desv.insuficiente'), true);
@@ -85,7 +85,7 @@ test('análisis: Excel con el patrón propio y los acontecimientos por tipo; bas
   assert.ok(!a2.some(r => /PLAN|Ventana (de sueño )?objetivo|^Hito/.test(r[0] || '')));   // la ventana sugerida (TCC-I) es una métrica y sigue
   assert.deepEqual([...a2.find(r => r[0] === 'Noches anotadas en el editor').slice(0, 2)], ['Noches anotadas en el editor', 21]);
   const dia = hojas['Diario'];
-  assert.deepEqual([...dia[0].slice(-6)], ['Estado día', 'Tratamiento', 'Observaciones', 'Acontecimientos (hora y tipo)', 'Respuestas del editor', 'Fuente']);
+  assert.deepEqual([...dia[0].slice(-7)], ['Estado día', 'Tratamiento', 'Observaciones', 'Acontecimientos (hora y tipo)', 'Siestas anotadas (día antes de la noche)', 'Respuestas del editor', 'Fuente']);
   assert.ok(dia.slice(1).every(r => r[r.length - 1] === 'Editor (a minuto)'));
   await app.ev('exportAllPatients()');
   const bd = hojas['Pacientes']; const i = bd[0].indexOf('Noches anotadas en el editor');
@@ -138,7 +138,9 @@ test('casos de ejemplo: la mujer de 80 años registrada con preguntas reproduce 
   const s = app.evj('analysisData().weeks.map(w=>[Math.round(w.se),Math.round(w.sol)])');
   assert.ok(s[0][0] < 65 && s[2][0] >= 85, `eficiencia ${JSON.stringify(s)}`);
   assert.ok(s[2][1] < s[0][1], 'latencia');
-  assert.deepEqual(app.evj('hitosValidos(loadedHitos).map(h=>h.dia)'), [7, 14]);
+  // v4.9.9: el caso, regenerado con el editor, anota el tratamiento desde las noches en que empezaba cada hito
+  assert.deepEqual(app.evj('state.map(d=>d.trat||"").map((t,i,a)=>i&&t!==a[i-1]?i:null).filter(i=>i!=null)'), [7, 14]);
+  assert.match(app.ev('state[7].trat'), /restricción de sueño/); assert.equal(app.ev('state[6].trat||""'), '');
   assert.ok(app.ev(`state.filter(d=>d.slots.some(Boolean)).every(d=>[d.qs,d.qd,d.qe].every(v=>v>=1&&v<=5)&&d.qsc===5)`));
   assert.deepEqual(app.errors, []);
 });
@@ -147,6 +149,8 @@ test('acceso: el mensaje de «Enviar» lleva el enlace directo, que abre el diar
   let mensaje = null;
   const doc = await loadApp({ prompt: (m, d) => { mensaje = d; return null; } });
   await loginDoctor(doc);
+  // un diario de la v4.9.7 con su ventana de sueño (los casos de la v4.9.9 ya no la tienen): el enlace la sigue llevando
+  doc.ev(`(()=>{ const k='agendasueno3:caso-tcci', r=JSON.parse(localStorage.getItem(k)); r.ventanas=[{desde:7,a:'00:30',l:'06:30'},{desde:14,a:'00:00',l:'06:30'}]; r.hitos=[{dia:7,txt:'Inicio de TCC-I'},{dia:14,txt:'Se amplía la ventana'}]; localStorage.setItem(k,JSON.stringify(r)); })()`);
   await doc.ev(`selectPatient('caso-tcci')`);
   await doc.ev(`(async()=>{const c=await crearCredencialPaciente('caso-tcci','TCC-I');mostrarCredencialNueva('TCC-I',c.pin,c.expires);})()`);
   doc.doc.getElementById('credMsgBtn').click();

@@ -23,7 +23,7 @@ const celda = (app, d) => app.evj(`(()=>{ const tr=document.querySelector('#grid
   const hr=[...tr.querySelectorAll('td.hr')].map(x=>x.classList.contains('fd')?'F':'L').join('');
   return {m,par:!!tr.querySelector('td.day .lfs'),festiu:tr.classList.contains('festiu'),fdia:tr.classList.contains('fdia'),hr}; })()`);
 
-test('MCTQ: el análisis de los casos de ejemplo pintados en la rejilla es el mismo que en la v4.9.7; los anotados con preguntas, a minuto', { skip: !V497 }, async () => {
+test('MCTQ: los casos de ejemplo regenerados con el editor (v4.9.9) conservan los tipos de noche y quedan cerca del análisis de la v4.9.7', { skip: !V497 }, async () => {
   const a = await loadApp(); await loginDoctor(a);
   const b = await loadApp({ file: V497 }); await loginDoctor(b);
   const ids = a.evj('DEMO_CASES.index.map(c=>c.id)');
@@ -31,12 +31,12 @@ test('MCTQ: el análisis de los casos de ejemplo pintados en la rejilla es el mi
   for (const id of ids) {
     await a.ev(`selectPatient('${id}')`); await b.ev(`selectPatient('${id}')`);
     assert.deepEqual(a.evj('state.map(x=>x.lf)'), b.evj('state.map(x=>x.lf)'), id + ': tipos de noche');
-    // v4.9.9: las noches con las respuestas de la noche (a minuto) se miden con ellas; las demás, con la rejilla, como antes
-    if (a.ev('state.some((d,i)=>d.gd&&_gdCoincide(i))')) {
-      const ma = a.evj('metricsOfState(state)'), mb = b.evj('metricsOfState(state)');
-      assert.ok(Math.abs(ma.tst - mb.tst) < 30 && Math.abs(ma.se - mb.se) < 6, id + ': a minuto, cerca de la rejilla');
-      assert.ok(a.ev('dayMetrics(0).fuente') === 'editor', id + ': fuente');
-    } else assert.deepEqual(a.evj('metricsOfState(state)'), b.evj('metricsOfState(state)'), id + ': análisis');
+    // v4.9.9: los casos se regeneraron con el editor (pequeña variación, mismas categorías) y se miden a minuto
+    assert.ok(a.ev('state.every((d,i)=>!_diaTieneDatos(d)||(d.gd&&_gdCoincide(i)&&dayMetrics(i).fuente===\'editor\'))'), id + ': noches del editor');
+    const ma = a.evj('metricsOfState(state)'), mb = b.evj('metricsOfState(state)');
+    // el bebé: su latencia de 60 min era un artefacto de la rejilla (se acostaba a las 19:00), y con ella la eficiencia
+    const tolSE = id === 'caso-bebe-hierro' ? 8 : 6;
+    assert.ok(Math.abs(ma.tst - mb.tst) < 30 && Math.abs(ma.se - mb.se) < tolSE, `${id}: cerca de la v4.9.7 (TST ${mb.tst}→${ma.tst}, SE ${mb.se}→${ma.se})`);
   }
   assert.deepEqual(a.errors, []); assert.deepEqual(b.errors, []);
 });
@@ -130,11 +130,11 @@ test('MCTQ: el editor de la noche muestra los dos días de la noche y deja cambi
   app.doc.getElementById('edDiaB').click();
   assert.match(app.ev(`document.getElementById('edTrans').textContent`), /Entrelaborables/);
   assert.equal(app.ev('state[4].lf'), 'F', 'no cambia hasta guardar');
-  app.ev('EditorNoche.irPaso(1)'); valorar(); app.doc.getElementById('edGuardar2').click();
+  app.ev("EditorNoche.irPaso('valor')"); valorar(); app.doc.getElementById('edGuardar2').click();
   assert.equal(app.ev('state[4].lf'), 'L');
   // el viernes 6 → festivo: cambia la noche del jueves (3)
   app.ev('abrirEditorNoche(4)'); app.doc.getElementById('edDiaA').click();
-  app.ev('EditorNoche.irPaso(1)'); app.doc.getElementById('edGuardar2').click();
+  app.ev("EditorNoche.irPaso('valor')"); app.doc.getElementById('edGuardar2').click();
   assert.equal(app.ev('state[3].lf'), 'F');
   assert.deepEqual(app.errors, []);
 });

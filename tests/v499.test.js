@@ -69,9 +69,12 @@ test('puente: el editor recibe la noche (a minuto si se anotó en él; desde la 
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-normal')`);
-  // noche pintada en la rejilla: se deduce de ella
+  // una noche anotada en el editor (los casos de ejemplo se regeneraron con él) vuelve con sus respuestas a minuto
+  assert.deepEqual(app.evj('AgendaPuente.noche(0).gd'), { b: '22:45', s: 25, w: [], f: '06:40', r: '06:45' });
+  // noche pintada en la rejilla (diario de una versión anterior, sin respuestas): se deduce de ella
+  app.ev('state.forEach(d=>{ delete d.gd; })');
   let n = app.evj('AgendaPuente.noche(0)');
-  assert.deepEqual(n.gd, { b: '22:30', s: 30, w: [], f: '07:00', r: '07:00' });
+  assert.deepEqual(n.gd, { b: '23:00', s: 30, w: [], f: '07:00', r: '07:00' });
   assert.equal(n.fecha, app.ev('isoDeFecha(dateFor(0))'));
   assert.deepEqual([n.tA, n.tB, n.prev], ['L', 'L', null]);
   assert.deepEqual([n.qs, n.qd, n.qe], [4, 4, 4]);
@@ -185,7 +188,7 @@ test('editor: el profesional abre una noche con ✏️ o tocando la fila, la ano
   assert.equal(app.ev('EditorNoche.estado().i'), 8);
   assert.equal(app.ev('JSON.stringify(state[8].slots)'), slots);
   // un acontecimiento, un tratamiento y guardar
-  app.ev(`EditorNoche.estado().ev.push({a:420,q:'Tos'});EditorNoche.estado().trat='Paracetamol';EditorNoche.irPaso(2);`);
+  app.ev(`EditorNoche.estado().ev.push({a:540,q:'Tos'});EditorNoche.estado().trat='Paracetamol';EditorNoche.irPaso('notas');`);
   app.doc.getElementById('edGuardar').click();
   assert.equal(ed().hidden, true);
   assert.deepEqual(app.evj('state[8].ev'), [{ t: '03:00', k: 'tos' }]);
@@ -207,7 +210,7 @@ test('editor: sin fecha de inicio no se abre y lo pide; sin las tres valoracione
   assert.match(app.doc.getElementById('toast').textContent, /fecha de inicio/);
   app.ev(`startDate=new Date('2026-03-02T00:00:00');buildBody();abrirEditorNoche(0);`);
   assert.equal(app.doc.getElementById('ed').hidden, false);
-  app.ev('EditorNoche.irPaso(2)');
+  app.ev("EditorNoche.irPaso('notas')");
   app.doc.getElementById('edGuardar').click();
   assert.equal(app.doc.getElementById('ed').hidden, false, 'sigue abierto');
   assert.equal(app.ev(`document.getElementById('pasoValor').hidden`), false, 'lleva a la valoración');
@@ -224,6 +227,7 @@ test('editor: sin fecha de inicio no se abre y lo pide; sin las tres valoracione
 test('rejilla de consulta: sin herramientas de pintar, registro guiado, factores, plan ni ventana; con ✏️ para los dos perfiles', async () => {
   const app = await loadApp();
   await loginDoctor(app);
+  app.ev(`(()=>{ const k='agendasueno3:caso-tcci', r=JSON.parse(localStorage.getItem(k)); r.ventanas=[{desde:7,a:'00:30',l:'06:30'},{desde:14,a:'00:00',l:'06:30'}]; r.hitos=[{dia:7,txt:'Inicio de TCC-I'},{dia:14,txt:'Se amplía la ventana'}]; localStorage.setItem(k,JSON.stringify(r)); })()`);   // un diario de la v4.9.7 con su plan terapéutico
   await app.ev(`selectPatient('caso-tcci')`);
   const doc = app.doc;
   for (const id of ['toolSleep', 'toolNap', 'toolDown', 'toolUp', 'toolEvent', 'toolErase', 'halfHour', 'lockBtn', 'lockHint', 'planBox', 'patHeaderQR', 'legTw', 'legHito'])
@@ -289,7 +293,7 @@ test('paciente (móvil): la lista de las 21 noches por semanas; la de anoche, de
   pn[2].click();
   assert.equal(doc.getElementById('ed').hidden, false);
   assert.equal(app.ev('EditorNoche.estado().i'), 2);
-  app.ev('EditorNoche.irPaso(1)');
+  app.ev("EditorNoche.irPaso('valor')");
   ['qs', 'qd', 'qe'].forEach(k => doc.querySelector(`#edValor .vfila[data-k="${k}"] .vop[data-v="5"]`).click());
   app.ev(`EditorNoche.estado().ev.push({a:450,q:'Atender a un niño'});`);
   doc.getElementById('edGuardar2').click();
@@ -362,8 +366,8 @@ test('CSV: los acontecimientos con su tipo y el tratamiento van y vuelven; un CS
   await app.ev(`selectPatient('caso-normal')`);
   app.ev(`AgendaPuente.guardar(3,${JSON.stringify({ ...NOCHE, trat: 'Zolpidem; «5 mg»', obs: '=1+1 sin dormir' })})`);
   const csv = app.ev('buildUnifiedCsv()');
-  assert.match(csv, /;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento\n/);
-  assert.match(csv, /^4;.*;03:10\+bano,05:10\+ruido;"Zolpidem; «5 mg»"$/m);
+  assert.match(csv, /;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento;siestas_anotadas\n/);
+  assert.match(csv, /^4;.*;03:10\+bano,05:10\+ruido;"Zolpidem; «5 mg»";$/m);
   const imp = app.evj(`rawImportText(${JSON.stringify(csv)})`);
   assert.deepEqual(imp.state[3].ev, [{ t: '03:10', k: 'bano' }, { t: '05:10', k: 'ruido' }]);
   assert.equal(imp.state[3].trat, 'Zolpidem; «5 mg»');
@@ -371,14 +375,14 @@ test('CSV: los acontecimientos con su tipo y el tratamiento van y vuelven; un CS
   assert.deepEqual(imp.state[3].gd, NOCHE.gd);
   assert.ok(imp.state.filter((d, i) => i !== 3).every(d => d.ev === undefined && d.trat === undefined));
   // formato de la v4.9.8: sin las dos columnas nuevas
-  const v498 = csv.replace(/;acont_tipos;tratamiento\n/, '\n').replace(/^(\d+;.*);[^;\n]*;("[^"\n]*"|[^;\n]*)$/gm, '$1');
+  const v498 = csv.replace(/;acont_tipos;tratamiento;siestas_anotadas\n/, '\n').replace(/^(\d+;.*);[^;\n]*;("[^"\n]*"|[^;\n]*);[^;\n]*$/gm, '$1');
   const i8 = app.evj(`rawImportText(${JSON.stringify(v498)})`);
   assert.equal(i8.state[3].ev, undefined); assert.equal(i8.state[3].trat, undefined);
   assert.deepEqual(i8.state[3].gd, NOCHE.gd);
   assert.deepEqual(app.evj(`evDelDia(${JSON.stringify(i8.state[3])})`), [{ t: '03:00', k: 'otro' }, { t: '05:00', k: 'otro' }]);
   // formato de la v4.9.5: sin escala, etiquetas, guiado ni las nuevas
-  const v495 = csv.replace(/;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento\n/, '\n')
-    .replace(/^(\d+;.*);(5)?;[^;\n]*;[^;\n]*;[^;\n]*;("[^"\n]*"|[^;\n]*)$/gm, '$1').replace(/^(ventanas_objetivo|hitos);.*\n/gm, '');
+  const v495 = csv.replace(/;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento;siestas_anotadas\n/, '\n')
+    .replace(/^(\d+;.*);(5)?;[^;\n]*;[^;\n]*;[^;\n]*;("[^"\n]*"|[^;\n]*);[^;\n]*$/gm, '$1').replace(/^(ventanas_objetivo|hitos);.*\n/gm, '');
   const i5 = app.evj(`rawImportText(${JSON.stringify(v495)})`);
   assert.ok(i5.state.every(d => !d.gd && !d.ev && !d.tags));
   assert.equal(i5.state.filter(d => d.slots.some(Boolean)).length, 21);
@@ -439,6 +443,7 @@ test('informes: análisis en pantalla, PDF, Word y Excel con los acontecimientos
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-normal')`);
+  app.ev('state.forEach(d=>{ delete d.gd; delete d.ev; delete d.sie; })');   // como un diario de una versión anterior
   [2, 5, 9].forEach(d => app.ev(`AgendaPuente.guardar(${d},${JSON.stringify(NOCHE)})`));
   app.ev('renderAnalysis()');
   const an = app.doc.getElementById('analisisContent');
@@ -512,10 +517,201 @@ test('casos de ejemplo: todos se abren en el editor sin errores y guardarlos sin
     // abrir y guardar la noche 1 tal cual: la rejilla no cambia
     if (app.ev('_diaTieneDatos(state[0])&&qDiaValorado(state[0])')) {
       const antes = app.ev(`slotsToRanges(state[0].slots,'s')`);
-      app.ev('abrirEditorNoche(0)'); app.ev('EditorNoche.irPaso(1)');
+      app.ev('abrirEditorNoche(0)'); app.ev("EditorNoche.irPaso('valor')");
       app.doc.getElementById('edGuardar2').click();
       assert.equal(app.ev(`slotsToRanges(state[0].slots,'s')`), antes, id + ': rejilla');
     }
   }
   assert.deepEqual(app.errors, []);
+});
+
+// ---------- 2.ª parte de la v4.9.9: siestas, eje desde las 18:00, catalán y una versión por diario ----------
+const valorarYGuardar = (app, v = 4) => { app.ev("EditorNoche.irPaso('valor')");
+  ['qs', 'qd', 'qe'].forEach(k => app.doc.querySelector(`#edValor .vfila[data-k="${k}"] .vop[data-v="${v}"]`).click());
+  app.doc.getElementById('edGuardar2').click(); };
+const sieClick = (app, i, c, d) => app.doc.querySelector(`#edSies .sfila[data-s="${i}"] .bt[data-c="${c}"]${d ? `[data-d="${d}"]` : ''}`).click();
+
+test('siestas (paso 2): se añaden, cambian y quitan; se pintan en su hora (fila anterior) y cuentan con su noche', async () => {
+  const app = await loadApp();
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
+  app.ev('abrirEditorNoche(1)');
+  assert.deepEqual(app.evj(`[...document.querySelectorAll('#edPasos [data-ir] span')].map(x=>x.textContent)`), ['Noche', 'Siestas', 'Valoración', 'Notas']);
+  app.doc.getElementById('edSiguiente').click();                       // «Siguiente» lleva a las siestas
+  assert.equal(app.ev(`document.getElementById('pasoSiestas').hidden`), false);
+  assert.match(app.doc.getElementById('edSies').textContent, /siesta el martes 3 de marzo, antes de esta noche/);
+  assert.match(app.doc.getElementById('edSiesEstado').textContent, /Sin siestas/);
+  app.doc.getElementById('sAdd').click();                              // 15:00, 30 min
+  sieClick(app, 0, 'd', '1'); sieClick(app, 0, 'd', '1');              // 45 → 60 min
+  sieClick(app, 0, 'a', '1');                                          // 15:15
+  assert.deepEqual(app.evj('EditorNoche.estado().sie'), [{ a: 915, d: 60 }]);
+  assert.match(app.doc.getElementById('edSiesEstado').textContent, /1 siesta · 1 h/);
+  app.doc.getElementById('sAdd').click();                              // la segunda, dos horas después de la primera
+  assert.deepEqual(app.evj('EditorNoche.estado().sie.map(x=>x.a)'), [915, 1095]);
+  sieClick(app, 1, 'x');
+  valorarYGuardar(app);
+  assert.deepEqual(app.evj('state[1].sie'), [{ t: '15:15', d: 60 }]);
+  assert.equal(app.ev(`slotsToRanges(state[0].slots,'n')`), '15:30-16:30');   // en su hora, al final de la fila del día anterior
+  assert.equal(app.ev('dayMetrics(1).napMin'), 60);                    // cuenta con su noche
+  assert.equal(app.ev('dayMetrics(0).napMin'), 0);                     // y no con la anterior
+  // se quita la siesta: se borra también de la rejilla
+  app.ev("abrirEditorNoche(1,'siestas')"); sieClick(app, 0, 'x'); valorarYGuardar(app);
+  assert.deepEqual(app.evj('state[1].sie'), []);
+  assert.equal(app.ev(`slotsToRanges(state[0].slots,'n')`), '');
+  // no puede pasar de la hora de acostarse
+  app.ev(`AgendaPuente.guardar(2,{gd:{b:'19:00',s:15,w:[],f:'06:00',r:'06:15'},tA:'L',tB:'L',ev:[],qs:3,qd:3,qe:3,trat:'',obs:''})`);
+  app.ev("abrirEditorNoche(2,'siestas')"); app.doc.getElementById('sAdd').click();
+  app.ev('EditorNoche.estado().sie[0].a=1080;'); sieClick(app, 0, 'd', '1');   // 18:00: no cabe más rato antes de las 19:00
+  assert.ok(app.ev('EditorNoche.estado().sie[0].a+EditorNoche.estado().sie[0].d') <= 19 * 60 - 15);
+  assert.deepEqual(app.errors, []);
+});
+
+test('siestas de diarios anteriores: el editor las lee de la rejilla y, si no se tocan, se quedan como estaban', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`state[3].slots[38]='n';state[3].slots[39]='n';buildBody();`);   // siesta pintada de 15:00 a 16:00 (día 5)
+  const n = app.evj('AgendaPuente.noche(4)');
+  assert.equal(n.sie, null);
+  assert.deepEqual(n.sieRejilla, [{ t: '15:00', d: 60 }]);
+  app.ev("abrirEditorNoche(4,'siestas')");
+  assert.match(app.doc.getElementById('edSies').textContent, /15:00.*1 h/);
+  valorarYGuardar(app);
+  assert.equal(app.ev('state[4].sie'), undefined, 'sin tocar: sigue como siesta de la rejilla');
+  assert.equal(app.ev(`slotsToRanges(state[3].slots,'n')`), '15:00-16:00');
+  assert.equal(app.ev('dayMetrics(3).napMin'), 60);
+  assert.deepEqual(app.errors, []);
+});
+
+test('siestas: viajan en el CSV (siestas_anotadas) y se ven en la lista del paciente', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`AgendaPuente.guardar(5,{...${JSON.stringify(NOCHE)},sie:[{t:'14:30',d:45},{t:'17:00',d:20}]})`);
+  app.ev(`AgendaPuente.guardar(6,{...${JSON.stringify(NOCHE)},sie:[]})`);
+  const csv = app.ev('buildUnifiedCsv()');
+  assert.match(csv, /;siestas_anotadas\n/);
+  assert.match(csv, /^6;.*;14:30\+45,17:00\+20$/m);
+  assert.match(csv, /^7;.*;-$/m);
+  const st = app.evj(`rawImportText(${JSON.stringify(csv)}).state`);
+  assert.deepEqual(st[5].sie, [{ t: '14:30', d: 45 }, { t: '17:00', d: 20 }]);
+  assert.deepEqual(st[6].sie, []);
+  assert.equal(st[7].sie, undefined);
+  assert.equal(app.ev('dayMetrics(5).napMin'), 65);
+  // lista del paciente: «+ siesta 1 h 05»
+  app.ev(`session={role:'patient'};pintarNochesPac();`);
+  assert.equal(app.doc.querySelector('#nochesPac .pn[data-noche="5"] .pn-s').textContent, '+ siesta 1 h 05');
+  assert.deepEqual(app.errors, []);
+});
+
+test('eje desde las 18:00: la noche de un bebé que se acuesta a las 19:00 se ve, se cambia y se guarda bien', async () => {
+  const app = await loadApp();
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
+  app.ev(`AgendaPuente.guardar(1,{gd:{b:'19:00',s:15,w:[{t:'01:00',d:30}],f:'06:00',r:'06:15'},tA:'L',tB:'L',ev:[{t:'01:00',q:'Dar el pecho o el biberón'}],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  assert.equal(app.ev('dayMetrics(1).tib'), 675); assert.equal(app.ev('dayMetrics(1).tst'), 615);
+  app.ev('abrirEditorNoche(1)');
+  const E = app.evj('EditorNoche.estado()');
+  assert.equal(E.m.B, 60); assert.equal(E.m.S, 75); assert.equal(E.m.R, 735);   // minutos desde las 18:00
+  assert.equal(E.v0, 30, 'el horario visible empieza media hora antes de acostarse (18:30), no a las 20:00');
+  assert.equal(app.ev(`document.querySelectorAll('#edBanda .db').length`), 2);   // el día de la tarde y el de la mañana
+  assert.deepEqual(E.ev.map(x => x.a), [420]);
+  // guardar sin tocar no cambia nada
+  valorarYGuardar(app);
+  assert.equal(app.ev('state[1].gd.b'), '19:00');
+  // adelantarla a las 18:30
+  app.ev('abrirEditorNoche(1)'); app.doc.getElementById('edMenos').click(); app.doc.getElementById('edMenos').click();
+  assert.equal(app.ev('EditorNoche.estado().m.B'), 30);
+  valorarYGuardar(app);
+  assert.equal(app.ev('state[1].gd.b'), '18:30');
+  assert.equal(app.ev('dayMetrics(1).tib'), 705);
+  assert.equal(app.ev(`fmtClock(dayMetrics(1).bedMin)`), '18:30');
+  // y no antes de las 18:00
+  app.ev('abrirEditorNoche(1)'); for (let i = 0; i < 6; i++) app.doc.getElementById('edMenos').click();
+  assert.equal(app.ev('EditorNoche.estado().m.B'), 0);
+  app.ev('EditorNoche.cerrar(false)');
+  // una noche normal se sigue viendo de 20:00 a 08:00
+  app.ev(`AgendaPuente.guardar(2,${JSON.stringify(NOCHE)})`); app.ev('abrirEditorNoche(2)');
+  assert.deepEqual(app.evj('[EditorNoche.estado().v0,EditorNoche.estado().v1]'), [120, 840]);
+  assert.deepEqual(app.errors, []);
+});
+
+test('catalán: el editor entero en catalán (pasos, días, valoración, siestas, acontecimientos y botones)', async () => {
+  const app = await loadApp();
+  app.ev(`initState();startDate=new Date('2026-04-06T00:00:00');buildBody();setLang('ca');`);
+  app.ev('abrirEditorNoche(0)');
+  const txt = id => app.ev(`document.getElementById('${id}').textContent`);
+  assert.deepEqual(app.evj(`[...document.querySelectorAll('#edPasos [data-ir] span')].map(x=>x.textContent)`), ['Nit', 'Migdiades', 'Valoració', 'Notes']);
+  assert.equal(txt('edTitulo'), 'Nit del dilluns 6 al dimarts 7 d’abril');
+  assert.match(txt('edDiaA'), /dl\. 6 abr\./); assert.match(txt('edDiaA'), /Laborable/);
+  assert.match(txt('edTrans'), /Entrelaborables/);
+  assert.equal(txt('edCancelar'), 'Cancel·lar'); assert.equal(txt('edSiguiente'), 'Següent ▸');
+  assert.match(app.ev(`document.getElementById('edCats').textContent`), /Anar al llit.*Latència.*Despertars.*Llevar-se/);
+  assert.match(txt('lecQ'), /Anar al llit · cap a les/);
+  app.ev("EditorNoche.irPaso('siestas')");
+  assert.match(txt('edSies'), /Vas fer alguna migdiada el dilluns 6 d’abril/);
+  assert.match(txt('edSiesEstado'), /Sense migdiades/);
+  app.ev("EditorNoche.irPaso('valor')");
+  assert.match(txt('edValor'), /Qualitat del son.*Com de descansat\/da et vas llevar\?.*Molt malament/);
+  app.ev("EditorNoche.irPaso('noche')"); app.doc.querySelector('#edCats [data-cat="X"]').click(); app.doc.getElementById('eAdd').click();
+  assert.equal(txt('edEvT'), 'Què va passar?');
+  assert.deepEqual(app.evj(`[...document.querySelectorAll('#edEvGrid .evop span:last-child')].map(x=>x.textContent)`),
+    ['Lavabo', 'Dolor', 'Soroll', 'Calor/fred', 'Preocupació', 'Tos', 'Nen', 'Presa', 'Altre']);
+  app.doc.querySelector('#edEvGrid .evop[data-tipo="0"]').click();
+  app.ev("EditorNoche.irPaso('notas')");
+  assert.equal(txt('edGuardar'), 'Desar');
+  assert.equal(app.ev(`document.getElementById('edTrat').placeholder`), 'Medicació de la nit o del dia: nom i, més o menys, quan');
+  assert.match(txt('edEvLista'), /Esdeveniments.*Lavabo · cap a les/);
+  // las notas de la fila, en el idioma de la pantalla; los informes del profesional, en castellano
+  valorarYGuardar(app);
+  assert.match(app.ev('notasNoche(state[0])'), /^Esdeveniments: \d\d:\d\d lavabo$/);
+  assert.equal(app.ev(`evInfo('bano').nom`), 'Baño');
+  // y otra vez en castellano
+  app.ev(`setLang('es')`); app.ev('abrirEditorNoche(0)');
+  assert.equal(txt('edTitulo'), 'Noche del lunes 6 al martes 7 de abril');
+  assert.equal(txt('edCancelar'), 'Cancelar');
+  assert.deepEqual(app.errors, []);
+});
+
+test('una sola versión por diario: la v4.9.9 guarda su versión y una versión anterior no sobrescribe ese diario', { skip: !require('fs').existsSync(require('path').join(__dirname, '..', 'v4.9.5', 'index.html')) }, async () => {
+  const path = require('path');
+  const app = await loadApp();
+  await loginDoctor(app);
+  const st0 = app.storage();
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`AgendaPuente.guardar(3,${JSON.stringify(NOCHE)})`);
+  app.doc.getElementById('saveBtn').click(); await app.sleep(400);
+  const rec = () => JSON.parse(app.storage()['agendasueno3:caso-normal']);
+  assert.equal(rec().ver, '4.9.9');
+  for (const v of ['v4.9.5', 'v4.9.6', 'v4.9.7']) {
+    const vieja = await loadApp({ file: path.join(__dirname, '..', v, 'index.html'), storage: app.storage() });
+    // al cargar sus casos de ejemplo (que ahora son de la v4.9.9) no los sobrescribe ni avisa
+    const limpia = await loadApp({ file: path.join(__dirname, '..', v, 'index.html'), storage: st0 });
+    await loginDoctor(limpia);
+    assert.equal(limpia.ev('window._sembrandoDemo'), false);
+    assert.equal(JSON.parse(limpia.storage()['agendasueno3:caso-tcci']).ver, '4.9.9', v + ': casos de la v4.9.9 intactos');
+    assert.ok(JSON.parse(limpia.storage()['agendasueno3:caso-tcci']).state.some(d => Array.isArray(d.ev) && d.ev.length), v + ': con sus acontecimientos');
+    // el aviso es del diario abierto: se quita al abrir uno que no es de una versión posterior
+    limpia.ev(`(()=>{ const r=JSON.parse(localStorage.getItem('agendasueno3:caso-menopausia')); delete r.ver; localStorage.setItem('agendasueno3:caso-menopausia',JSON.stringify(r)); })()`);
+    await limpia.ev(`selectPatient('caso-tcci')`);
+    assert.ok(limpia.doc.getElementById('avisoVersion'), v + ': aviso en un diario de la v4.9.9');
+    await limpia.ev(`selectPatient('caso-menopausia')`);
+    assert.equal(limpia.doc.getElementById('avisoVersion'), null, v + ': sin aviso en un diario sin versión');
+    await loginDoctor(vieja);
+    await vieja.ev(`selectPatient('caso-normal')`);
+    assert.ok(vieja.doc.getElementById('avisoVersion'), v + ': aviso');
+    assert.match(vieja.doc.getElementById('avisoVersion').textContent, /versión 4\.9\.9/);
+    vieja.ev(`state[10].cmt='editado en ${v}';`); vieja.doc.getElementById('saveBtn').click(); await vieja.sleep(400);
+    const r = JSON.parse(vieja.storage()['agendasueno3:caso-normal']);
+    assert.equal(r.ver, '4.9.9', v + ': no lo sobrescribe');
+    assert.deepEqual(r.state[3].ev, [{ t: '03:10', k: 'bano' }, { t: '05:10', k: 'ruido' }]);
+    assert.notEqual(r.state[10].cmt, `editado en ${v}`);
+    // los diarios que no son de la v4.9.9 se siguen guardando
+    await vieja.ev(`selectPatient('caso-pseudoinsomnio')`);
+    assert.equal(JSON.parse(vieja.storage()['agendasueno3:caso-pseudoinsomnio'] || '{}').ver === '4.9.9', true);
+  }
+  // la v4.9.9 tampoco sobrescribe un diario de una versión posterior
+  app.ev(`localStorage.setItem('agendasueno3:caso-normal',JSON.stringify({...JSON.parse(localStorage.getItem('agendasueno3:caso-normal')),ver:'5.0.0'}))`);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.doc.getElementById('saveBtn').click(); await app.sleep(400);
+  assert.equal(rec().ver, '5.0.0');
+  assert.ok(app.doc.getElementById('avisoVersion'));
 });

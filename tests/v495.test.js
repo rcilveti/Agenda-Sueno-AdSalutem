@@ -105,14 +105,14 @@ test('CSV: guarda la escala por día; un CSV antiguo (sin la columna) se importa
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-pseudoinsomnio')`);
   const csv = app.ev('buildUnifiedCsv()');
-  assert.match(csv, /;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento\n/);
+  assert.match(csv, /;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento;siestas_anotadas\n/);
   assert.match(csv, /^escala_calidad;5;niveles$/m);
   assert.match(csv, /^calidad_sueno_dias_malos;\d+;% dias 1-2$/m);
   const st = app.evj(`rawImportText(${JSON.stringify(csv)}).state`);
   assert.ok(st.filter(d => d.qs >= 1).every(d => d.qsc === 5));
   // el mismo archivo sin la columna (formato anterior): valores 4–5 no válidos en 1–3 y escala antigua
   // (v4.9.7 y v4.9.9: el archivo lleva además etiquetas, guiado, acont_tipos y tratamiento, que también faltan en el formato anterior)
-  const viejo = csv.replace(/;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento\n/, '\n').replace(/^(\d+;.*);(5)?;[^;\n]*;[^;\n]*;[^;\n]*;[^;\n]*$/gm, '$1');
+  const viejo = csv.replace(/;escala_calidad;etiquetas;guiado;acont_tipos;tratamiento;siestas_anotadas\n/, '\n').replace(/^(\d+;.*);(5)?;[^;\n]*;[^;\n]*;[^;\n]*;[^;\n]*;[^;\n]*$/gm, '$1');
   const st2 = app.evj(`rawImportText(${JSON.stringify(viejo)}).state`);
   assert.ok(st2.every(d => !d.qsc));
   assert.ok(st2.every(d => [d.qs, d.qd, d.qe].every(v => v >= 0 && v <= 3)));

@@ -2533,7 +2533,24 @@ const INDEX_KEY="agenda_patient_index3";
 async function load(id){
   try{const v=await rawGet(safeKey(id));return v?JSON.parse(v):null;}catch(e){return null;}
 }
+// v4.9.9 · una sola versión por diario: un diario guardado con una versión posterior (campo «ver») no se
+// sobrescribe desde esta versión, que perdería lo que no conoce; se avisa de que se abra en la versión principal.
+function _verMayor(a,b){ const x=String(a).split('.').map(Number), y=String(b).split('.').map(Number);
+  for(let i=0;i<Math.max(x.length,y.length);i++){ const d=(x[i]||0)-(y[i]||0); if(d) return d>0; } return false; }
+function _avisoVersionPosterior(ver){ if(document.getElementById('avisoVersion')) return;
+  const raiz=location.href.replace(/[#?].*$/,'').replace(/v\d+\.\d+\.\d+\/(index\.html)?$/,'');
+  const ca=(typeof LANG!=='undefined'&&LANG==='ca');
+  const b=document.createElement('div'); b.id='avisoVersion'; b.setAttribute('role','alert');
+  b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:4000;background:#8a3b00;color:#fff;padding:10px 14px;font:600 14px/1.4 system-ui,sans-serif;text-align:center';
+  const a=document.createElement('a'); a.href=raiz; a.textContent=raiz; a.style.color='#fff';
+  b.append(ca?'Aquest diari es va desar amb la versió '+ver+'. Obre’l a la versió principal: ':'Este diario se guardó con la versión '+ver+'. Ábrelo en la versión principal: ',
+    a, ca?'. Des d’aquí no es desen els canvis, per no perdre dades.':'. Desde aquí no se guardan los cambios, para no perder datos.');
+  document.body.appendChild(b); }
 async function saveRec(id,obj){
+  try{ const v=await rawGet(safeKey(id)); const pr=v?JSON.parse(v):null; if(pr&&pr.ver&&_verMayor(pr.ver,APP_VERSION)){ if(!window._sembrandoDemo) _avisoVersionPosterior(pr.ver); return false; } }catch(e){}
+  return _saveRecBase(id,obj);
+}
+async function _saveRecBase(id,obj){
   const key=safeKey(id);
   // v4.9.7: la ventana de sueño y los hitos son datos de la ficha: si el registro que se guarda no los trae
   // (autoguardado, «Guardar datos del diario», importación…), se conservan los ya guardados
@@ -4233,6 +4250,8 @@ function actualizarCuadroPaciente(obj){
 }
 async function loadPatient(id){
   const obj=await load(id);
+  if(obj&&obj.ver&&_verMayor(obj.ver,APP_VERSION)) _avisoVersionPosterior(obj.ver);   // v4.9.9: una sola versión por diario
+  else { const _bAv=document.getElementById('avisoVersion'); if(_bAv) _bAv.remove(); }
   if(obj&&Array.isArray(obj.state)){
     state=obj.state.map(s=>{const day=Object.assign(blankDay(),s);
       if(!Array.isArray(day.downs))day.downs=(s&&s.down!=null)?[s.down]:[];
@@ -7313,6 +7332,7 @@ const DEMO_CASES={"index":[{"id":"caso-normal","name":"Caso · Sueño normal"},{
 // v4.9.7: marca 15 (la 14 es de la v4.9.6) — factores de contexto, hitos, noches registradas con el modo guiado
 // (mujer de 80 años) y un caso nuevo de insomnio en TCC-I con ventana de sueño prescrita
 async function seedDemoCases(){
+  window._sembrandoDemo=true;   // v4.9.9: sin aviso de versión al cargar los casos
   try{
     const seededFlag=await rawGet('agenda_demo_seeded15');
     if(seededFlag)return;
@@ -7325,6 +7345,7 @@ async function seedDemoCases(){
     await saveIndex(idx);
     await rawSet('agenda_demo_seeded15','1');
   }catch(e){console.error('seedDemoCases:',e);}
+  finally{ window._sembrandoDemo=false; }
 }
 
 // init

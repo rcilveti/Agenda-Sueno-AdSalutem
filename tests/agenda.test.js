@@ -95,9 +95,9 @@ test('inyección: un diario manipulado no inserta HTML en el equipo del profesio
   assert.match(app.doc.getElementById('analisisContent').textContent, /<img src=x/);
   // v4.9.9: la observación con </textarea> se ve como texto en la columna de notas y en el editor de la noche
   assert.equal(app.ev(`document.querySelector('#gridBody .cmtv[data-cmtd="1"]').textContent`), '</textarea><img src=x onerror=window.__pwned=2>');
-  app.ev('abrirEditorNoche(1,2)');
+  app.ev("abrirEditorNoche(1,'notas')");
   assert.equal(app.ev(`document.getElementById('edObs').value`), '</textarea><img src=x onerror=window.__pwned=2>');
-  app.ev('EditorNoche.cerrar(false);abrirEditorNoche(0,2)');
+  app.ev("EditorNoche.cerrar(false);abrirEditorNoche(0,'notas')");
   assert.match(app.ev(`document.getElementById('edObs').value`), /<img src=x onerror=/);
   await app.sleep(50);
   assert.equal(app.doc.querySelectorAll('img[src="x"]').length, 0, 'el editor no inserta el HTML de las notas');
