@@ -7,8 +7,8 @@ jobs:
   pruebas:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5      # checkout y setup-node v5 funcionan con Node 24 (Node 20 está en desuso en GitHub Actions)
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
