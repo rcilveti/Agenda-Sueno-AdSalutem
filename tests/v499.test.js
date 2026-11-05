@@ -817,6 +817,11 @@ test('C · editor: se abre ajustado, escala con el color del día, «Despertar f
   assert.match(fondo, /var\(--labor\)/); assert.match(fondo, /var\(--festiu\)/);
   assert.match(app.doc.getElementById('edCats').textContent, /Despertar final/);
   assert.doesNotMatch(app.doc.getElementById('edCats').textContent, /Final en cama/);
+  // los botones de acostarse, latencia, despertar final y levantarse llevan el icono de su tirador
+  assert.deepEqual(app.evj(`['B','S','F','R','W','X'].map(k=>{ const i=document.querySelector('#edCats [data-cat="'+k+'"] i.ic'); return i?i.textContent:null; })`), ['↓', 'z', '☀', '↑', null, null]);
+  // los despertares, del color del fondo de la escala (sin sueño), no del ámbar de los festivos
+  const cssEd = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(cssEd, /#ed \.hueco\{[^}]*background:var\(--labor\)/);
   app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
   assert.match(app.doc.getElementById('lecQ').textContent, /Despertar final · hacia las/);
   assert.equal(app.doc.getElementById('lecH').textContent, '06:45');

@@ -918,6 +918,8 @@
 #ed .ed-cats::-webkit-scrollbar{display:none}
 #ed .cat{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;height:30px;padding:0 12px;font:600 .8rem var(--f-ui);cursor:pointer;color:var(--slate);display:inline-flex;align-items:center;gap:6px}
 #ed .cat i{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* v4.9.9: acostarse, latencia, despertar final y levantarse llevan, en pequeño, el icono de su tirador en la barra */
+#ed .cat i.ic{width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:800 .64rem/1 var(--f-ui);flex:none}
 #ed .cat.on{border-color:var(--brand-deep);background:var(--brand-deep);color:#fff}
 #ed .cat.on i{box-shadow:0 0 0 2px #fff}/* barra del horario visible (morada): arrastrar = desplazar, bordes = ampliar o reducir */
 
@@ -957,7 +959,7 @@
 #ed .lineas i.med{border-left:2px solid #9fb6c9}
 #ed .cama{position:absolute;top:24%;bottom:24%;background:var(--bed);border-radius:6px}
 #ed .sueno{position:absolute;top:38%;bottom:38%;background:var(--sleep);border-radius:4px}
-#ed .hueco{position:absolute;top:34%;bottom:34%;background:var(--wake-soft);border:2px solid var(--wake);border-radius:4px;cursor:grab}
+#ed .hueco{position:absolute;top:34%;bottom:34%;background:var(--labor);border:2px solid var(--wake);border-radius:4px;cursor:grab}   /* v4.9.9: despierto = sin sueño (como el fondo de la escala); el ámbar queda para los festivos */
 #ed .hueco.sel{box-shadow:0 0 0 3px rgba(233,162,59,.35)}
 #ed .tir{position:absolute;top:0;bottom:0;width:0;z-index:3}
 #ed .tir .lin{position:absolute;left:-1px;width:2px;background:var(--c);opacity:.9}
@@ -1111,7 +1113,7 @@
   #ed .ed-herr .seg-et,#ed .zoom-fila .seg-et,#ed .et-add{display:none}
   #ed .ed-cab{gap:10px}
   #ed .dchip{height:30px;padding:0 7px;gap:5px}#ed .dchip b{font-size:.8rem}#ed .ed-dias{gap:4px}
-  #ed .cat{height:28px;padding:0 7px;font-size:.73rem;gap:4px}#ed .cat i{width:8px;height:8px}#ed .ed-cats{gap:4px}
+  #ed .cat{height:28px;padding:0 7px;font-size:.73rem;gap:4px}#ed .cat i{width:8px;height:8px}#ed .cat i.ic{width:15px;height:15px;font-size:.58rem}#ed .ed-cats{gap:4px}
   #ed .seg button{padding:0 8px;font-size:.74rem;height:28px}
   #ed .lectura{min-width:12.5em;max-width:12.5em}#ed .lectura .e{display:none}/* ancho fijo: −/+ no se mueven al cambiar de categoría */   
   #ed .resumen{font-size:.74rem}
@@ -1119,6 +1121,7 @@
 
 @container (max-width:600px){
   #ed .dchip{padding:0 6px}#ed .dchip .cam{display:none}
+  #ed .cat{padding:0 6px;gap:3px}#ed .cat i.ic{width:13px;height:13px;font-size:.52rem}#ed .ed-cats{gap:3px}   /* con los iconos, que quepan los seis */
   #ed .ed-cab{gap:8px}
   #ed .lectura{min-width:10.5em;max-width:10.5em}
   #ed .ajuste .bt{padding:0 8px;min-width:40px}
@@ -8367,7 +8370,7 @@ function renderBanda(){
 }
 function render(){
   if(!E)return; const m=E.m, s=E.sel;
-  $('edCats').innerHTML=CATS.map(c=>`<button type="button" class="cat${s.k===c.k?' on':''}" data-cat="${c.k}"><i style="background:${c.c}"></i>${c.corto?`<span class="l">${catNom(c)}</span><span class="c">${catCorto(c)}</span>`:catNom(c)}</button>`).join('');
+  $('edCats').innerHTML=CATS.map(c=>`<button type="button" class="cat${s.k===c.k?' on':''}" data-cat="${c.k}">${'BSFR'.includes(c.k)?`<i class="ic" style="background:${c.c}" aria-hidden="true">${c.ic}</i>`:`<i style="background:${c.c}"></i>`}${c.corto?`<span class="l">${catNom(c)}</span><span class="c">${catCorto(c)}</span>`:catNom(c)}</button>`).join('');
   renderBanda();
   const hora=s.k==='B'||s.k==='R', horaW=(s.k==='W'&&s.borde==='m')||s.k==='X';
   $('edMenos').textContent=hora?'−'+E.paso+'′':horaW?'−30′':'−'; $('edMas').textContent=hora?'+'+E.paso+'′':horaW?'+30′':'+';
