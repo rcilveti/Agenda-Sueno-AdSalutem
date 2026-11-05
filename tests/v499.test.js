@@ -821,7 +821,9 @@ test('C · editor: se abre ajustado, escala con el color del día, «Despertar f
   assert.deepEqual(app.evj(`['B','S','F','R','W','X'].map(k=>{ const i=document.querySelector('#edCats [data-cat="'+k+'"] i.ic'); return i?i.textContent:null; })`), ['↓', 'z', '☀', '↑', null, null]);
   // los despertares, del color del fondo de la escala (sin sueño), no del ámbar de los festivos
   const cssEd = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
-  assert.match(cssEd, /#ed \.hueco\{[^}]*background:var\(--labor\)/);
+  assert.match(cssEd, /#ed \.hueco\{[^}]*background:var\(--labor\);border:2px solid var\(--wake\)/);
+  assert.match(cssEd, /--wake:#b5307a;/, 'borde de los despertares en magenta, no en naranja');
+  assert.match(app.doc.querySelector('#edCats [data-cat="W"] i').getAttribute('style'), /#b5307a/);
   app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
   assert.match(app.doc.getElementById('lecQ').textContent, /Despertar final · hacia las/);
   assert.equal(app.doc.getElementById('lecH').textContent, '06:45');
