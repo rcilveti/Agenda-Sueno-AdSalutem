@@ -869,7 +869,7 @@
   }
 /* ===== v4.9.9: EDITOR DE LA NOCHE (prototipo v7, pasos de 15 min) ===== */
 #ed{--ink:#1b2330; --slate:#42546a; --mist:#6f7e90; --paper:#eef1f4; --card:#ffffff; --line:#d9dee4;
-  --brand:#1f5f8b; --brand-deep:#143f5e; --sleep:#2f6f9e; --bed:#d7e6f2; --wake:#b5307a; --wake-soft:#fff3df;   /* v4.9.9: despertares en magenta (el naranja se confundía con los festivos) */
+  --brand:#1f5f8b; --brand-deep:#143f5e; --sleep:#2f6f9e; --bed:#d7e6f2; --wake:#2f7a4d; --wake-soft:#fff3df;   /* v4.9.9: despertares en verde oscuro (el naranja se confundía con los festivos) */
   --festiu:#fdeccf; --festiu-edge:#e0941f; --labor:#e3ecf4; --good:#3f8a5f;
   --f-ui:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
   --f-num:ui-monospace,'SF Mono','Cascadia Mono','Segoe UI Mono',Menlo,Consolas,monospace;;font-family:var(--f-ui);line-height:1.45;color:var(--ink)}
@@ -878,7 +878,7 @@
 #ed button,#ed textarea{font-family:inherit;letter-spacing:normal;text-transform:none}
 /* ---------- editor horizontal ---------- */
 #ed{position:fixed;inset:0;z-index:50;background:rgba(14,30,44,.55)}
-#ed .ed-caja{position:relative;--zoom:#7a5cc0;--lat:#2f6f9e;--wk:#b5307a;--term:#5b6b80;
+#ed .ed-caja{position:relative;--zoom:#7a5cc0;--lat:#2f6f9e;--wk:#2f7a4d;--term:#5b6b80;
   position:absolute;left:0;top:0;width:100%;height:100%;background:var(--card);display:flex;flex-direction:column;container-type:size;
   padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));gap:5px;overflow:hidden}
 #ed .ed-caja.girada{transform-origin:0 0}/* en un ordenador, ventana centrada en lugar de pantalla completa */
@@ -960,7 +960,7 @@
 #ed .cama{position:absolute;top:24%;bottom:24%;background:var(--bed);border-radius:6px}
 #ed .sueno{position:absolute;top:38%;bottom:38%;background:var(--sleep);border-radius:4px}
 #ed .hueco{position:absolute;top:34%;bottom:34%;background:var(--labor);border:2px solid var(--wake);border-radius:4px;cursor:grab}   /* v4.9.9: despierto = sin sueño (como el fondo de la escala); el ámbar queda para los festivos */
-#ed .hueco.sel{box-shadow:0 0 0 3px rgba(181,48,122,.3)}
+#ed .hueco.sel{box-shadow:0 0 0 3px rgba(47,122,77,.3)}
 #ed .tir{position:absolute;top:0;bottom:0;width:0;z-index:3}
 #ed .tir .lin{position:absolute;left:-1px;width:2px;background:var(--c);opacity:.9}
 #ed .tir .bola{position:absolute;left:-15px;width:30px;height:30px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font:800 .8rem var(--f-ui);cursor:grab;outline:none}
@@ -987,7 +987,7 @@
 #ed .tir.medio.ini .tri{right:2px;clip-path:polygon(0 0,100% 50%,0 100%)}
 #ed .tir.medio.fin .tri{left:2px;clip-path:polygon(100% 0,0 50%,100% 100%)}
 #ed .tir.medio.sel .bola{transform:none}
-#ed .tir.medio.sel .tri{background:#8a1f5c;transform:scale(1.25)}
+#ed .tir.medio.sel .tri{background:#1f5535;transform:scale(1.25)}
 #ed .tir.medio .bola:focus-visible{box-shadow:none;filter:drop-shadow(0 0 2px #ffbf47) drop-shadow(0 0 2px #ffbf47)}
 #ed .guia{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--brand-deep);pointer-events:none;z-index:2}/* tiradores fuera del horario visible: aviso en el borde (tocar = ir allí) */
 
@@ -8009,13 +8009,13 @@ const $=id=>document.getElementById(id);
 const CATS=[
   {k:'B',ic:'↓',c:'#143f5e',pos:'arriba'},
   {k:'S',ic:'z',c:'#2f6f9e',pos:'abajo'},
-  {k:'W',ic:'!',c:'#b5307a',pos:'medio'},   // v4.9.9: magenta (el naranja se confundía con el fondo de los festivos)
+  {k:'W',ic:'!',c:'#2f7a4d',pos:'medio'},   // v4.9.9: verde oscuro (el naranja se confundía con el fondo de los festivos)
   {k:'F',corto:1,ic:'☀',c:'#2f6f9e',pos:'abajo'},
   {k:'R',ic:'↑',c:'#143f5e',pos:'arriba'},
   {k:'X',corto:1,ic:'',c:'#7b818a',pos:'evento'},
 ];
 const catNom=c=>T('c.'+c.k), catCorto=c=>T('c.'+c.k+'c');
-const COL={lat:'#2f6f9e',w:'#a52a6e',term:'#5b6b80'};
+const COL={lat:'#2f6f9e',w:'#2b6e46',term:'#5b6b80'};
 const PASOS=['noche','siestas','valor','notas'];
 let E=null;   // estado: {i, m, dA/dB fechas y tA/tB tipos de los dos días, nueva, paso, v0, v1 (horario visible), sel:{k, w, borde}, sie}
 let girada=false, arrastre=null, zArr=null;

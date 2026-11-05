@@ -822,8 +822,8 @@ test('C · editor: se abre ajustado, escala con el color del día, «Despertar f
   // los despertares, del color del fondo de la escala (sin sueño), no del ámbar de los festivos
   const cssEd = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
   assert.match(cssEd, /#ed \.hueco\{[^}]*background:var\(--labor\);border:2px solid var\(--wake\)/);
-  assert.match(cssEd, /--wake:#b5307a;/, 'borde de los despertares en magenta, no en naranja');
-  assert.match(app.doc.querySelector('#edCats [data-cat="W"] i').getAttribute('style'), /#b5307a/);
+  assert.match(cssEd, /--wake:#2f7a4d;/, 'borde de los despertares en verde oscuro, no en naranja');
+  assert.match(app.doc.querySelector('#edCats [data-cat="W"] i').getAttribute('style'), /#2f7a4d/);
   app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
   assert.match(app.doc.getElementById('lecQ').textContent, /Despertar final · hacia las/);
   assert.equal(app.doc.getElementById('lecH').textContent, '06:45');

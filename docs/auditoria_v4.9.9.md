@@ -248,7 +248,7 @@ Los pendientes 1, 2, 4, 5, 9 y 10 se resolvieron tras la auditoría (apartado 8)
    - La tos se muestra con 😷: 🫁 (de 2020) no se ve en muchos móviles y ordenadores.
    - Las siestas se arrastran con el dedo: el bloque mueve la hora (de 15 en 15 min) y su borde derecho cambia la duración (escalones). Se mantienen los botones − y +.
    - En la valoración, «Estado durante el día» indica que se refiere al día previo, con su día y su fecha («Estado durante el día · viernes 6 de junio»).
-   - Los despertares se ven del azul del fondo de la escala (despierto, sin sueño) y en magenta (borde, tirador, cota y punto de su botón): el relleno y el borde naranjas se confundían con el ámbar de los días festivos.
+   - Los despertares se ven del azul del fondo de la escala (despierto, sin sueño) y en verde oscuro (borde, tirador, cota y punto de su botón): el relleno y el borde naranjas se confundían con el ámbar de los días festivos.
    - Los botones «Acostarse», «Latencia», «Despertar final» y «Levantarse» llevan en pequeño el icono de su tirador en la barra (↓, z, ☀, ↑). Caben los seis en un iPhone SE apaisado.
 
 Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al día. Seis pruebas nuevas.
