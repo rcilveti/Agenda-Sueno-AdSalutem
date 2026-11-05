@@ -1223,6 +1223,15 @@
   .toast{max-width:calc(100vw - 32px);text-align:center}
   .toast:not(.show){opacity:0;visibility:hidden;transform:translateX(-50%) translateY(calc(100% + 40px))}
   body.patient-mode .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+
+  /* v4.9.9: márgenes laterales en pantallas anchas (cabecera y pestañas alineadas con la columna del contenido) */
+  @media screen and (min-width:1313px){
+    header.app,nav.tabs{padding-left:calc((100% - 1280px) / 2 + 16px);padding-right:calc((100% - 1280px) / 2 + 16px)}
+  }
+  @media screen and (min-width:760px){
+    body.patient-mode header.app{padding-left:calc((100% - 720px) / 2)!important;padding-right:calc((100% - 720px) / 2)!important}
+    body.patient-mode nav.tabs{padding-left:calc((100% - 720px) / 2);padding-right:calc((100% - 720px) / 2)}
+  }
 </style>
 </head>
 <body>
@@ -1491,7 +1500,6 @@
         <span><i style="background:var(--festiu);border-color:var(--festiu-edge)"></i><span data-i18n="leg.free">Festivo (editable)</span></span>
         <span class="lklegend" data-i18n-html="leg.q"><b>Calidad (1–5):</b> <span class="lkdot v1">1</span> muy mala <span class="lkdot v2">2</span> mala <span class="lkdot v3">3</span> regular <span class="lkdot v4">4</span> buena <span class="lkdot v5">5</span> muy buena</span>
         <span data-i18n-html="leg.marks">↓ acostarse · ↑ levantarse · 🚽 💢 🔊 … acontecimientos (✕ en diarios anteriores)</span>
-      </div>
       </div>
       <!-- MÓDULO ÚNICO: Exportar e importar (solo profesional ve la base de datos e importación; el paciente ve sus exportaciones) -->
       <div class="iomodule noprint" id="ioModule" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">

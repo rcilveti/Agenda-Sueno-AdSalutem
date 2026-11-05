@@ -35,7 +35,7 @@ La v4.9.9 parte de la v4.9.8 (regla del MCTQ) y cambia la forma de anotar:
 
 | Comprobación | Alcance |
 |---|---|
-| Pruebas automáticas (jsdom) | **94 pruebas, 94 superadas**: 68 heredadas y adaptadas, y 26 nuevas de la v4.9.9 (`tests/v499.test.js`). Las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` siguen pasando con el parche de versión |
+| Pruebas automáticas (jsdom) | **95 pruebas, 95 superadas**: 68 heredadas y adaptadas, y 27 nuevas de la v4.9.9 (`tests/v499.test.js`). Las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` siguen pasando con el parche de versión |
 | Navegador real (Playwright, Chromium) | iPhone 13 y iPhone SE, en vertical y en horizontal; escritorio a 1400 px; editor en castellano y en catalán. Sin errores de JavaScript ni desbordamiento horizontal |
 | Impresión | PDF del diario (2 hojas en horizontal) y PDF del análisis |
 | Métricas a mano | Una noche conocida y un diario de 21 noches con laborables y festivos (apartado 5) |
@@ -111,7 +111,8 @@ La v4.9.9 parte de la v4.9.8 (regla del MCTQ) y cambia la forma de anotar:
    - ayuda del paciente y leyenda impresa;
    - resumen para la consulta;
    - PDF, Word, Excel y filas del CSV.
-9. **Código sin uso eliminado:**
+9. **Márgenes en el ordenador.** Al retirar la ayuda de la rejilla quedó un cierre de bloque de más, que sacaba «Análisis» y «Pacientes» de la columna centrada: en pantallas anchas, el análisis ocupaba todo el ancho, sin márgenes, y «Exportar e importar» salía también en «Análisis». **Corregido:** vuelven a la columna de 1280 px y, en pantallas anchas, la cabecera y las pestañas se alinean con ella (en el modo paciente, con la lista de noches).
+10. **Código sin uso eliminado:**
    - panel del registro guiado;
    - casilla y panel de factores;
    - panel de valoración de la rejilla;
