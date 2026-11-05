@@ -216,7 +216,7 @@ guarden una copia de su diario antes.
 
 ### Pruebas en el ordenador (opcional)
 
-Con Node.js 20 o superior: `npm install` y después `npm test` (unos 15 minutos).
+Con Node.js 20 o superior: `npm install` y después `npm test` (unos 25 minutos).
 
 ---
 
