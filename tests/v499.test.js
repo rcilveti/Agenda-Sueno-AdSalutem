@@ -32,6 +32,18 @@ async function pacienteMovil(opts = {}) {
 const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const rangos = (app, d) => app.ev(`slotsToRanges(state[${d}].slots,'s')`);
 // una noche como la daría el editor (horas en HH:MM, acontecimientos con el nombre del tipo)
+// Word del análisis (sin la librería docx, como .doc en HTML): devuelve el HTML y la descripción del documento
+async function wordAnalisis(app) {
+  let html = '', nombre = '';
+  const B = app.win.Blob;
+  app.win.Blob = function (parts, o) { html = parts.join(''); return new B(parts, o); };
+  app.win.URL.createObjectURL = () => 'blob:x'; app.win.URL.revokeObjectURL = () => {};
+  const clic = app.win.HTMLAnchorElement.prototype.click;
+  app.win.HTMLAnchorElement.prototype.click = function () { nombre = this.download; };
+  try { await app.ev('exportAnalysisWord()'); } finally { app.win.Blob = B; app.win.HTMLAnchorElement.prototype.click = clic; }
+  return { html, nombre, D: app.evj('window._ultimoWordAnalisis') };
+}
+const textoBloques = bs => bs.map(b => b.t === 'p' ? b.runs.map(r => r.text || (r.br ? ' ' : '')).join('') : b.rows.map(r => r.cells.map(c => textoBloques(c.blocks || [])).join(' ')).join(' ')).join(' ');
 const NOCHE = { gd: { b: '23:50', s: 30, w: [{ t: '03:00', d: 30 }, { t: '05:10', d: 10 }], f: '06:30', r: '07:00' }, tA: 'L', tB: 'L',
   ev: [{ t: '03:10', q: 'Ir al baño' }, { t: '05:10', q: 'Ruido' }], qs: 4, qd: 3, qe: 5, trat: 'Melatonina 1 mg a las 23:00', obs: 'Cena tarde' };
 
@@ -456,17 +468,16 @@ test('informes: análisis en pantalla, PDF, Word y Excel con los acontecimientos
   assert.match(res, /Más anotados: 🚽 Baño \(3\) · 🔊 Ruido \(3\)/);
   assert.match(res, /Tratamiento: Melatonina 1 mg a las 23:00 \(3 noches\)/);
   assert.match(res, /18 de una versión anterior/);
-  // Word
-  let html = '';
-  const B = app.win.Blob;
-  app.win.Blob = function (parts, o) { html = parts.join(''); return new B(parts, o); };
-  app.win.URL.createObjectURL = () => 'blob:x'; app.win.URL.revokeObjectURL = () => {};
-  await app.ev('exportAnalysisWord()');
-  app.win.Blob = B;
-  assert.match(html, /Patrón propio, acontecimientos y tratamiento/);
-  assert.match(html, /<b>Tratamiento anotado por el paciente:<\/b> Melatonina 1 mg a las 23:00 \(3 noches\)/);
-  assert.match(html, /<b>Acontecimientos anotados:<\/b> Baño 3/);
-  assert.doesNotMatch(html, /Ventana de sueño objetivo|Hitos:|Modo guiado/);
+  // Word (v4.9.9, noviembre): lo mismo que el PDF del análisis completo, con todos los apartados desplegados
+  app.ev(`document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=true; }); renderAnalysis()`);
+  const { html, D } = await wordAnalisis(app);
+  const txt = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+  assert.match(txt, /Tratamiento: Melatonina 1 mg a las 23:00 \(3 noches\)/);
+  assert.match(txt, /Más anotados: 🚽 Baño \(3\) · 🔊 Ruido \(3\)/);
+  assert.match(txt, /Acontecimientos anotados.*🚽 Baño/);
+  assert.match(txt, /03:10 .*🚽 Baño — Cena tarde/);
+  assert.doesNotMatch(txt, /Ventana de sueño objetivo|Hitos:|Modo guiado/);
+  assert.equal(D.secciones.length, 2);
   // Excel
   const hojas = {};
   app.win.XLSX = { utils: { book_new: () => ({}), aoa_to_sheet: a => a, book_append_sheet: (wb, ws, n) => { hojas[n] = ws; } }, writeFile: () => {} };
@@ -1049,5 +1060,87 @@ test('F · casos de ejemplo al día: ninguna noche fuera de los saltos del despe
     return r; })()`);
   assert.deepEqual(fuera, []);
   assert.equal(app.ev('DEMO_CASES.index.length'), 17);
+  assert.deepEqual(app.errors, []);
+});
+
+// ---------- PDF del análisis completo y Word (v4.9.9, noviembre) ----------
+test('G · calidades de 0 a 10 en todo el análisis: RU-SATED, comparativa, acontecimientos, resumen por día e informe clínico', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-tcci')`);
+  app.ev('renderAnalysis()');
+  const sec = t => app.doc.querySelector(`#analisisContent details[data-sectitle="${t}"]`).textContent.replace(/\s+/g, ' ');
+  const T = app.evj(`(()=>{ const A=analysisData(); return {qs:A.total.qs,qe:A.total.qe}; })()`);
+  const diez = v => String(Math.round((v - 1) / 4 * 100) / 10).replace('.', ',');
+  const rus = sec('Salud del sueño (índice compuesto RU-SATED)');
+  assert.ok(rus.includes(diez(T.qs) + '/10') && rus.includes(diez(T.qe) + '/10'), rus);
+  assert.doesNotMatch(rus, /\/5\b/);
+  assert.match(sec('Comparativa laborables vs. festivos'), /Calidad del sueño\s*\d+(,\d)?\/10 \(regular\)\s*\d+(,\d)?\/10 \(regular\)\s*[+−]\d+,\d/);
+  assert.match(sec('Resumen por día, semana y total'), /en las filas de media, la media de 0 a 10/);
+  assert.match(sec('Acontecimientos anotados'), /C\. sueño \(0–10\)/);
+  const inf = sec('Informe clínico provisional');
+  assert.ok(inf.includes('Valoración media (de 0 a 10): calidad del sueño'), inf);
+  assert.ok(inf.includes('(' + diez(T.qs) + '/10)'));
+  assert.match(inf, /Mediana: sueño \S+ \(\d+(,\d)?\/10\)/);
+  assert.doesNotMatch(inf, /\(1–2\)|\/5\)/);
+  assert.deepEqual(app.errors, []);
+});
+
+test('G · Word del análisis = PDF del análisis completo: mismos apartados, en el mismo orden, solo los desplegados, y la rejilla como anexo apaisado', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-ins-mantenimiento')`);
+  // como en el PDF: con todos los apartados desplegados…
+  app.ev(`document.querySelector('nav.tabs button[data-view="analisis"]').click(); renderAnalysis();
+    document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=true; }); renderAnalysis()`);
+  // el orden del PDF (la misma maquetación que imprime «PDF del análisis completo»)
+  app.win.print = () => {};
+  app.ev(`printView('analisis')`);
+  const ordenPdf = app.evj(`[...document.querySelectorAll('#analisisContent>*')].filter(e=>e.tagName!=='DETAILS'||e.open)
+    .map(e=>e.dataset.sectitle==='__resumen__'?'Resumen para la consulta':e.dataset.sectitle||((e.querySelector('.kgh')||{}).textContent)||(e.id==='annexGrid'?'Anexo · Diario de sueño':null)).filter(Boolean)`);
+  app.win.dispatchEvent(new app.win.Event('afterprint'));
+  const { html, nombre, D } = await wordAnalisis(app);
+  assert.match(nombre, /_analisis_completo_v4_9_9\.doc$/);
+  const txt = textoBloques(D.secciones[0].bloques) + ' ' + textoBloques(D.secciones[1].bloques);
+  let pos = -1;
+  for (const t of ['Agenda de Sueño — Informe de análisis', ...ordenPdf]) {
+    const i = txt.indexOf(t, pos + 1);
+    assert.ok(i > pos, `«${t}» en el Word, después del apartado anterior (${i} > ${pos})`);
+    pos = i;
+  }
+  assert.ok(ordenPdf.includes('Informe clínico provisional') && ordenPdf.includes('Referencias') && ordenPdf.length >= 16, JSON.stringify(ordenPdf));
+  // la rejilla del diario, en una sección apaisada aparte
+  assert.equal(D.secciones.length, 2); assert.equal(D.secciones[1].apaisada, true);
+  assert.match(textoBloques(D.secciones[1].bloques), /Anexo · Diario de sueño/);
+  // saltos de página donde el PDF empieza hoja (grupos de apartados y conclusiones del informe)
+  const saltos = JSON.stringify(D).match(/"salto":true/g) || [];
+  assert.ok(saltos.length >= 8, 'saltos: ' + saltos.length);
+  // lo que no se imprime tampoco va al Word (botones, notas de pantalla)
+  assert.doesNotMatch(txt, /Desplegar todos|🖨 Imprimir resumen/);
+  assert.match(html, /Section2/);   // .doc: la sección apaisada
+  assert.match(txt, /© 2026 AdSalutem|/);
+  assert.equal(D.pie, app.ev('APP_COPYRIGHT'));
+  // el mismo .docx con la librería docx (la de la página, en Node): dos secciones, la segunda apaisada, y el pie
+  const docx = require('docx'), JSZip = require('jszip');
+  const src = ['_wdOrdena', '_wdDocx'].map(n => app.win[n].toString()).join('\n');
+  const crea = new Function('docx', '_WD_A4', '_WD_MV', '_WD_MA', src + '\nreturn _wdDocx;')(docx, app.evj('_WD_A4'), app.ev('_WD_MV'), app.ev('_WD_MA'));
+  const z = await JSZip.loadAsync(await docx.Packer.toBuffer(crea(D)));
+  const xml = await z.file('word/document.xml').async('string');
+  assert.equal((xml.match(/<w:sectPr/g) || []).length, 2);
+  assert.equal((xml.match(/w:orient="landscape"/g) || []).length, 1);
+  assert.ok((xml.match(/<w:pageBreakBefore/g) || []).length >= 8);
+  const xtxt = xml.replace(/<[^>]+>/g, '');
+  assert.ok(xtxt.indexOf('Informe clínico provisional') > xtxt.indexOf('Calidad percibida'));
+  assert.match(await z.file('word/footer1.xml').async('string'), /AdSalutem/);
+  // …y solo con «Calidad percibida» desplegado: el Word lleva lo mismo que ese PDF (las métricas, ese apartado y el anexo)
+  app.ev(`document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=d.dataset.sectitle==='Calidad percibida'; }); renderAnalysis()`);
+  const W2 = await wordAnalisis(app), t2 = textoBloques(W2.D.secciones[0].bloques);
+  assert.match(t2, /Calidad percibida/); assert.match(t2, /Duración y continuidad del sueño/i);
+  assert.doesNotMatch(t2, /Tendencias a lo largo del registro|Informe clínico provisional|Referencias/);
+  assert.equal(W2.D.secciones[1].apaisada, true);
+  // después, el análisis vuelve a la pantalla tal cual (sin anexo ni estilos de impresión)
+  assert.equal(app.doc.getElementById('annexGrid'), null);
+  assert.equal(app.doc.getElementById('wdImpresion'), null);
+  assert.equal(app.doc.body.getAttribute('data-print'), null);
   assert.deepEqual(app.errors, []);
 });

@@ -264,6 +264,23 @@ Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al 
 - **Colores de los días en la lista de noches (móvil).** El fondo de la barra de cada noche lleva el color de sus dos días, partido a medianoche como en la escala del editor: azul claro, laborable; naranja claro, festivo. También en las noches sin anotar, para ver de un vistazo los festivos. «lab.» y «fest.» van en una etiqueta del mismo color, y la fecha y los tipos ya no se parten (las siestas pasan a su propia línea).
 - **Anillos de la calidad percibida de 0 a 10.** La valoración sigue en la escala Likert de cinco categorías (en el editor, los datos, el CSV y los informes). Para no mezclar dos escalas en un mismo gráfico, los anillos se leen solo de 0 a 10 (la categoría más baja vale 0 y la más alta, 10; es el porcentaje del máximo posible dividido entre 10): la media en el centro, con su nombre debajo («Media: 1,2 de 10 · «muy mala»»), y la mediana. La leyenda lleva el nombre de cada categoría, sin numerar, y los días malos se nombran por sus categorías («muy mala o mala»). En un diario con la escala antigua de tres niveles, mala, regular y buena valen 0, 5 y 10.
 
+### G · PDF del análisis completo, informe clínico provisional y Word
+
+- **Revisión del PDF del análisis completo** (todos los apartados desplegados, casos de menopausia y de TCC-I):
+  - Los anillos de la calidad percibida ya salían de 0 a 10, con la leyenda sin numerar.
+  - En cambio, otras medias de las calidades seguían de 1 a 5, y en un caso con punto decimal («1.48/5»): la satisfacción y la alerta del RU-SATED, la comparativa laborables/festivos, los acontecimientos anotados, las filas de media del resumen por día y el informe clínico provisional («Valoración media… (1.48/5)», «mala o muy mala (1–2)»).
+  - Ahora todas las medias y medianas de las calidades van de 0 a 10 («1,2/10»; criterio del RU-SATED, > 6,5 de 10). La valoración de cada día sigue en su escala de cinco categorías.
+- **La rejilla del anexo no cabía en su hoja.** El título quedaba solo en una hoja y la rejilla se partía en dos, con el pie de página encima de las últimas filas.
+  - Causa: en la copia de la rejilla, las notas de cada noche no tenían altura máxima.
+  - Ahora caben la rejilla, su título y su leyenda en una hoja apaisada, que deja 9 mm abajo para el pie.
+- **El Word del análisis reproduce el PDF del análisis completo.** Antes era un resumen propio, con otros apartados y otro orden.
+  - Lleva los mismos apartados desplegados, en el mismo orden y con los mismos saltos de página, y la rejilla del diario como anexo en una sección apaisada.
+  - Conserva colores, fondos, recuadros y tablas, y los gráficos van como imágenes.
+  - El texto y las tablas son editables.
+  - Cómo se hace: se maqueta el análisis como al imprimir (las reglas de impresión, al ancho de la hoja) y se recorre. De ahí sale el .docx o, sin la librería, un .doc con el mismo contenido.
+  - Comprobado en Chromium, convirtiendo el .docx a PDF con LibreOffice: el Word sigue página a página al PDF. Solo cambia el número de hojas de las listas largas (acontecimientos reportados y referencias), porque en Word la letra es Arial.
+- Pruebas: dos nuevas (109 en la raíz), entre ellas la del .docx generado con la misma librería en Node; `docx` 8.5.0 pasa a dependencia de desarrollo.
+
 ### F · Casos de ejemplo al día
 
 Los 17 casos se han vuelto a generar con el editor de noviembre, con las mismas variaciones que la primera vez: 31 de sus 357 noches tenían 25 o 45 min entre el despertar final y levantarse, que el editor ya no ofrece; ahora van en los saltos nuevos (20 o 30 min, el más próximo). Solo el de hipersomnia ha necesitado otra variación para conservar sus categorías. Ningún caso cambia de categoría clínica; frente a los casos anteriores de la v4.9.9, el TST medio cambia como mucho 2 min y la eficiencia, medio punto, y las noches fuera del patrón propio del caso de TCC-I son las mismas. Se vuelven a cargar una vez (marca 17), también en los navegadores que ya tenían los anteriores. El anexo IV del documento técnico está al día. Una prueba nueva (107 en la raíz).
