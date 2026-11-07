@@ -883,3 +883,145 @@ test('C · pantalla del paciente: «Cómo se anota», «Recordatorio» y «Ajust
   assert.match(css, /\.pacv-links\{display:flex;gap:6px;flex-wrap:nowrap\}/);
   assert.equal(app.doc.querySelectorAll('.pacv-links button').length, 3);
 });
+
+// ---------- más cambios de noviembre (misma v4.9.9) ----------
+test('D · despertar final → levantarse: saltos de 5, 10, 15, 20 y 30 minutos y luego de 30 en 30', async () => {
+  const app = await loadApp();
+  const esperado = [0, 5, 10, 15, 20]; for (let v = 30; v <= 720; v += 30) esperado.push(v);
+  assert.deepEqual(app.evj('EditorNoche.ESC_F'), esperado);
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
+  app.ev(`AgendaPuente.guardar(1,{gd:{b:'23:00',s:15,w:[],f:'06:45',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  app.ev('abrirEditorNoche(1)'); app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
+  const tfa = () => app.ev('EditorNoche.estado().m.R-EditorNoche.estado().m.F');
+  assert.equal(tfa(), 15);
+  const vistos = [];
+  for (let i = 0; i < 6; i++) { app.doc.getElementById('edMas').click(); vistos.push(tfa()); }
+  assert.deepEqual(vistos, [20, 30, 60, 90, 120, 150], 'después de 30 min, de 30 en 30 (sin 45)');
+  for (let i = 0; i < 9; i++) app.doc.getElementById('edMenos').click();
+  assert.equal(tfa(), 0);
+  // la latencia sigue con sus escalones (45 incluido)
+  app.ev(`document.querySelector('#edCats [data-cat="S"]').click()`);
+  const lat = () => app.ev('EditorNoche.estado().m.S-EditorNoche.estado().m.B'), l = [];
+  for (let i = 0; i < 5; i++) { app.doc.getElementById('edMas').click(); l.push(lat()); }
+  assert.deepEqual(l, [20, 25, 30, 45, 60]);
+  app.ev('EditorNoche.cerrar(false)');
+  // una noche anterior con 40 o 50 minutos se propone con el escalón más próximo; sin tocarla, se guarda como estaba
+  app.ev(`AgendaPuente.guardar(2,{gd:{b:'23:00',s:15,w:[],f:'06:10',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  app.ev('abrirEditorNoche(2)'); assert.equal(tfa(), 60);
+  valorarYGuardar(app);
+  assert.equal(app.ev('state[2].gd.f'), '06:10');
+  assert.deepEqual(app.errors, []);
+});
+
+test('D · cabecera del editor: si no cabe, se compacta por niveles y el texto de la noche no pisa los pasos', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  // jsdom no maqueta: se simula una fila de días que solo cabe a partir del nivel 4 (más juntos)
+  app.ev(`(()=>{ const P=HTMLElement.prototype, cab=()=>document.querySelector('#ed .ed-cab');
+    Object.defineProperty(P,'offsetWidth',{configurable:true,get(){ return 10; }});
+    Object.defineProperty(P,'clientWidth',{configurable:true,get(){ return this.id==='edDias'?400:100; }});
+    Object.defineProperty(P,'scrollWidth',{configurable:true,get(){ return this.id==='edDias'?(cab().classList.contains('k4')?390:520):100; }}); })()`);
+  app.ev('abrirEditorNoche(3)');
+  assert.equal(app.ev(`document.querySelector('#ed .ed-cab').className`), 'ed-cab k1 k2 k3 k4');
+  // con sitio de sobra, sin niveles
+  app.ev(`Object.defineProperty(HTMLElement.prototype,'scrollWidth',{configurable:true,get(){ return 100; }})`);
+  app.ev(`EditorNoche.irPaso('siestas')`);
+  assert.equal(app.ev(`document.querySelector('#ed .ed-cab').className`), 'ed-cab');
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /#ed \.ed-cab\.k1 \.dchip \.cam\{display:none\}/);
+  assert.match(css, /#ed \.ed-cab\.k3 \.pasos button span\{display:none\}/);
+  assert.match(css, /#ed \.ed-cab\.k5 \.dtrans\{display:none\}/);
+  assert.match(css, /#ed \.ed-cab\.k7\{flex-wrap:wrap/);
+  // el texto de la noche sigue en la ayuda de los días aunque se oculte
+  assert.match(app.doc.getElementById('edDias').getAttribute('title'), /laborable|festivo/i);
+  app.ev('EditorNoche.cerrar(false)');
+  assert.deepEqual(app.errors, []);
+});
+
+test('D · notas con el móvil en vertical (caja girada): al escribir, la caja se pone derecha como el teclado y luego vuelve', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`Object.defineProperty(window,'innerWidth',{configurable:true,value:390}); Object.defineProperty(window,'innerHeight',{configurable:true,value:664});`);
+  app.ev('abrirEditorNoche(3)'); await app.sleep(100);   // (al abrir, el foco va al tirador seleccionado)
+  const caja = () => app.doc.getElementById('edCaja');
+  assert.ok(caja().classList.contains('girada'));
+  app.ev(`EditorNoche.irPaso('notas')`);
+  assert.match(app.doc.getElementById('edGiroNota').textContent, /teclado sale en vertical/);
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /#ed \.ed-caja\.vertical \.giro-nota\{display:block\}/);
+  app.doc.getElementById('edTrat').focus();
+  assert.ok(!caja().classList.contains('girada') && caja().classList.contains('escribe'), 'mientras escribe, derecha');
+  assert.equal(caja().style.transform, '');
+  // pasar al otro campo no la gira
+  app.doc.getElementById('edObs').focus(); await app.sleep(450);
+  assert.ok(caja().classList.contains('escribe'));
+  // al dejar de escribir, vuelve a girarse (con una pequeña espera)
+  app.doc.getElementById('edObs').blur();
+  assert.ok(caja().classList.contains('escribe'), 'no se mueve bajo el dedo al instante');
+  await app.sleep(450);
+  assert.ok(caja().classList.contains('girada') && !caja().classList.contains('escribe'));
+  // escribir y guardar: se guarda y se cierra; al volver a abrir, girada otra vez
+  app.doc.getElementById('edTrat').focus();
+  app.ev(`EditorNoche.estado().trat='Melatonina 1 mg'; EditorNoche.estado().q={qs:4,qd:4,qe:4};`);
+  app.doc.getElementById('edGuardar').click();
+  assert.equal(app.doc.getElementById('ed').hidden, true);
+  assert.equal(app.ev('state[3].trat'), 'Melatonina 1 mg');
+  app.ev('abrirEditorNoche(3)');
+  assert.ok(caja().classList.contains('girada'));
+  // en horizontal no se gira nunca, tampoco al escribir
+  app.ev(`EditorNoche.cerrar(false); Object.defineProperty(window,'innerWidth',{configurable:true,value:844}); Object.defineProperty(window,'innerHeight',{configurable:true,value:390}); abrirEditorNoche(3); EditorNoche.irPaso('notas')`); await app.sleep(100);
+  app.doc.getElementById('edTrat').focus();
+  assert.ok(!caja().classList.contains('girada') && !caja().classList.contains('escribe') && !caja().classList.contains('vertical'));
+  // en catalán
+  app.ev(`EditorNoche.cerrar(false); setLang('ca'); abrirEditorNoche(3); EditorNoche.irPaso('notas')`);
+  assert.match(app.doc.getElementById('edGiroNota').textContent, /teclat surt en vertical/);
+  app.ev(`EditorNoche.cerrar(false); setLang('es')`);
+  assert.deepEqual(app.errors, []);
+});
+
+test('D · paciente (móvil): el fondo de cada noche lleva el color de sus dos días, también sin anotar', async () => {
+  const app = await pacienteMovil();
+  const doc = app.doc;
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const inicio = new Date(hoy); inicio.setDate(inicio.getDate() - 3);
+  const s2 = doc.getElementById('start2'); s2.value = iso(inicio); s2.dispatchEvent(new app.win.Event('change'));
+  await app.sleep(50);
+  app.ev(`state[1].lf='F'; AgendaPuente.guardar(1,${JSON.stringify(Object.assign({}, NOCHE, { tA: 'L', tB: 'F' }))})`);
+  await app.sleep(50);
+  const pn = [...doc.querySelectorAll('#nochesPac .pn')];
+  const fondo = i => pn[i].querySelector('.nbar').getAttribute('style');
+  // la barra va de 18:00 a 14:00: la medianoche, al 30 %
+  assert.equal(fondo(1), 'background:linear-gradient(to right,#e3ecf4 0 30%,#fdeccf 30% 100%)');
+  assert.equal(fondo(2), 'background:linear-gradient(to right,#fdeccf 0 30%,#e3ecf4 30% 100%)', 'sin anotar: la tarde, festivo; la mañana, laborable');
+  assert.ok(pn[2].querySelector('.nbar.vacia .pn-vacia'));
+  assert.equal(fondo(5), 'background:linear-gradient(to right,#e3ecf4 0 30%,#e3ecf4 30% 100%)');
+  assert.deepEqual([...pn[1].querySelectorAll('.pn-t i')].map(x => x.className + ':' + x.textContent), ['L:lab.', 'F:fest.']);
+  const css = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /\.pn-t i\.F\{background:#fdeccf/);
+  assert.deepEqual(app.errors, []);
+});
+
+test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (la valoración sigue en 1–5)', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`renderAnalysis()`);
+  const sec = app.doc.querySelector('#analisisContent details[data-sectitle="Calidad percibida"]');
+  assert.ok(sec, 'sección Calidad percibida');
+  const svgs = [...sec.querySelectorAll('svg')].filter(s => s.querySelectorAll('circle').length);
+  assert.equal(svgs.length, 3);
+  ['qs', 'qd', 'qe'].forEach((k, i) => {
+    const R = app.evj(`qResumen('${k}')`);
+    const t = [...svgs[i].querySelectorAll('text')].map(x => x.textContent);
+    const diez = String(Math.round((R.avg - 1) / (R.esc - 1) * 100) / 10).replace('.', ',');
+    assert.deepEqual(t, [diez, 'de 10'], k);
+    assert.equal(R.esc, 5);
+    assert.ok(+diez.replace(',', '.') >= 0 && +diez.replace(',', '.') <= 10);
+  });
+  assert.match(sec.textContent, /de 0 a 10 \(1 = 0 y 5 = 10\)/);
+  assert.match(sec.textContent, /\d,\d de 5/);
+  assert.match(sec.textContent, /5 Muy buena/, 'la leyenda sigue con los cinco valores de la escala');
+  assert.deepEqual(app.errors, []);
+});

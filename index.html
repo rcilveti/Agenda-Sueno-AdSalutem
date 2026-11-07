@@ -1180,6 +1180,28 @@
 #ed .sacc{display:flex;align-items:center;gap:10px}
 @container (max-height:380px){ #ed .sies{gap:5px} #ed .sbar{height:22px;margin-top:12px} #ed .sbar.con{height:40px} #ed .sies-arr{font-size:.7rem} #ed .sfila{padding:3px 0} #ed .sfila .bt{height:30px} }
 @container (max-width:640px){ #ed .sfila{gap:6px 8px} #ed .sfila .sl{display:none} #ed .sfila .sn{min-width:0} #ed .sfila .sv{min-width:3.2em} }
+/* v4.9.9: cabecera sin solapes (encajarCab): niveles k1…k5, del más leve al más fuerte */
+#ed .ed-cab.k1 .dchip .cam{display:none}
+#ed .ed-cab.k2 .pasos button:not([aria-current]) span{display:none}
+#ed .ed-cab.k2 .pasos button:not([aria-current]){padding:0 4px}
+#ed .ed-cab.k3 .pasos button span{display:none}
+#ed .ed-cab.k3 .pasos button{padding:0 4px}
+#ed .ed-cab.k4{gap:6px}
+#ed .ed-cab.k4 .ed-dias{gap:3px}
+#ed .ed-cab.k4 .dchip{padding:0 5px;gap:4px}
+#ed .ed-cab.k4 .dtrans{padding:2px 3px}
+#ed .ed-cab.k4 .pasos{gap:3px}
+#ed .ed-cab.k5 .dtrans{display:none}
+#ed .ed-cab.k6 .dchip .t{display:none}
+#ed .ed-cab.k7{flex-wrap:wrap;row-gap:5px}
+#ed .ed-cab.k7 .ed-fecha{flex:1 1 100%}
+#ed .ed-cab.k8 .dflecha{display:none}
+/* v4.9.9: notas con la caja girada: aviso del teclado; al escribir, caja derecha (vertical) */
+#ed .giro-nota{display:none;grid-column:1/-1;margin:0;font-size:.72rem;line-height:1.3;color:var(--slate);background:#f3f6f9;border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+#ed .ed-caja.vertical .giro-nota{display:block}
+@container (max-width:560px){ #ed .notas{grid-template-columns:minmax(0,1fr)} #ed .ncampo textarea{min-height:90px} }
+/* muy poca altura (móvil apaisado con el teclado abierto): solo los campos y el pie */
+@container (max-height:200px){ #ed .ed-cab,#ed .giro-nota,#ed .paso-pie .estado{display:none} #ed .paso-pie .bt.pri{margin-left:auto} #ed .nlab{min-height:20px} #ed .ncampo textarea{min-height:44px} }
 
 
   /* ===== v4.9.9: PANTALLA DEL PACIENTE ===== */
@@ -1221,12 +1243,18 @@
   .pn-f{display:flex;align-items:baseline;gap:7px;min-width:0;flex-wrap:wrap}
   .pn-f b{font-size:.95rem;color:#143f5e}
   .pn-t{font-size:.72rem;color:#6f7e90}
-  .pn-t i{font-style:normal}.pn-t i.F{color:#a35b00;font-weight:700}
+  .pn-t i{font-style:normal;display:inline-block;padding:0 5px;border-radius:5px;background:#e3ecf4;color:#143f5e;font-weight:600;line-height:1.45}.pn-t i.F{background:#fdeccf;color:#8a4b00;font-weight:700}
   .pn-d{display:flex;align-items:center;gap:5px;font-size:.8rem;color:#42546a;font-variant-numeric:tabular-nums;white-space:nowrap}
   .pn-d svg{width:19px;height:19px;display:block}
   .pn-h{margin-right:4px}
   .nbar{grid-column:1/-1;position:relative;height:20px;background:#f1f4f7;border-radius:6px}
-  .nb-cama{position:absolute;top:4px;bottom:4px;background:#cfe0ef;border-radius:4px}
+  .nb-cama{position:absolute;top:4px;bottom:4px;background:#c4d8ea;border-radius:4px;box-shadow:inset 0 0 0 1px #a9c3dc}
+  .pn-f b,.pn-t{white-space:nowrap}   /* la fecha y los dos tipos no se parten (si no caben, pasan juntos a otra línea) */
+  .pn-f{min-width:min-content}
+  .pn-d{flex-wrap:wrap;justify-content:flex-end;row-gap:2px}
+  .pn-d .pn-s{order:9;flex-basis:100%;text-align:right;margin-right:0}   /* «+ siesta», en su propia línea bajo la hora y las caras */
+  .nbar.vacia{display:flex;align-items:center;padding:0 8px;min-height:22px;height:auto}
+  .nbar.vacia .pn-vacia{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .nb-sueno{position:absolute;top:6px;bottom:6px;background:#2f6f9e;border-radius:3px}
   .nb-ev{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:.8rem;line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;filter:drop-shadow(0 0 1px #fff)}
   .pn-vacia{grid-column:1/-1;font-size:.82rem;color:#6f7e90}
@@ -3558,6 +3586,8 @@ function pintarNochesPac(){
   if(!startDate){ box.innerHTML=''; return; }
   const hoy=new Date(); hoy.setHours(0,0,0,0);
   const ab=x=>`<i class="${x}">${x==='F'?t('grid.freeS'):t('grid.workS')}</i>`;
+  const _med=_nbPc(240), fondo=d=>{ const c=x=>x==='F'?'#fdeccf':'#e3ecf4';   // v4.9.9: fondo de la noche con el color de sus dos días
+    return `background:linear-gradient(to right,${c(tipoFecha(d))} 0 ${_med}%,${c(tipoFecha(d+1))} ${_med}% 100%)`; };
   const cara=v=>(window.EditorNoche&&v)?window.EditorNoche.cara(v):'';
   let h=`<div class="nb-eje" aria-hidden="true">${[[-120,'18'],[120,'22'],[360,'02'],[600,'06'],[840,'10'],[1080,'14']].map(([v,l])=>`<span style="left:${_nbPc(v)}%">${l}</span>`).join('')}</div>`;
   for(let d=0;d<DAYS;d++){
@@ -3569,7 +3599,7 @@ function pintarNochesPac(){
     const vacia=futura?t('pac.aun'):(pend&&d===_nocheDeAnoche())?t('pac.ayer'):t('pac.toca');   // «de ayer» solo para la última noche
     h+=`<button type="button" class="pn${pend?' pend':''}${bn?' anot':''}" data-noche="${d}" role="listitem"${futura&&!bn?' disabled':''} aria-label="${escHtml((L.dd+' '+L.dn).trim()+': '+(bn?t('pac.anotada'):vacia))}">`+
       `<span class="pn-f"><b>${escHtml((L.dd+' '+L.dn).trim())}</b><span class="pn-t">${ab(tipoFecha(d))} → ${ab(tipoFecha(d+1))}</span></span>${det}`+
-      (bn?`<span class="nbar" aria-hidden="true">${bn.h}</span>`:`<span class="pn-vacia">${escHtml(vacia)}</span>`)+`</button>`;
+      (bn?`<span class="nbar" aria-hidden="true" style="${fondo(d)}">${bn.h}</span>`:`<span class="nbar vacia" style="${fondo(d)}"><span class="pn-vacia">${escHtml(vacia)}</span></span>`)+`</button>`;
   }
   box.innerHTML=h;
   box.querySelectorAll('.pn[data-noche]').forEach(b=>b.addEventListener('click',()=>abrirEditorNoche(+b.dataset.noche)));
@@ -5009,22 +5039,22 @@ function renderAnalysis(){
       off+=len;
     }
     const pct=i=>Math.round((c[i]||0)/n*100);
-    const avgPct=Math.round(qPomp(avg,esc));   // % del máximo posible: 1 → 0 %, máximo → 100 %
+    const avg10=Math.round(qPomp(avg,esc))/10, d10=v=>String(v).replace('.',',');   // v4.9.9: media de 0 a 10 (1 → 0, máximo → 10)
     const leyenda=[];for(let i=1;i<=esc;i++)leyenda.push(`<span style="white-space:nowrap"><span style="color:${cols[i-1]}">●</span> ${esc===5?i+' ':''}${labs[i-1]} ${c[i]||0} (${pct(i)}%)</span>`);
     return `<div style="text-align:center;flex:1;min-width:170px">
       <div style="font-size:.84rem;font-weight:600;margin-bottom:6px;color:${QCOL[key]}">${qLabel[key]}</div>
       <svg viewBox="0 0 140 140" style="width:140px;height:140px;max-width:100%">
         <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#eef1f4" stroke-width="${sw}"/>
         ${arcs}
-        <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="26" font-weight="700" fill="${QCOL[key]}">${r1(avg)}</text>
-        <text x="${cx}" y="${cy+22}" text-anchor="middle" font-size="11" fill="#7c8a9b">de ${esc} · ${avgPct}%</text>
+        <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="26" font-weight="700" fill="${QCOL[key]}">${d10(avg10)}</text>
+        <text x="${cx}" y="${cy+22}" text-anchor="middle" font-size="11" fill="#7c8a9b">de 10</text>
       </svg>
-      <div style="font-size:.74rem;color:${QCOL[key]};font-weight:600;margin-top:2px">Media «${qTexto(avg,esc,key)}»</div>
+      <div style="font-size:.74rem;color:${QCOL[key]};font-weight:600;margin-top:2px">Media «${qTexto(avg,esc,key)}» · ${d10(r1(avg))} de ${esc}</div>
       <div style="font-size:.7rem;color:var(--mist);margin-top:4px;line-height:1.55;display:flex;flex-wrap:wrap;gap:2px 8px;justify-content:center">${leyenda.join('')}</div>
       <div style="font-size:.7rem;color:var(--slate);margin-top:3px">Mediana: <b>${qTexto(med,esc,key)}</b> · días ${esc===5?'malos (1–2)':'«mala»'}: <b>${Rq.pctMalo}%</b></div></div>`;
   }
   html+=sec('Calidad percibida', `
-    <p class="sub">Valoración del paciente sobre su sueño, su despertar y su estado diurno (escala ${qInfo.escala===5?'Likert 1–5':'1–3 de versiones anteriores'}), con la distribución a lo largo de las 3 semanas. En el centro, la media y su porcentaje sobre el máximo posible.</p>
+    <p class="sub">Valoración del paciente sobre su sueño, su despertar y su estado diurno (escala ${qInfo.escala===5?'Likert 1–5':'1–3 de versiones anteriores'}), con la distribución a lo largo de las 3 semanas. En el centro de cada anillo, la media en una escala de 0 a 10 (${qInfo.escala===5?'1 = 0 y 5 = 10':'1 = 0 y 3 = 10'}); debajo, la media en la escala del diario.</p>
     ${qInfo.mixto?`<p class="secnote" style="margin:0 0 10px"><b>Escalas mezcladas:</b> ${qInfo.n3} día(s) se valoraron con la escala antigua de 3 niveles. Para el análisis se han pasado a 1–5 de forma lineal (mala = 1, regular = 3, buena = 5).</p>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-around;align-items:flex-start">
       ${qDonut('qs')}${qDonut('qd')}${qDonut('qe')}
@@ -7761,6 +7791,7 @@ function registrarServiceWorker(){
     </div>
     <div class="paso-ed" id="pasoNotas" hidden>
       <div class="notas">
+        <p class="giro-nota" id="edGiroNota" data-tx="giro.nota"></p>
         <div class="ncampo"><div class="nlab"><label for="edTrat"><span data-tx="trat">Tratamiento</span> <span class="opc" data-tx="opc">· opcional</span></label><button type="button" class="mini" id="edTratAyer" data-tx="igualAyer">Igual que ayer</button></div><textarea id="edTrat" rows="3" placeholder="Medicación de la noche o del día: nombre y, más o menos, cuándo" data-tx-ph="trat.ph"></textarea></div>
         <div class="ncampo"><div class="nlab"><label for="edObs"><span data-tx="obs">Observaciones</span> <span class="opc" data-tx="opc">· opcional</span></label></div><textarea id="edObs" rows="3" placeholder="Lo que pudo influir: café, alcohol, ejercicio, una cena tardía…" data-tx-ph="obs.ph"></textarea></div>
         <div class="nev" id="edEvLista"></div>
@@ -7804,6 +7835,7 @@ es:{
   'valor.intro':'Toca una cara en cada fila: de 1 (muy mal) a 5 (muy bien). Hacen falta las tres para guardar.',
   falta:'Falta', faltaP:' (falta)', 'valor.ok':'Valoradas <b>3 de 3</b> ✓',
   'valor.faltan':'Falta valorar <b>{f}</b><span class="l">: sin las tres no se puede guardar</span>','valor.n':'Valoradas <b>{n} de 3</b>',
+  'giro.nota':'📱 Con la pantalla girada, el teclado sale en vertical: mientras escribes, el editor también se pone en vertical. Para escribir en horizontal, desbloquea la rotación de la pantalla del móvil.',
   'notas.ev':'<b>Acontecimientos</b><span class="opc">se añaden solos a las observaciones:</span>', hacia:'hacia las {h}',
   'notas.sinEv':'Sin acontecimientos. Si pasó algo durante la noche, añádelo en el paso 1: «Acontecimientos» y «+ Añadir».',
   'notas.ok':'Noche <b>✓</b> · {s} · valoración <b>3 de 3</b> · <b>{n}</b> acontec.','notas.falta':'Falta valorar <b>{f}</b>',
@@ -7862,6 +7894,7 @@ ca:{
   'valor.intro':'Toca una cara a cada fila: d’1 (molt malament) a 5 (molt bé). Calen les tres per desar.',
   falta:'Falta', faltaP:' (falta)', 'valor.ok':'Valorades <b>3 de 3</b> ✓',
   'valor.faltan':'Falta valorar <b>{f}</b><span class="l">: sense les tres no es pot desar</span>','valor.n':'Valorades <b>{n} de 3</b>',
+  'giro.nota':'📱 Amb la pantalla girada, el teclat surt en vertical: mentre escrius, l’editor també es posa en vertical. Per escriure en horitzontal, desbloqueja la rotació de la pantalla del mòbil.',
   'notas.ev':'<b>Esdeveniments</b><span class="opc">s’afegeixen sols a les observacions:</span>', hacia:'cap a les {h}',
   'notas.sinEv':'Sense esdeveniments. Si va passar alguna cosa durant la nit, afegeix-la al pas 1: «Esdeveniments» i «+ Afegir».',
   'notas.ok':'Nit <b>✓</b> · {s} · valoració <b>3 de 3</b> · <b>{n}</b> esdev.','notas.falta':'Falta valorar <b>{f}</b>',
@@ -7978,17 +8011,19 @@ const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 // Duraciones en escalones humanos, como en el diario de consenso: de 5 en 5 minutos hasta media hora,
 // de 15 en 15 hasta una hora y de 30 en 30 después
 const ESC=(()=>{const a=[];for(let v=0;v<=30;v+=5)a.push(v);a.push(45,60);for(let v=90;v<=720;v+=30)a.push(v);return a;})();
-const escalon=(x,min)=>{ let best=null; ESC.forEach(v=>{ if(v>=(min||0)&&(best==null||Math.abs(v-x)<Math.abs(best-x))) best=v; }); return best; };
-const hastaEscalon=(tope,min)=>{ let r=null; ESC.forEach(v=>{ if(v>=(min||0)&&v<=tope) r=v; }); return r; };   // el mayor escalón que cabe
-const otroEscalon=(v,d,min)=>{ const i=ESC.indexOf(escalon(v,min)); return Math.max(min||0,ESC[Math.max(0,Math.min(ESC.length-1,i+d))]); };
+// despertar final → levantarse: 5, 10, 15, 20 y 30 minutos, y luego de 30 en 30
+const ESC_F=(()=>{const a=[0,5,10,15,20];for(let v=30;v<=720;v+=30)a.push(v);return a;})();
+const escalon=(x,min,L)=>{ let best=null; (L||ESC).forEach(v=>{ if(v>=(min||0)&&(best==null||Math.abs(v-x)<Math.abs(best-x))) best=v; }); return best; };
+const hastaEscalon=(tope,min,L)=>{ let r=null; (L||ESC).forEach(v=>{ if(v>=(min||0)&&v<=tope) r=v; }); return r; };   // el mayor escalón que cabe
+const otroEscalon=(v,d,min,L)=>{ L=L||ESC; const i=L.indexOf(escalon(v,min,L)); return Math.max(min||0,L[Math.max(0,Math.min(L.length-1,i+d))]); };
 const r30=x=>Math.round(x/30)*30, c30=x=>Math.ceil(x/30)*30, f30=x=>Math.floor(x/30)*30;
 // Lleva cualquier noche al formato del editor: horas al paso de 15 min, duraciones en escalones y
 // despertares en su media hora, sin solaparse y dentro del sueño
 function normalizar(m,p){
   const rp=x=>Math.round(x/p)*p;
   const B=Math.max(0,rp(m.B)), R=Math.min(RMAX,Math.max(B+2*p,rp(m.R)));
-  let lat=escalon(m.S-m.B,0), tfa=escalon(m.R-m.F,0);
-  while(B+lat>R-tfa-15&&(lat||tfa)){ if(tfa>=lat) tfa=otroEscalon(tfa,-1,0); else lat=otroEscalon(lat,-1,0); }
+  let lat=escalon(m.S-m.B,0), tfa=escalon(m.R-m.F,0,ESC_F);
+  while(B+lat>R-tfa-15&&(lat||tfa)){ if(tfa>=lat) tfa=otroEscalon(tfa,-1,0,ESC_F); else lat=otroEscalon(lat,-1,0); }
   const S=B+lat, F=R-tfa, W=[]; let fin=S+5;
   m.W.slice().sort((x,y)=>x.a-y.a).forEach(w=>{
     let d=escalon(w.b-w.a,5), a=Math.max(c30(fin),r30(w.a));
@@ -8051,6 +8086,7 @@ function abrir(i){
   $('edCeja').innerHTML=E.nueva?T('ceja.nueva'):T('ceja.normal');
   $('ed').hidden=false; document.documentElement.style.overflow='hidden';
   try{ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{}); }catch(e){}
+  escribiendo=false; clearTimeout(tEscribe);
   orientar(); irPaso(0,true);
   setTimeout(()=>{const b=document.querySelector('.tir.sel .bola');if(b)b.focus({preventScroll:true});},50);
 }
@@ -8071,6 +8107,7 @@ function pintarPasos(){
   const p=E.pasoEd, completas=!faltan().length, hechos=[true,E.visto[1],completas,E.visto[3]];
   document.querySelectorAll('#edPasos [data-ir]').forEach(b=>{ const i=+b.dataset.ir; if(i===p) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current');
     b.classList.toggle('hecho',i!==p&&E.visto[i]&&hechos[i]); b.classList.toggle('falta',i===2&&i!==p&&E.faltaAviso&&!completas); });
+  encajarCab();
   // «Guardar» no guarda hasta tener las tres valoraciones: avisa y lleva a las que faltan
   [['edGuardar','edNotasEstado'],['edGuardar2','edValorEstado']].forEach(([id,est])=>{ const b=$(id); b.classList.toggle('bloq',!completas); if(completas) b.removeAttribute('aria-describedby'); else b.setAttribute('aria-describedby',est); });
 }
@@ -8082,6 +8119,25 @@ function renderDias(){
   chip('edDiaA',E.dA,E.tA); chip('edDiaB',E.dB,E.tB);
   const tr=transicion(E.tA,E.tB), el=$('edTrans');
   el.innerHTML=tr.txt; el.className='dtrans'+(tr.cambio?' cambio':''); el.title=tr.lar;
+  $('edDias').title=tr.lar;
+  encajarCab();
+}
+// Cabecera sin solapes: si los dos días, el texto de la noche y los pasos no caben en una fila, se compacta por
+// niveles hasta que caben: sin ⇄, nombre solo en el paso actual, pasos solo con número, más juntos, sin el texto de
+// la noche (el tipo de cada día sigue en su botón) y, solo en la caja derecha y estrecha mientras se escribe, sin el
+// tipo escrito (queda el color), con los pasos en otra fila y sin la flecha. Se mide en el plano de la caja.
+const NIV_CAB=['k1','k2','k3','k4','k5','k6','k7','k8'];
+function encajarCab(){
+  const cab=document.querySelector('#ed .ed-cab'), d=$('edDias'), p=$('edPasos'), t=$('edTrans'); if(!cab||!d||!p||!t) return;
+  cab.classList.remove(...NIV_CAB);
+  if(!cab.offsetWidth) return;
+  const choca=()=>{ if(d.scrollWidth>d.clientWidth+1||cab.scrollWidth>cab.clientWidth+1) return true;
+    const ref=t.offsetWidth?t:d.lastElementChild&&d.lastElementChild.offsetWidth?d.lastElementChild:$('edDiaB');
+    const r=ref.getBoundingClientRect(), q=p.getBoundingClientRect();
+    // en el plano de la caja: si está girada, «a la derecha» es hacia abajo en la pantalla y «abajo», hacia la izquierda
+    const x1=girada?r.bottom:r.right, x2=girada?q.top:q.left, misma=girada?Math.abs(r.left+r.width/2-(q.left+q.width/2))<Math.max(r.width,q.width)/2:Math.abs(r.top+r.height/2-(q.top+q.height/2))<Math.max(r.height,q.height)/2;
+    return misma&&x1>x2-2; };
+  for(const k of NIV_CAB){ if(!choca()) break; cab.classList.add(k); }
 }
 const faltan=()=>E?QK.filter(k=>!E.q[k]):[];
 const nombresFaltan=f=>{ const t=f.map(k=>qv()[k].t.toLowerCase()); return t.length>1?t.slice(0,-1).join(', ')+T('y')+t[t.length-1]:t[0]; };
@@ -8201,7 +8257,7 @@ function cerrar(guardar){
       qs:E.q.qs,qd:E.q.qd,qe:E.q.qe,trat:E.trat.trim(),obs:E.obs.trim()};
     if(!P().guardar(E.i,datos)){ irPaso(0,true); aviso(T('noGuardar')); return false; }
     var guardada=E.i; }
-  $('ed').hidden=true; document.documentElement.style.overflow=''; E=null; arrastre=null; zArr=null;
+  $('ed').hidden=true; document.documentElement.style.overflow=''; E=null; arrastre=null; zArr=null; escribiendo=false; clearTimeout(tEscribe);
   try{ if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
   if(guardar&&P().despues) P().despues(guardada);
   return true;
@@ -8211,14 +8267,26 @@ let relojVisto=false;
 function cerrarAvisoReloj(){ const a=$('edReloj'); if(a&&!a.hidden){ a.hidden=true; relojVisto=true; } }
 
 // En vertical, la caja del editor se gira 90° para verla en horizontal al girar el móvil
+// Al escribir (tratamiento, observaciones) con la caja girada, el teclado del móvil sale en vertical (con la rotación
+// bloqueada, la web no puede girarlo): mientras se escribe, la caja se muestra derecha, como el teclado, y se vuelve
+// a girar al dejar de escribir. Con la rotación desbloqueada, el móvil en horizontal no gira la caja y el teclado
+// sale en horizontal.
+let escribiendo=false, tEscribe=null;
+const esCampoTexto=el=>!!el&&(el.tagName==='TEXTAREA'||(el.tagName==='INPUT'&&!/^(button|checkbox|radio|range|submit|reset|file|color|hidden)$/i.test(el.type||'')));
 function orientar(){
-  const c=$('edCaja'), W=window.innerWidth, H=window.innerHeight;
-  girada=H>W*1.05;
-  c.classList.toggle('girada',girada);
+  const c=$('edCaja'), W=window.innerWidth, H=window.innerHeight, vertical=H>W*1.05;
+  girada=vertical&&!escribiendo;
+  c.classList.toggle('girada',girada); c.classList.toggle('escribe',vertical&&escribiendo); c.classList.toggle('vertical',vertical);
   if(girada){ c.style.width=H+'px'; c.style.height=W+'px'; c.style.transform=`translateX(${W}px) rotate(90deg)`; }
   else { c.style.width=''; c.style.height=''; c.style.transform=''; }
+  encajarCab();
 }
 window.addEventListener('resize',()=>{ if(E){ orientar(); if(E.pasoEd===0) render(); } });
+$('edCaja').addEventListener('focusin',e=>{ if(!E||!esCampoTexto(e.target)) return; clearTimeout(tEscribe);
+  if(!escribiendo){ escribiendo=true; if(girada){ orientar(); const t=e.target; setTimeout(()=>{ if(t.scrollIntoView) t.scrollIntoView({block:'nearest'}); },60); } } });
+$('edCaja').addEventListener('focusout',e=>{ if(!E||!esCampoTexto(e.target)) return; clearTimeout(tEscribe);
+  // con espera: si el dedo va a «Guardar» o al otro campo, la caja no se mueve bajo el dedo
+  tEscribe=setTimeout(()=>{ if(E&&escribiendo&&!esCampoTexto(document.activeElement)){ escribiendo=false; orientar(); } },350); });
 
 // geometría: posición del dedo a lo largo de un elemento (en px del propio elemento, gire o no la caja)
 function posEn(el,e){ const r=el.getBoundingClientRect(); return (girada?e.clientY-r.top:e.clientX-r.left)-el.clientLeft; }
@@ -8260,7 +8328,7 @@ function fijar(k,v,w,borde){
   if(k==='B'){ const lat=m.S-m.B; let b=cl(rp(v),0,RMAX); if(b+lat>limS) b=Math.floor((limS-lat)/p)*p; if(b<0) return; m.B=b; m.S=b+lat; }
   else if(k==='R'){ const tfa=m.R-m.F; let r=cl(rp(v),0,RMAX); if(r-tfa<limF) r=Math.ceil((limF+tfa)/p)*p; if(r>RMAX) return; m.R=r; m.F=r-tfa; }
   else if(k==='S'){ let lat=escalon(Math.max(0,v-m.B),0); if(m.B+lat>limS) lat=hastaEscalon(limS-m.B,0); if(lat==null) return; m.S=m.B+lat; }
-  else if(k==='F'){ let tfa=escalon(Math.max(0,m.R-v),0); if(m.R-tfa<limF) tfa=hastaEscalon(m.R-limF,0); if(tfa==null) return; m.F=m.R-tfa; }
+  else if(k==='F'){ let tfa=escalon(Math.max(0,m.R-v),0,ESC_F); if(m.R-tfa<limF) tfa=hastaEscalon(m.R-limF,0,ESC_F); if(tfa==null) return; m.F=m.R-tfa; }
   else if(k==='X'){ const x=E.ev[w]; if(!x) return; x.a=cl(r30(v-15),0,DIA-30); }
   else if(k==='W'){
     const x=W[w]; if(!x) return; const d=x.b-x.a;
@@ -8276,7 +8344,7 @@ function pasoDe(k,w,borde,d){
   if(k==='B') fijar('B',m.B+d*E.paso);
   else if(k==='R') fijar('R',m.R+d*E.paso);
   else if(k==='S') fijar('S',m.B+otroEscalon(m.S-m.B,d,0));
-  else if(k==='F') fijar('F',m.R-otroEscalon(m.R-m.F,d,0));
+  else if(k==='F') fijar('F',m.R-otroEscalon(m.R-m.F,d,0,ESC_F));
   else if(k==='X'){ const x=E.ev[w]; if(!x) return; fijar('X',x.a+15+d*30,w); }
   else { const x=m.W[w]; if(!x) return; if(borde==='b') fijar('W',x.a+otroEscalon(x.b-x.a,d,5),w,'b'); else fijar('W',x.a+d*30,w,'m'); }
   verValor(valorDe(k,w,borde));
@@ -8553,7 +8621,7 @@ $('edEvPanel').addEventListener('click',e=>{
 });
 
 // para la Agenda y las pruebas automáticas
-window.EditorNoche={abrir,cerrar,estado:()=>E,irPaso,EV_TIPOS,EV,evDe,evNom,icoEv,insignia,notasDe,evTexto,ESC,QV,qv,cara,T,PASOS,aModelo,aRespuestas,normalizar};
+window.EditorNoche={abrir,cerrar,estado:()=>E,irPaso,EV_TIPOS,EV,evDe,evNom,icoEv,insignia,notasDe,evTexto,ESC,ESC_F,QV,qv,cara,T,PASOS,aModelo,aRespuestas,normalizar};
 })();
 </script>
 </body>

@@ -253,3 +253,15 @@ Los pendientes 1, 2, 4, 5, 9 y 10 se resolvieron tras la auditoría (apartado 8)
 
 Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al día. Seis pruebas nuevas.
 
+### D · Editor: teclado, despertar final y cabecera
+
+1. **Notas con el móvil en horizontal.** En vertical, la caja del editor se gira 90° para verla con el móvil en horizontal. Con la rotación de la pantalla bloqueada (lo habitual en iPhone, y en Android con la rotación automática desactivada), el sistema sigue en vertical y el teclado sale en vertical: una página web no puede girarlo. Ahora, mientras se escribe en «Tratamiento» u «Observaciones», la caja se pone derecha, como el teclado, y vuelve a girarse al dejar de escribir (con una pequeña espera, para que «Guardar» o el otro campo no se muevan bajo el dedo). Un aviso en el paso 4, solo con la caja girada, lo explica y recuerda que con la rotación desbloqueada se escribe en horizontal. Con la rotación activada, en horizontal la caja no se gira y el teclado sale en horizontal (iPhone y Android). En un móvil apaisado con el teclado abierto (Android reduce el alto de la ventana) quedan solo los campos y el pie.
+2. **Despertar final → levantarse:** 5, 10, 15, 20 y 30 minutos y, después, de 30 en 30 (sin 45). Las demás duraciones siguen igual. Una noche anterior con otro valor (por ejemplo, 40 min) se propone con el escalón más próximo y, si no se toca, se guarda tal cual.
+3. **Cabecera sin solapes.** El texto de la noche («Noche entre laborables», «Noche antes de festivo», «Noche antes de laborable») pisaba la pestaña «1 Noche» en móviles apaisados (iPhone SE, Pixel 7, iPhone 14 Pro Max). Si no cabe en una fila, la cabecera se compacta por niveles hasta que cabe: sin ⇄, nombre solo en el paso actual, pasos solo con número, más juntos y, en último caso, sin el texto de la noche (el tipo de cada día sigue en su botón y el texto, en la ayuda). Se mide en el plano de la caja, también girada.
+
+### E · Pantalla del paciente y análisis
+
+- **Colores de los días en la lista de noches (móvil).** El fondo de la barra de cada noche lleva el color de sus dos días, partido a medianoche como en la escala del editor: azul claro, laborable; naranja claro, festivo. También en las noches sin anotar, para ver de un vistazo los festivos. «lab.» y «fest.» van en una etiqueta del mismo color, y la fecha y los tipos ya no se parten (las siestas pasan a su propia línea).
+- **Anillos de la calidad percibida de 0 a 10.** La valoración sigue en la escala Likert 1–5 (en el editor, los datos, el CSV y los informes). En el centro de cada anillo, la media pasa a una escala de 0 a 10 (1 = 0, 5 = 10; es el porcentaje del máximo posible dividido entre 10); debajo, la media en la escala 1–5. Los cinco segmentos y la leyenda no cambian.
+
+Comprobado en Chromium (iPhone 13, iPhone SE, Pixel 7 y iPhone 14 Pro Max, en vertical y en horizontal, en castellano y en catalán, y con el alto que deja el teclado). Guías del paciente y documento técnico al día. Cinco pruebas nuevas (106 en la raíz).
