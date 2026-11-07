@@ -47,7 +47,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
 | `docs/` | Documentación de la v4.9.9: documento técnico (`Agenda_Sueno_v4.9.9_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v4.9.9_castellano.pdf`) y en catalán (`Guia_del_pacient_v4.9.9_catala.pdf`) y auditoría (`auditoria_v4.9.9.md`). Las de versiones anteriores están en `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
-| `tests/`, `package.json` | Pruebas automáticas (109 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
+| `tests/`, `package.json` | Pruebas automáticas (113 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
 | `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
@@ -129,12 +129,14 @@ de la v4.9.8 (que no se llegó a publicar):
 - *Del navegador a la app instalada*: lo anotado en el navegador del móvil pasa a la app al
   añadirla a la pantalla de inicio (en iPhone tienen almacenamientos separados): la dirección lleva
   una copia comprimida del diario, que la app fusiona noche a noche.
-- *PDF del análisis*: la cabecera lleva el código de acceso del paciente y un solo logo, y la rejilla del
-  anexo cabe en su hoja apaisada.
+- *PDF del análisis*: la cabecera lleva el código de acceso del paciente y un solo logo, la rejilla del
+  anexo cabe en su hoja apaisada y las referencias, en una hoja, sin hojas casi en blanco.
 - *Word del análisis*: reproduce el PDF del análisis completo (los mismos apartados desplegados, en el
-  mismo orden, con sus gráficos, el informe clínico provisional y la rejilla como anexo apaisado), editable.
-- *Calidad percibida*: la valoración sigue en la escala 1–5; las medias y medianas del análisis y del
-  informe clínico van de 0 a 10 (1 = 0, 5 = 10), y los anillos, con la leyenda sin numerar.
+  mismo orden y con las mismas hojas). La cabecera y el informe clínico provisional son editables; el
+  resto de apartados, imágenes en alta resolución del PDF, y el anexo, una imagen apaisada.
+- *Calidad percibida*: la valoración sigue en la escala 1–5; las medias y medianas del análisis, del
+  informe clínico y del Excel van sobre 10, como el doble del valor (1 = 2 … 5 = 10), y los anillos,
+  con la leyenda sin numerar.
 - Se mantienen de la v4.9.7 el recordatorio, el aviso de noche pendiente, las tendencias, el patrón
   propio y el resumen para la consulta. Se retiran el registro con preguntas, los factores del día,
   la ventana de sueño y los hitos (sus datos se conservan).
