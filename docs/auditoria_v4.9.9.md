@@ -286,3 +286,30 @@ Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al 
 Los 17 casos se han vuelto a generar con el editor de noviembre, con las mismas variaciones que la primera vez: 31 de sus 357 noches tenían 25 o 45 min entre el despertar final y levantarse, que el editor ya no ofrece; ahora van en los saltos nuevos (20 o 30 min, el más próximo). Solo el de hipersomnia ha necesitado otra variación para conservar sus categorías. Ningún caso cambia de categoría clínica; frente a los casos anteriores de la v4.9.9, el TST medio cambia como mucho 2 min y la eficiencia, medio punto, y las noches fuera del patrón propio del caso de TCC-I son las mismas. Se vuelven a cargar una vez (marca 17), también en los navegadores que ya tenían los anteriores. El anexo IV del documento técnico está al día. Una prueba nueva (107 en la raíz).
 
 Comprobado en Chromium (iPhone 13, iPhone SE, Pixel 7 y iPhone 14 Pro Max, en vertical y en horizontal, en castellano y en catalán, y con el alto que deja el teclado). Guías del paciente y documento técnico al día. Cinco pruebas nuevas (106 en la raíz).
+
+### H · Calidades sobre 10, iconos de los acontecimientos, PDF sin hojas en blanco y Word por apartados
+
+- **Calidades sobre 10, como el doble del valor.** De 0 a 10 (apartados E y G), las puntuaciones altas eran difíciles de alcanzar: un 4 de 5 quedaba en 7,5. Ahora cada categoría vale el doble: muy mala = 2, mala = 4, regular = 6, buena = 8, muy buena = 10 (en la escala antigua de tres niveles, mala = 2, regular = 6, buena = 10).
+  - Se aplica a los anillos de la calidad percibida (media y mediana), al RU-SATED (criterio: media > 7,2 de 10, el mismo 65 % del máximo de antes), a la comparativa laborables/festivos (las diferencias, en puntos sobre 10), a los acontecimientos anotados, a las filas de media del resumen por día y al informe clínico provisional.
+  - También fuera del análisis: hoja «Análisis» del Excel (medias por semana y total), Excel de todos los pacientes y comparación de periodos. El CSV conserva las medias en la escala del diario y añade las medias y medianas sobre 10 (`calidad_sueno_media_sobre10`…).
+  - La valoración de cada día sigue en su escala de cinco categorías (editor, rejilla, hoja diaria del Excel, CSV).
+- **Iconos de los acontecimientos en el móvil del paciente.** Al volver a abrir la app con la sesión guardada, cada acontecimiento de la lista de noches salía como ✕ y sin las caras de la valoración.
+  - Causa: los emoji y las caras están en el editor de la noche, que se carga después del guion principal, y la lista se pintaba antes.
+  - Ahora la Agenda tiene los mismos emoji y, en cuanto el editor se carga, vuelve a pintar la lista y la rejilla (con las caras).
+- **PDF del análisis sin hojas casi vacías.**
+  - Las referencias ocupaban una hoja y dos referencias de la siguiente: van con letra de 7,6 pt y, si aun así no cupieran, se reducen como el resumen por día. Caben en una hoja con margen.
+  - «Acontecimientos reportados» (y el análisis longitudinal) empezaba hoja aunque fuera un recuadro de dos líneas: ahora sigue a las conclusiones del informe.
+  - Comprobado en cuatro casos (TCC-I, normal, menopausia, insomnio de mantenimiento): 11 a 15 hojas, sin hojas en blanco; solo una tabla larga de acontecimientos termina en una hoja con pocas filas.
+- **Word del análisis por apartados.** El Word que reproducía el PDF como texto editable se descuadraba con los ajustes de página de cada versión de Word. Ahora:
+  - Son editables la cabecera (con los datos del paciente) y el informe clínico provisional, con los colores, fondos y letra de la impresión (el mismo interlineado y, en la primera parte del informe, la misma reducción que en el PDF).
+  - Cada uno de los demás apartados es una imagen en alta resolución (unos 290 ppp) de lo que imprime el PDF, del ancho de la hoja. El apartado que en el PDF empieza hoja también la empieza en el Word.
+  - Si un apartado no cabe en lo que queda de hoja, se parte por filas o entre líneas, nunca por la mitad de una línea o de un gráfico, y la cabecera de la tabla se repite arriba, como en el PDF. Los apartados que el PDF no parte (tendencias, resumen por día, referencias) pasan enteros a la hoja siguiente.
+  - El anexo es una sola imagen en su hoja apaisada.
+  - Cómo se hace: html2canvas dibuja cada apartado en la maqueta de impresión. Sin html2canvas o sin la librería docx, todo el Word se escribe editable, como antes.
+  - Comprobado en Chromium y convirtiendo el .docx a PDF con LibreOffice: el caso de TCC-I da 11 hojas, como su PDF; el de menopausia, 14 (su PDF tiene 15). Pesa de 6 a 7 MB y se genera en unos 15 s.
+- **Documentación, casos e intercambio de datos.**
+  - Documento técnico: escala sobre 10 (anillos, RU-SATED, informe, Excel), PDF sin hojas en blanco y Word por apartados. En el esquema de datos (CSV), las métricas `*_media_sobre10` y `*_mediana_sobre10`; al importar se ignoran, porque se recalculan. El esquema sigue en la versión 5.
+  - Tabla IV.1 de los casos de ejemplo, con la calidad media sobre 10 de cada caso (sueño, despertar y día).
+  - Guías del paciente (castellano y catalán): cada noche anotada de la lista muestra su horario, las tres caras de la valoración y el icono de cada acontecimiento.
+  - Los datos de los casos de ejemplo no cambian (la valoración de cada día sigue en 1–5), así que no se vuelven a cargar.
+- Pruebas: cuatro nuevas (113 en la raíz), entre ellas la del Word por apartados, con una captura simulada y el .docx generado en Node.

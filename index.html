@@ -146,6 +146,8 @@
   #analisisContent.medir-pdf>details.secblock[open]>summary h2{font-size:12pt!important;margin:0!important}
   #analisisContent.medir-pdf>details.secblock[open]>.dbody>.sub{font-size:7.5pt!important;line-height:1.35!important;margin:0 0 2mm!important}
   #analisisContent.medir-pdf .pg-resdia .scroll{overflow:visible!important}
+  #analisisContent.medir-pdf .pg-refs ol.refnote{font-size:7.6pt!important;line-height:1.32!important;padding-left:5mm!important}
+  #analisisContent.medir-pdf .pg-refs ol.refnote li{margin:0 0 .8mm!important}
   #analisisContent.medir-pdf .pg-resdia table{font-size:7.5pt!important;width:100%!important;table-layout:fixed}
   #analisisContent.medir-pdf .pg-resdia table th:nth-child(1){width:12%}
   #analisisContent.medir-pdf .pg-resdia table th:nth-child(2){width:7%}
@@ -637,6 +639,9 @@
     body[data-print="analisis"] .pg-informe .clinrep p{margin:0 0 1.1mm!important}
     body[data-print="analisis"] .pg-informe .clinrep li{margin:0 0 1mm!important}
     body[data-print="analisis"] .pg-resdia{break-inside:avoid;page-break-inside:avoid}
+    body[data-print="analisis"] .pg-refs{break-inside:avoid;page-break-inside:avoid}   /* v4.9.9: referencias en una hoja */
+    body[data-print="analisis"] .pg-refs ol.refnote{font-size:7.6pt!important;line-height:1.32!important;padding-left:5mm!important}
+    body[data-print="analisis"] .pg-refs ol.refnote li{margin:0 0 .8mm!important}
     body[data-print="analisis"] .pg-informe .clinrep h4{break-after:avoid;page-break-after:avoid}
     body[data-print="analisis"] .pg-informe .clin-final{break-before:page;page-break-before:always;margin-top:0!important}
     /* la cabecera del apartado no se separa de su contenido (evita páginas con solo el título) */
@@ -1557,7 +1562,7 @@
           <button class="btn sec" id="exportJson" style="padding:6px 12px;font-size:.78rem" title="Copia completa del diario en JSON (para reimportar)">JSON</button>
           <button class="btn sec" id="printBtn" style="padding:6px 12px;font-size:.78rem" title="PDF del diario (cabecera + rejilla en una hoja)">PDF del diario</button>
           <button class="btn sec" id="printAnalysisBtn" style="padding:6px 12px;font-size:.78rem" title="PDF con TODOS los datos del análisis (métricas, comparativas, cronotipo, gráficos e informe)">PDF del análisis completo</button>
-          <button class="btn sec" id="wordAnalysisBtn" style="padding:6px 12px;font-size:.78rem" title="Word editable con lo mismo que el PDF del análisis completo (los apartados desplegados, con sus gráficos, el informe clínico provisional y la rejilla del diario), para revisarlo antes de la historia clínica">Word del análisis completo</button>
+          <button class="btn sec" id="wordAnalysisBtn" style="padding:6px 12px;font-size:.78rem" title="Word con lo mismo que el PDF del análisis completo: la cabecera y el informe clínico provisional, editables, para revisarlos antes de la historia clínica; el resto de apartados desplegados y la rejilla del diario, como imágenes del PDF">Word del análisis completo</button>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px" id="ioDbRow">
           <span style="font-size:.74rem;color:var(--mist);min-width:120px">Base de datos:</span>
@@ -3051,7 +3056,8 @@ function qEscDiario(st){st=st||state;let n3=0,n5=0;(st||[]).forEach(d=>{if(qDiaV
 function qValor(day,key,esc){const v=day?(+day[key]||0):0;if(v<1)return 0;return (qEscDia(day)===3&&esc===5)?2*v-1:v;}
 function qValores(key,esc,st){st=st||state;esc=esc||qEscDiario(st).escala;return st.map(d=>qValor(d,key,esc)).filter(v=>v>=1);}
 const qPomp=(v,esc)=>v==null?null:(v-1)/(esc-1)*100;   // 0 = peor valor posible · 100 = mejor
-const qDiez=(v,esc)=>v==null?'—':String(Math.round(qPomp(v,esc))/10).replace('.',',');   // v4.9.9: media o mediana de 0 a 10
+const qDiezN=(v,esc)=>v==null?null:Math.round((2+qPomp(v,esc)*0.08)*10)/10;   // v4.9.9: media o mediana sobre 10, el doble del valor (1 → 2 … 5 → 10)
+const qDiez=(v,esc)=>v==null?'—':String(qDiezN(v,esc)).replace('.',',');
 function qTexto(v,esc,key){if(v==null)return '—';const k=Math.min(esc,Math.max(1,Math.round(v)));return esc===5?Q_TXT5[key||'qs'][k-1]:Q_TXT3[k-1];}
 function qColor(v,esc){if(v==null)return 'var(--mist)';const k=Math.min(esc,Math.max(1,Math.round(v)));return (esc===5?Q_COL5:Q_COL3)[k-1];}
 // resumen de una calidad: distribución, media, mediana y % de días malos (1–2 en la escala 1–5; «mala» en la 1–3)
@@ -3488,11 +3494,18 @@ function halfOf(el,clientX){const r=el.getBoundingClientRect();return (clientX-r
 // a partir de ella, la rejilla pintada con la regla del registro guiado (para verla, imprimirla y para los índices que
 // trabajan por medias horas). Los diarios anteriores, pintados a mano, se abren en el editor desde su rejilla.
 const EVK=[ // acontecimientos: clave guardada y tipo del editor (mismos emoji y nombres que en el editor)
-  {k:'bano',q:'Ir al baño'},{k:'dolor',q:'Dolor'},{k:'ruido',q:'Ruido'},{k:'temp',q:'Calor o frío'},{k:'estres',q:'Estrés o preocupación'},
-  {k:'tos',q:'Tos'},{k:'ninos',q:'Atender a un niño'},{k:'toma',q:'Dar el pecho o el biberón'},{k:'otro',q:'Otro'}];
+  {k:'bano',q:'Ir al baño',e:'🚽',nom:'Baño'},{k:'dolor',q:'Dolor',e:'💢',nom:'Dolor'},{k:'ruido',q:'Ruido',e:'🔊',nom:'Ruido'},{k:'temp',q:'Calor o frío',e:'🌡️',nom:'Calor/frío'},
+  {k:'estres',q:'Estrés o preocupación',e:'😟',nom:'Preocupación'},{k:'tos',q:'Tos',e:'😷',nom:'Tos'},{k:'ninos',q:'Atender a un niño',e:'👶',nom:'Niño'},
+  {k:'toma',q:'Dar el pecho o el biberón',e:'🍼',nom:'Toma'},{k:'otro',q:'Otro',e:'🏷️',nom:'Otro'}];   // v4.9.9: e y nom, por si el editor aún no está
 const evQ=k=>(EVK.find(x=>x.k===k)||EVK[EVK.length-1]).q;
 const evK=q=>(EVK.find(x=>x.q===q)||EVK[EVK.length-1]).k;
-const evInfo=k=>{ const E=window.EditorNoche; return E?E.evDe(evQ(k)):{e:'✕',nom:k}; };
+const evInfo=k=>{ const E=window.EditorNoche; if(E) return E.evDe(evQ(k)); const x=EVK.find(y=>y.k===k)||EVK[EVK.length-1]; return {e:x.e,nom:x.nom}; };   // v4.9.9: sin ✕
+function _trasCargarEditor(){   // v4.9.9: llamada por el editor de la noche en cuanto se carga
+  try{
+    const tb=$('gridBody'); if(tb&&tb.children.length) buildBody();   // rejilla y lista de noches del paciente
+    const an=$('analisisContent'); if(an&&an.children.length&&typeof renderAnalysis==='function') renderAnalysis();
+  }catch(e){ console.error('_trasCargarEditor',e); }
+}
 function evDelDia(day){ // [{t:'03:00',k:'bano'}]; en los diarios anteriores solo hay la media hora (✕): «otro»
   if(day&&Array.isArray(day.ev)) return day.ev.filter(x=>x&&_hhmm(x.t)!=null).map(x=>({t:_fmtHHMM(_hhmm(x.t)),k:EVK.some(y=>y.k===x.k)?x.k:'otro'}));
   // v4.9.7: un despertar del registro guiado con motivo (baño, dolor…) dejó su ✕ en esa media hora: se recupera su tipo y su hora
@@ -4626,7 +4639,7 @@ function ruSated(A){
   // Satisfaction → calidad del sueño percibida: saludable si la media supera el 65 % del máximo posible (POMP),
   // es decir, > 3,6 en la escala 1–5 (v4.9.5) o > 2,3 en la escala antigua 1–3: predominan los días buenos.
   const QE=(A.qEsc)||qEscDiario().escala, Q_SANO=65;
-  const qs=T.qs; add('S','Satisfacción', qs==null?null:qPomp(qs,QE)>Q_SANO, qs==null?'—':qDiez(qs,QE)+'/10', 'Calidad del sueño percibida (media > 6,5 de 10: predominan los días buenos).');
+  const qs=T.qs; add('S','Satisfacción', qs==null?null:qPomp(qs,QE)>Q_SANO, qs==null?'—':qDiez(qs,QE)+'/10', 'Calidad del sueño percibida (media > 7,2 de 10: predominan los días buenos).');
 
   // Alertness → estado durante el día: proxy subjetivo de alerta diurna (mismo umbral en POMP)
   const qe=T.qe; add('A','Alerta diurna', qe==null?null:qPomp(qe,QE)>Q_SANO, qe==null?'—':qDiez(qe,QE)+'/10', 'Estado durante el día (proxy subjetivo; el diario no mide somnolencia objetiva).');
@@ -5041,7 +5054,7 @@ function renderAnalysis(){
       off+=len;
     }
     const pct=i=>Math.round((c[i]||0)/n*100);
-    const a10=v=>v==null?null:Math.round(qPomp(v,esc))/10, d10=v=>String(v).replace('.',',');   // v4.9.9: de 0 a 10
+    const a10=v=>qDiezN(v,esc), d10=v=>String(v).replace('.',',');   // v4.9.9: sobre 10 (el doble del valor: 1 → 2 … 5 → 10)
     const avg10=a10(avg), med10=a10(med), malos=esc===5?labs[0].toLowerCase()+' o '+labs[1].toLowerCase():labs[0].toLowerCase();
     const leyenda=[];for(let i=1;i<=esc;i++)leyenda.push(`<span style="white-space:nowrap"><span style="color:${cols[i-1]}">●</span> ${labs[i-1]} ${c[i]||0} (${pct(i)}%)</span>`);
     return `<div style="text-align:center;flex:1;min-width:170px">
@@ -5057,8 +5070,8 @@ function renderAnalysis(){
       <div style="font-size:.7rem;color:var(--slate);margin-top:3px">Mediana: <b>${d10(med10)} de 10</b> · «${qTexto(med,esc,key)}» · días malos (${malos}): <b>${Rq.pctMalo}%</b></div></div>`;
   }
   html+=sec('Calidad percibida', `
-    <p class="sub">Valoración del paciente sobre su sueño, su despertar y su estado diurno (escala ${qInfo.escala===5?'Likert de cinco categorías':'de tres categorías de versiones anteriores'}), con la distribución a lo largo de las 3 semanas. La media (en el centro de cada anillo) y la mediana se expresan de 0 a 10: la categoría más baja vale 0 y la más alta, 10${qInfo.escala===5?' (2,5 entre categorías)':''}.</p>
-    ${qInfo.mixto?`<p class="secnote" style="margin:0 0 10px"><b>Escalas mezcladas:</b> ${qInfo.n3} día(s) se valoraron con la escala antigua de 3 niveles. Para el análisis se han pasado a la escala de cinco categorías de forma lineal (mala, la más baja; regular, la central; buena, la más alta), que de 0 a 10 valen 0, 5 y 10.</p>`:''}
+    <p class="sub">Valoración del paciente sobre su sueño, su despertar y su estado diurno (escala ${qInfo.escala===5?'Likert de cinco categorías':'de tres categorías de versiones anteriores'}), con la distribución a lo largo de las 3 semanas. La media (en el centro de cada anillo) y la mediana se expresan sobre 10, como el doble del valor de cada categoría: la más baja vale 2 y la más alta, 10${qInfo.escala===5?' (2 puntos entre categorías)':' (la central, 6)'}.</p>
+    ${qInfo.mixto?`<p class="secnote" style="margin:0 0 10px"><b>Escalas mezcladas:</b> ${qInfo.n3} día(s) se valoraron con la escala antigua de 3 niveles. Para el análisis se han pasado a la escala de cinco categorías de forma lineal (mala, la más baja; regular, la central; buena, la más alta), que sobre 10 valen 2, 6 y 10.</p>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-around;align-items:flex-start">
       ${qDonut('qs')}${qDonut('qd')}${qDonut('qe')}
     </div>
@@ -5072,7 +5085,7 @@ function renderAnalysis(){
   const QDOT=(day,key)=>{const v=+day[key]||0;if(!v)return '<span style="color:#ccd2d8">○</span>';
     if(qEscDia(day)===5)return `<span style="color:${Q_COL5[v-1]}" title="${v} · ${Q_TXT5[key][v-1]}">●<span class="qletter">${v}</span></span>`;
     return `<span style="color:${Q_COL3[v-1]}" title="${Q_TXT3[v-1]} (escala antigua 1–3)">●<span class="qletter">${['M','R','B'][v-1]}</span></span>`;};
-  const qAvg=key=>{const v=qValores(key,QE);return v.length?qDiez(v.reduce((a,b)=>a+b,0)/v.length,QE):null;};   // v4.9.9: de 0 a 10
+  const qAvg=key=>{const v=qValores(key,QE);return v.length?qDiez(v.reduce((a,b)=>a+b,0)/v.length,QE):null;};   // v4.9.9: sobre 10
   const qAvgWk=(key,a,b)=>{const v=qValores(key,QE,state.slice(a,b));return v.length?qDiez(v.reduce((p,q)=>p+q,0)/v.length,QE):null;};
   let dayRows='';
   const _dv=desviacionesPropias(all), _desvDia={}; _dv.lista.forEach(x=>{(_desvDia[x.d]=_desvDia[x.d]||[]).push(x);});   // v4.9.7
@@ -5109,8 +5122,8 @@ function renderAnalysis(){
     <td>${qAvg('qs')??'—'}</td><td>${qAvg('qd')??'—'}</td><td>${qAvg('qe')??'—'}</td></tr>`;
 
   // ---- Comparativa laborable vs festivo ----
-  const qTxt=(v,key)=>v==null?'—':qDiez(v,QE)+'/10 ('+qTexto(v,QE,key)+')';   // v4.9.9: de 0 a 10
-  const _dq10=d=>{ const v=Math.round(d*10/(QE-1)*10)/10; return (v>0?'+':v<0?'−':'')+String(Math.abs(v)).replace('.',','); };   // diferencia, en puntos de 0 a 10
+  const qTxt=(v,key)=>v==null?'—':qDiez(v,QE)+'/10 ('+qTexto(v,QE,key)+')';   // v4.9.9: sobre 10
+  const _dq10=d=>{ const v=Math.round(d*8/(QE-1)*10)/10; return (v>0?'+':v<0?'−':'')+String(Math.abs(v)).replace('.',','); };   // diferencia, en puntos sobre 10 (el doble)
   const fmtDelta=(min,unit)=>{if(min==null)return'—';const s=min>0?'+':min<0?'−':'';return s+r2(Math.abs(min))+unit;};
   const rows=[
     ['Tiempo total de sueño (TST)', fmtHM(lab.tst), fmtHM(fes.tst), (lab.tst!=null&&fes.tst!=null)?fmtDelta(fes.tst-lab.tst,' min'):'—'],
@@ -5175,7 +5188,7 @@ function renderAnalysis(){
     </div>`}`, {open:false});
 
   html+=sec('Resumen por día, semana y total', `
-    <p class="sub">Acostarse/levantarse (24 h, media circular). Latencias sobre el periodo principal de sueño. Calidad: valoración de cada día, de 1 (rojo, peor) a ${QE} (verde, mejor)${qInfo.mixto?'; M/R/B = días de la escala antigua de 3 niveles':''}; en las filas de media, la media de 0 a 10. 2 decimales.</p>
+    <p class="sub">Acostarse/levantarse (24 h, media circular). Latencias sobre el periodo principal de sueño. Calidad: valoración de cada día, de 1 (rojo, peor) a ${QE} (verde, mejor)${qInfo.mixto?'; M/R/B = días de la escala antigua de 3 niveles':''}; en las filas de media, la media sobre 10 (el doble del valor). 2 decimales.</p>
     <div class="scroll"><table class="summary">
       <thead><tr><th>Día</th><th>Acostarse</th><th>Levantarse</th><th>P. medio</th><th>Lat. sueño</th><th>Desp. terminal</th><th>TST</th><th>TIB</th><th>WASO</th><th>Nº desp.</th><th>Eficiencia</th><th>Siesta</th><th>Acontec.</th><th style="color:${QCOL.qs}">C. sueño</th><th style="color:${QCOL.qd}">C. despertar</th><th style="color:${QCOL.qe}">Estado día</th></tr></thead>
       <tbody>${dayRows}</tbody></table></div>${(()=>{
@@ -5203,7 +5216,7 @@ function renderAnalysis(){
     const par=(p,fmt)=>p[0]==null?'—':`${fmt(p[0])}${p[1]!=null?` <span style="color:var(--mist)">/ ${fmt(p[1])}</span>`:''}`;
     const filas=fac.map(f=>`<tr><td class="lab">${evInfo(f.k).e||''} ${escHtml(evInfo(f.k).nom)}</td><td style="text-align:center">${f.n}</td>${f.comp?`<td>${par(f.se,v=>r1(v)+' %')}</td><td>${par(f.tst,v=>fmtHM(v))}</td><td>${par(f.sol,v=>r1(v)+'′')}</td><td>${par(f.waso,v=>r1(v)+'′')}</td><td>${par(f.qs,v=>qDiez(v,QE))}</td>`:'<td colspan="5" style="color:var(--mist)">pocos días para comparar</td>'}</tr>`).join('');
     html+=sec('Acontecimientos anotados', `<p class="sub">Acontecimientos de la noche anotados por el paciente en el editor, por tipo. Para cada uno: nº de noches y la media de esas noches frente a la de las noches sin él (en gris). Es una comparación descriptiva: con pocas noches, orientativa.</p>
-      ${filas?`<div class="scroll"><table class="summary"><thead><tr><th>Acontecimiento</th><th>Noches</th><th>Eficiencia</th><th>TST</th><th>Latencia</th><th>WASO</th><th>C. sueño (0–10)</th></tr></thead><tbody>${filas}</tbody></table></div>`:'<div class="empty">No se han anotado acontecimientos en este diario.</div>'}`, {open:false});
+      ${filas?`<div class="scroll"><table class="summary"><thead><tr><th>Acontecimiento</th><th>Noches</th><th>Eficiencia</th><th>TST</th><th>Latencia</th><th>WASO</th><th>C. sueño (de 10)</th></tr></thead><tbody>${filas}</tbody></table></div>`:'<div class="empty">No se han anotado acontecimientos en este diario.</div>'}`, {open:false});
   }
   // ---- Lista de acontecimientos reportados (día · hora · descripción) ----
   const evList=[];
@@ -5362,8 +5375,8 @@ function clinicalReport(D){
   let q=[];
   const QE=qEscDiario().escala, qMix=qEscDiario().mixto;
   const qt=(v,k)=>qTexto(v,QE,k);
-  // v4.9.9: medias y medianas de 0 a 10 (como los anillos de la calidad percibida)
-  q.push(`Valoración media (de 0 a 10): calidad del sueño <b>${qt(total.qs,'qs')}</b> (${total.qs==null?'—':qDiez(total.qs,QE)+'/10'}), del despertar <b>${qt(total.qd,'qd')}</b> (${total.qd==null?'—':qDiez(total.qd,QE)+'/10'}) y del estado diurno <b>${qt(total.qe,'qe')}</b> (${total.qe==null?'—':qDiez(total.qe,QE)+'/10'}).${qMix?' Parte de los días se valoraron con la escala antigua de 3 niveles y se han pasado a la de cinco categorías de forma lineal.':''}`);
+  // v4.9.9: medias y medianas sobre 10 (como los anillos de la calidad percibida)
+  q.push(`Valoración media (sobre 10): calidad del sueño <b>${qt(total.qs,'qs')}</b> (${total.qs==null?'—':qDiez(total.qs,QE)+'/10'}), del despertar <b>${qt(total.qd,'qd')}</b> (${total.qd==null?'—':qDiez(total.qd,QE)+'/10'}) y del estado diurno <b>${qt(total.qe,'qe')}</b> (${total.qe==null?'—':qDiez(total.qe,QE)+'/10'}).${qMix?' Parte de los días se valoraron con la escala antigua de 3 niveles y se han pasado a la de cinco categorías de forma lineal.':''}`);
   // la escala es ordinal, así que se añaden la mediana y la proporción de días malos
   {
     const R={qs:qResumen('qs'),qd:qResumen('qd'),qe:qResumen('qe')};
@@ -5564,6 +5577,8 @@ function buildUnifiedCsv(){
       ['calidad_despertar_mediana',r(qResumen('qd').med),'1-'+A.qEsc],
       ['estado_dia_mediana',r(qResumen('qe').med),'1-'+A.qEsc],
       ['calidad_sueno_dias_malos',r(qResumen('qs').pctMalo),A.qEsc===5?'% dias 1-2':'% dias mala'],
+      ...['qs','qd','qe'].map(k=>[{qs:'calidad_sueno',qd:'calidad_despertar',qe:'estado_dia'}[k]+'_media_sobre10',r(qDiezN(t[k],A.qEsc)),'2-10 (doble del valor)']),   // v4.9.9
+      ...['qs','qd','qe'].map(k=>[{qs:'calidad_sueno',qd:'calidad_despertar',qe:'estado_dia'}[k]+'_mediana_sobre10',r(qDiezN(qResumen(k).med,A.qEsc)),'2-10 (doble del valor)']),
       ['acontecimientos_total',t.evSum,''],
       ['dias_con_marca_tiempo',A.adh?A.adh.conMarca:'','dias'],
       ['dias_registrados_a_tiempo',A.adh?A.adh.aTiempo:'','dias'],
@@ -6131,20 +6146,24 @@ function dataURLtoUint8(durl){
   const b64=durl.split(',')[1]; const bin=atob(b64); const len=bin.length; const u=new Uint8Array(len);
   for(let i=0;i<len;i++)u[i]=bin.charCodeAt(i); return u;
 }
-// ===== v4.9.9: WORD DEL ANÁLISIS = EL PDF DEL ANÁLISIS COMPLETO, EDITABLE =====
+// ===== v4.9.9: WORD DEL ANÁLISIS = EL PDF DEL ANÁLISIS COMPLETO =====
 // Se prepara la misma vista que imprime «PDF del análisis completo» (los apartados desplegados, en el mismo orden y
-// con los mismos saltos de página, el informe clínico provisional y la rejilla del diario como anexo apaisado) y se
-// recorre para escribir el Word: textos y tablas editables, con los colores, fondos, bordes y tamaños de letra de la
-// impresión (se leen las reglas @media print de la página), y los gráficos (SVG) como imágenes. Primero se construye
-// una descripción intermedia (párrafos, tablas e imágenes) y de ella sale el .docx (librería docx) o, si esa librería
-// no se ha podido cargar, un .doc en HTML con el mismo contenido.
+// con los mismos saltos de página, el informe clínico provisional y la rejilla del diario como anexo apaisado).
+// El Word se divide en apartados editables y no editables (v4.9.9, noviembre): la cabecera (con los datos del paciente)
+// y el informe clínico provisional se escriben como texto y tablas editables, con los colores, fondos, bordes y tamaños
+// de letra de la impresión (se leen las reglas @media print de la página); cada uno de los demás apartados es una imagen
+// en alta resolución de lo que imprime el PDF (html2canvas), del ancho de la hoja, y se parte por filas o líneas si no
+// cabe en ella. Así el Word no se descuadra con los ajustes de página de cada versión de Word. El anexo es una imagen
+// en una hoja apaisada. Primero se construye una descripción intermedia (párrafos, tablas e imágenes) y de ella sale
+// el .docx (librería docx). Sin html2canvas o sin la librería docx, todo el Word se escribe editable, como antes (o,
+// sin la librería docx, un .doc en HTML con el mismo contenido).
 const _WD_A4={w:11906,h:16838}, _WD_MV=794, _WD_MA=340;   // A4 en twips; márgenes de 14 mm (vertical) y 6 mm (anexo)
 function _wdReglasImpresion(){
   const out=[]; let ord=0;
   const recorre=(rules,print)=>{ for(const r of rules||[]){
     if(r.cssRules&&r.media){ const m=(r.media&&r.media.mediaText)||r.conditionText||''; recorre(r.cssRules,print||/\bprint\b/.test(m)); }
     else if(print&&r.selectorText&&r.style){ const props={};
-      ['display','font-size','break-before','page-break-before','padding-top','padding-right','padding-bottom','padding-left','height'].forEach(p=>{ const v=r.style.getPropertyValue(p); if(v) props[p]={v:String(v).trim(),imp:r.style.getPropertyPriority(p)==='important'}; });
+      ['display','font-size','break-before','page-break-before','break-inside','page-break-inside','padding-top','padding-right','padding-bottom','padding-left','height'].forEach(p=>{ const v=r.style.getPropertyValue(p); if(v) props[p]={v:String(v).trim(),imp:r.style.getPropertyPriority(p)==='important'}; });
       if(Object.keys(props).length) out.push({sel:r.selectorText,props,ord:ord++}); } } };
   for(const sh of document.styleSheets){ try{ recorre(sh.cssRules,false); }catch(e){} }
   return out;
@@ -6169,7 +6188,9 @@ function _wdContexto(){
     const t=el.tagName.toUpperCase(); if(['SCRIPT','STYLE','TEMPLATE','TITLE','NOSCRIPT'].includes(t)) return false;
     return CS(el).visibility!=='hidden'; };
   const SALTO=el=>P(el,'break-before')==='page'||P(el,'page-break-before')==='always';
-  return {R,CS,P,PT,DISP,VIS,SALTO,sinImg:/jsdom/i.test(navigator.userAgent)||typeof document.createElement('canvas').toDataURL!=='function'};
+  // letra reducida como en el PDF (zoom de ajuste a una hoja: la primera parte del informe clínico)
+  const Z=new Map(), F=el=>{ let f=1; for(const [e,z] of Z) if(e.contains(el)) f*=z; return f; };
+  return {R,CS,P,PT,DISP,VIS,SALTO,Z,F,sinImg:/jsdom/i.test(navigator.userAgent)||typeof document.createElement('canvas').toDataURL!=='function'};
 }
 function _wdTw(v){ const x=String(v||'').match(/^(-?[\d.]+)\s*(mm|cm|pt|px|rem|em|in)?$/); if(!x) return null; const n=+x[1];
   return Math.round(x[2]==='mm'?n*56.7:x[2]==='cm'?n*567:x[2]==='pt'?n*20:x[2]==='in'?n*1440:(x[2]==='rem'||x[2]==='em')?n*240:n*15); }
@@ -6224,7 +6245,7 @@ async function _wdImagen(el,C,X){
 }
 function _wdEstilo(el,X){
   const cs=X.CS(el), fw=cs.fontWeight;
-  const o={pt:X.PT(el),b:(fw==='bold'||+fw>=600),i:cs.fontStyle==='italic',color:_wdHex(cs.color)||'222222',caps:cs.textTransform==='uppercase'};
+  const o={pt:Math.round(X.PT(el)*X.F(el)*10)/10,b:(fw==='bold'||+fw>=600),i:cs.fontStyle==='italic',color:_wdHex(cs.color)||'222222',caps:cs.textTransform==='uppercase'};
   if(el.closest('sup')||cs.verticalAlign==='super') o.sup=true;
   if(el.closest('sub')||cs.verticalAlign==='sub') o.sub=true;
   return o;
@@ -6271,6 +6292,8 @@ function _wdParrafo(el,runs,X,propio,C){
   if(propio){ p.antes=Math.min(240,Math.round(_wdPx(cs.marginTop)*12)); p.despues=Math.min(200,Math.round(_wdPx(cs.marginBottom)*12)); }
   else p.despues=40;
   const t=el.tagName.toUpperCase(); if(/^H[1-6]$/.test(t)||t==='SUMMARY'||el.classList.contains('kgh')) p.seguir=true;
+  // interlineado de la impresión (Word, con interlineado sencillo, deja ~1,15 veces la letra)
+  const lh=parseFloat(cs.lineHeight), fs=parseFloat(cs.fontSize); if(lh>0&&fs>0) p.interl=Math.max(240,Math.min(420,Math.round(240*lh/fs/1.15)));
   return p;
 }
 async function _wdFlujo(el,C,X){
@@ -6297,7 +6320,7 @@ function _wdSubC(C,el,X,ancho){
 }
 async function _wdCaja(el,C,X){
   const cs=X.CS(el), r=el.getBoundingClientRect(), pa=el.parentElement, pr=pa?pa.getBoundingClientRect():null;
-  let w=C.ancho; if(r.width&&pr&&pr.width&&r.width<pr.width*.92) w=Math.round(C.ancho*r.width/pr.width);
+  let w=C.ancho; if(r.width&&pr&&pr.width&&r.width<pr.width*.92&&!el.matches('header.app')) w=Math.round(C.ancho*r.width/pr.width);   // la cabecera, de lado a lado
   const pad=_wdPad(el,X), sub=_wdSubC(C,el,X,w-pad.left-pad.right);
   const hijos=await _wdContenido(el,sub,X);
   // un salto de página dentro de una tabla no funciona en Word: la caja se parte en una tabla por hoja
@@ -6442,6 +6465,97 @@ async function _wdBloque(el,C,X){
   if(out.length&&X.SALTO(el)){ if(out[0].t==='p') out[0]=Object.assign({},out[0],{salto:true}); else out.unshift({t:'p',runs:[],salto:true,mini:true}); }
   return out;
 }
+// ---- apartados no editables: imágenes en alta resolución de lo que imprime el PDF ----
+const _WD_ALTO=_WD_A4.h-2*_WD_MV, _WD_HOLGURA=360;   // alto útil de la hoja (twips) y margen de seguridad
+// la cabecera (con los datos del paciente) y el informe clínico provisional se escriben editables
+function _wdEditable(el){ return el.matches('header.app,.print-head,details[data-sectitle="Informe clínico provisional"]'); }
+function _wdPuedeCapturar(X){ return !X.sinImg&&typeof html2canvas==='function'&&typeof docx!=='undefined'&&!!docx.Document; }
+function _wdTitulo(el){ const t=el.dataset&&el.dataset.sectitle; if(t) return t==='__resumen__'?'Resumen para la consulta':t==='__longitudinal__'?'Análisis longitudinal':t;
+  const h=el.querySelector('.kgh,.annex-title,h2,h3'); return h?h.textContent.replace(/\s+/g,' ').trim():'Apartado'; }
+// posiciones (px desde arriba del apartado) por donde se puede partir sin cortar una línea de texto, una fila o un gráfico
+function _wdCortes(el){
+  const R0=el.getBoundingClientRect(), t0=R0.top, iv=[];
+  const tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT), rg=document.createRange();
+  for(let n=tw.nextNode();n;n=tw.nextNode()){ if(!n.nodeValue.trim()) continue; rg.selectNodeContents(n); for(const q of rg.getClientRects()) if(q.height) iv.push([q.top-t0,q.bottom-t0]); }
+  el.querySelectorAll('tr,svg,img,canvas,summary,li,.kpi,.trend,.chip,.qbox').forEach(e=>{ const q=e.getBoundingClientRect(); if(q.height) iv.push([q.top-t0,q.bottom-t0]); });
+  const c=new Set(); iv.forEach(([a,b])=>{ c.add(b); c.add(a); });   // entre dos filas seguidas, el borde común
+  return [...c].filter(y=>y>4&&y<R0.height-4&&!iv.some(([a,b])=>a+.5<y&&y<b-.5)).sort((a,b)=>a-b);
+}
+// los gráficos SVG se dibujan aparte (como imagen): se les ponen en línea los estilos que reciben de la hoja de estilos
+function _wdSvgEnLinea(doc){
+  const c=doc.querySelector('[data-wd-cap]'), w=doc.defaultView; if(!c||!w) return;
+  const PR=['fill','fill-opacity','stroke','stroke-width','stroke-opacity','stroke-dasharray','stroke-linecap','stroke-linejoin','opacity','font-size','font-family','font-weight','font-style','text-anchor','dominant-baseline','visibility'];
+  c.querySelectorAll('svg').forEach(sv=>{ [sv,...sv.querySelectorAll('*')].forEach(o=>{ const cs=w.getComputedStyle(o);
+    const x=PR.map(p=>p+':'+cs.getPropertyValue(p)).filter(v=>!/:\s*$/.test(v)).join(';');
+    o.setAttribute('style',(o===sv?(o.getAttribute('style')||'')+';':'')+x); }); });
+}
+// captura de un apartado. Con el zoom de ajuste a una hoja del PDF (z < 1), se dibuja más ancho (1/z) y la imagen se
+// reduce al ancho de la hoja: el mismo efecto que el zoom en el PDF.
+async function _wdCapturar(el,z){
+  const guarda=el.getAttribute('style');
+  if(z&&z<1){ const w=el.getBoundingClientRect().width; el.style.width=(w/z)+'px'; el.style.maxWidth='none'; await new Promise(ok=>setTimeout(ok,30)); }
+  try{
+    const r=el.getBoundingClientRect(); if(!r.width||!r.height) return null;
+    const sc=Math.max(1.5,Math.min(3,Math.sqrt(2.4e7/(r.width*r.height))));   // alta resolución (~290 ppp), sin pasar del límite de los lienzos
+    const cortes=_wdCortes(el), t0=r.top;
+    // tablas con cabecera: si la imagen se parte dentro de una, la cabecera se repite arriba del trozo siguiente (como en el PDF)
+    const tablas=[...el.querySelectorAll('table')].map(t=>{ const h=t.tHead&&t.tHead.getBoundingClientRect(), q=t.getBoundingClientRect(); return h&&h.height?[h.top-t0,h.bottom-t0,q.bottom-t0]:null; }).filter(Boolean);
+    el.setAttribute('data-wd-cap','');
+    const cv=await html2canvas(el,{scale:sc,backgroundColor:'#ffffff',logging:false,useCORS:true,ignoreElements:e=>e.id==='wdTapa',
+      windowWidth:Math.max(window.innerWidth,Math.ceil(r.right)+16),onclone:_wdSvgEnLinea});
+    return {cv,sc,wpx:r.width,hpx:r.height,cortes,tablas};
+  }finally{ el.removeAttribute('data-wd-cap'); if(guarda==null) el.removeAttribute('style'); else el.setAttribute('style',guarda); }
+}
+// una franja de la captura (de y0 a y1 px de maqueta), en PNG
+function _wdTrozo(cap,y0,y1,cab){   // cab: [arriba, abajo] de la cabecera de tabla que se repite encima
+  const W=cap.cv.width, a=Math.round(y0*cap.sc), H=Math.max(1,Math.min(cap.cv.height,Math.round(y1*cap.sc))-a);
+  const ca=cab?Math.round(cab[0]*cap.sc):0, ch=cab?Math.max(0,Math.round(cab[1]*cap.sc)-ca):0;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H+ch; const g=cv.getContext('2d');
+  g.fillStyle='#ffffff'; g.fillRect(0,0,W,H+ch);
+  if(ch) g.drawImage(cap.cv,0,ca,W,ch,0,0,W,ch);
+  g.drawImage(cap.cv,0,a,W,H,0,ch,W,H);
+  return _wdU8(cv.toDataURL('image/png'));
+}
+// lo que ocupa en la hoja un apartado editable (para saber cuánto sitio queda para la imagen siguiente)
+function _wdAvanza(pag,el,C,X){
+  const r=el.getBoundingClientRect(), gap=pag.fondo==null?0:Math.max(0,r.top-pag.fondo);
+  const s=[...el.querySelectorAll('.clin-final,.pg-salto')].filter(e=>X.SALTO(e)).pop();
+  if(s) pag.y=Math.round((r.bottom-s.getBoundingClientRect().top)*C.esc);
+  else if(X.SALTO(el)) pag.y=Math.round(r.height*C.esc);
+  else pag.y+=Math.round((gap+r.height)*C.esc);
+  pag.fondo=r.bottom;
+}
+// un apartado como imagen (o varias, una por hoja, si no cabe): como en el PDF, empieza hoja si allí empieza hoja; si
+// no cabe en lo que queda de hoja, sigue en la siguiente (los que el PDF no parte, enteros)
+async function _wdApartadoImagen(el,C,X,pag,z){
+  const r=el.getBoundingClientRect(), salto=X.SALTO(el);
+  let cap=null; try{ cap=await _wdCapturar(el,z); }catch(e){ console.error('captura del apartado',e); }
+  if(!cap){ const bl=await _wdBloque(el,C,X); _wdAvanza(pag,el,C,X); return bl; }   // sin imagen: editable
+  const gap=(salto||pag.fondo==null)?0:Math.round(Math.max(0,r.top-pag.fondo)*C.esc); pag.fondo=r.bottom;
+  const k=C.ancho/cap.wpx, HB=_WD_ALTO-_WD_HOLGURA, alt=_wdTitulo(el)+' (del PDF del análisis)';
+  const evita=/avoid/.test((X.P(el,'break-inside')||'')+(X.P(el,'page-break-inside')||''));
+  let nueva=salto, disp=salto?HB:HB-pag.y-gap; const total=cap.hpx*k;
+  if(!nueva&&total>disp&&(evita||disp<3000||total<=HB&&disp<total*.4)){ nueva=true; disp=HB; }
+  const out=[]; let y0=0, primero=true;
+  while(y0<cap.hpx-.5){
+    const cab=primero?null:(cap.tablas||[]).find(([a,b,f])=>b<=y0+1&&y0<f-1)||null, hc=cab?cab[1]-cab[0]:0;
+    const lim=y0+disp/k-hc; let y1=cap.hpx;
+    if(lim<cap.hpx){ y1=null; for(const c of cap.cortes) if(c>y0+20&&c<=lim) y1=c; if(y1==null) y1=lim; }
+    const h=Math.round((y1-y0+hc)*k), img=_wdTrozo(cap,y0,y1,cab);
+    out.push({t:'p',runs:[{img,w:C.ancho,h,alt}],align:'left',antes:(primero&&!nueva)?gap:0,despues:0,salto:nueva,imagen:true});
+    pag.y=nueva?h:pag.y+gap+h;
+    y0=y1; primero=false; nueva=true; disp=HB;
+  }
+  return out;
+}
+// el anexo (la rejilla del diario), una imagen en su hoja apaisada
+async function _wdAnexoImagen(anexo,X){
+  let cap=null; try{ cap=await _wdCapturar(anexo,1); }catch(e){ console.error('captura del anexo',e); }
+  if(!cap) return null;
+  const anchoA=_WD_A4.h-2*_WD_MA, altoA=_WD_A4.w-2*_WD_MA-200-_WD_HOLGURA;
+  let w=anchoA, h=Math.round(w*cap.hpx/cap.wpx); if(h>altoA){ w=Math.round(w*altoA/h); h=altoA; }
+  return [{t:'p',runs:[{img:_wdTrozo(cap,0,cap.hpx),w,h,alt:_wdTitulo(anexo)}],align:'center',despues:0,imagen:true}];
+}
 // Descripción del Word a partir de la vista de impresión del análisis (ya preparada con prepararImpresionAnalisis)
 // Mientras se describe, la página se maqueta como al imprimir: las reglas @media print se aplican también en pantalla
 // y el análisis toma el ancho de la hoja (182 mm; la rejilla del anexo, 285 mm, apaisada). Una capa blanca lo tapa.
@@ -6457,20 +6571,28 @@ async function _wdDescribir(){
   pon(wrap,{width:'182mm',maxWidth:'none',marginLeft:'0',marginRight:'0',paddingLeft:'0',paddingRight:'0',boxSizing:'border-box'});
   pon(cab,{width:'182mm',boxSizing:'border-box'});
   pon(anexo,{width:'285mm'});
-  if(an) an.querySelectorAll('[style*="zoom"]').forEach(e=>pon(e,{zoom:''}));   // sin el ajuste a una hoja del PDF: Word pagina solo
+  // sin el zoom de ajuste a una hoja del PDF (Word no lo tiene): la letra del informe se reduce igual y los apartados
+  // en imagen se dibujan más anchos y se reducen
+  const zooms=new Map(); if(an) an.querySelectorAll('[style*="zoom"]').forEach(e=>{ const z=parseFloat(e.style.zoom); if(z>0&&z<1) zooms.set(e,z); pon(e,{zoom:''}); });
   await new Promise(ok=>setTimeout(ok,60));
-  const X=_wdContexto();
+  const X=_wdContexto(), img=_wdPuedeCapturar(X);
+  zooms.forEach((z,e)=>X.Z.set(e,z));
   try{
     const anchoV=_WD_A4.w-2*_WD_MV, anchoA=_WD_A4.h-2*_WD_MA;
     const pxV=(an&&an.getBoundingClientRect().width)||688;
     const C={ancho:anchoV,esc:anchoV/pxV,fondo:'FFFFFF'};
     const vertical=[];
     if(cab&&X.VIS(cab)) vertical.push(...await _wdBloque(cab,Object.assign({},C,{esc:anchoV/((cab.getBoundingClientRect().width)||pxV)}),X));
-    for(const el of (an?[...an.children]:[])){ if(el===anexo) continue; vertical.push(...await _wdBloque(el,C,X)); }
+    if(img){   // v4.9.9: la cabecera y el informe, editables; el resto, imágenes del PDF
+      const pag={y:cab&&X.VIS(cab)?Math.round(cab.getBoundingClientRect().height*anchoV/((cab.getBoundingClientRect().width)||pxV))+200:0,fondo:null};
+      for(const el of (an?[...an.children]:[])){ if(el===anexo||!X.VIS(el)) continue;
+        if(_wdEditable(el)){ vertical.push(...await _wdBloque(el,C,X)); _wdAvanza(pag,el,C,X); }
+        else vertical.push(...await _wdApartadoImagen(el,C,X,pag,zooms.get(el)||1)); }
+    } else for(const el of (an?[...an.children]:[])){ if(el===anexo) continue; vertical.push(...await _wdBloque(el,C,X)); }
     let apaisada=[];
     if(anexo&&X.VIS(anexo)){ const pxA=anexo.getBoundingClientRect().width||1077;
-      apaisada=await _wdFlujo(anexo,{ancho:anchoA,esc:anchoA/pxA,fondo:'FFFFFF',altoMax:_WD_A4.w-2*_WD_MA-200-1500},X); }
-    return {secciones:[{apaisada:false,bloques:vertical},...(apaisada.length?[{apaisada:true,bloques:apaisada}]:[])],pie:APP_COPYRIGHT};
+      apaisada=(img&&await _wdAnexoImagen(anexo,X))||await _wdFlujo(anexo,{ancho:anchoA,esc:anchoA/pxA,fondo:'FFFFFF',altoMax:_WD_A4.w-2*_WD_MA-200-1500},X); }
+    return {secciones:[{apaisada:false,bloques:vertical},...(apaisada.length?[{apaisada:true,bloques:apaisada}]:[])],pie:APP_COPYRIGHT,imagenes:img};
   }finally{
     guarda.reverse().forEach(([el,v])=>{ if(v==null) el.removeAttribute('style'); else el.setAttribute('style',v); });
     st.remove(); tapa.remove();
@@ -6505,7 +6627,7 @@ function _wdDocx(D){
   };
   const parr=p=>{
     const o={children:p.runs.length?p.runs.map(run):[new TextRun({text:'​',size:p.mini?2:16})],alignment:AL[p.align]||AlignmentType.LEFT,
-      spacing:p.mini?{before:0,after:0,line:Math.max(20,p.alto||20),lineRule:'exact'}:{before:p.antes||0,after:p.despues==null?40:p.despues,line:240,lineRule:'auto'}};
+      spacing:p.mini?{before:0,after:0,line:Math.max(20,p.alto||20),lineRule:'exact'}:{before:p.antes||0,after:p.despues==null?40:p.despues,line:p.imagen?240:(p.interl||240),lineRule:'auto'}};
     if(p.seguir) o.keepNext=true; if(p.salto) o.pageBreakBefore=true;
     const izq=(p.ind||0)+(p.sangria?p.sangria.left:0); if(izq||p.indR||(p.sangria&&p.sangria.hanging)) o.indent={left:izq,right:p.indR||0,hanging:p.sangria&&p.sangria.hanging||undefined};
     if(p.linea) o.border={bottom:{style:BorderStyle.SINGLE,size:6,color:'CFE0EF',space:1}};
@@ -6547,7 +6669,7 @@ function _wdHtml(D){
     let s=e(r.text); const st=[`font-size:${r.pt||10}pt`,`color:#${r.color||'222222'}`]; if(r.b) st.push('font-weight:bold'); if(r.i) st.push('font-style:italic'); if(r.caps) st.push('text-transform:uppercase'); if(r.shade) st.push('background:#'+r.shade);
     s=`<span style="${st.join(';')}">${s}</span>`; return r.sup?`<sup>${s}</sup>`:r.sub?`<sub>${s}</sub>`:s; };
   const par=p=>p.mini?`<p style="margin:0;font-size:1pt;line-height:${Math.max(1,(p.alto||20)/20)}pt${p.salto?';page-break-before:always':''}">&nbsp;</p>`:
-    `<p style="margin:${(p.antes||0)/20}pt ${(p.indR||0)/20}pt ${(p.despues==null?40:p.despues)/20}pt ${((p.ind||0)+(p.sangria?p.sangria.left:0))/20}pt;text-align:${p.align||'left'}${p.salto?';page-break-before:always':''}${p.linea?';border-bottom:1px solid #cfe0ef':''}">${p.runs.map(run).join('')||'&nbsp;'}</p>`;
+    `<p style="margin:${(p.antes||0)/20}pt ${(p.indR||0)/20}pt ${(p.despues==null?40:p.despues)/20}pt ${((p.ind||0)+(p.sangria?p.sangria.left:0))/20}pt;text-align:${p.align||'left'}${p.interl&&!p.imagen?';line-height:'+Math.round(p.interl/240*115)+'%':''}${p.salto?';page-break-before:always':''}${p.linea?';border-bottom:1px solid #cfe0ef':''}">${p.runs.map(run).join('')||'&nbsp;'}</p>`;
   const bd=x=>x?`${Math.max(1,Math.round(x.size/6))}px solid #${x.color}`:'none';
   const tab=t=>`<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:${Math.round(t.cols.reduce((a,b)=>a+b,0)/20)}pt;margin-left:${(t.ind||0)/20}pt">`+
     t.rows.map(r=>`<tr${r.alto?` style="height:${r.alto/20}pt"`:''}>`+r.cells.filter(c=>c.vm!=='continue').map(c=>{ const B=c.bordes||{}, P=c.pad||{top:15,bottom:15,left:30,right:30};
@@ -6641,8 +6763,8 @@ function exportExcel(){
   a2.push(['Cronotipo (MSFsc)',A.chrono,C(A.MSFsc),'MCTQ (ref. 7)']);
   a2.push([]);
   a2.push(['RESUMEN POR SEMANA Y TOTAL']);
-  a2.push(['Periodo','Días con datos','Acostarse','Levantarse','Punto medio','Lat. sueño','Despertar terminal','TST','TIB','WASO','Nº desp.','Desp. total','Eficiencia %','Siesta','Acontec.','C. sueño (1-'+A.qEsc+')','C. despertar (1-'+A.qEsc+')','Estado día (1-'+A.qEsc+')']);
-  const aggRow=(name,w)=>[name,w.n,C(w.bed),C(w.rise),C(w.mid),R2(w.sol),R2(w.wakeLat),HM(w.tst),HM(w.tib),R2(w.waso),R2(w.nWake),R2(w.twt),R2(w.se),R2(w.nap),w.evSum,R2(w.qs),R2(w.qd),R2(w.qe)];
+  a2.push(['Periodo','Días con datos','Acostarse','Levantarse','Punto medio','Lat. sueño','Despertar terminal','TST','TIB','WASO','Nº desp.','Desp. total','Eficiencia %','Siesta','Acontec.','C. sueño (de 10)','C. despertar (de 10)','Estado día (de 10)']);   // v4.9.9: medias sobre 10
+  const aggRow=(name,w)=>[name,w.n,C(w.bed),C(w.rise),C(w.mid),R2(w.sol),R2(w.wakeLat),HM(w.tst),HM(w.tib),R2(w.waso),R2(w.nWake),R2(w.twt),R2(w.se),R2(w.nap),w.evSum,R2(qDiezN(w.qs,A.qEsc)),R2(qDiezN(w.qd,A.qEsc)),R2(qDiezN(w.qe,A.qEsc))];
   A.weeks.forEach((w,i)=>a2.push(aggRow('Semana '+(i+1),w)));
   a2.push(aggRow('TOTAL 3 semanas',A.total));
   a2.push([]);
@@ -6731,7 +6853,7 @@ async function exportAllPatients(){
     'TST noct. (h:min)','Siesta (min)','TST 24h (h:min)','Valoración TST','TIB (h:min)','Eficiencia %','Valoración SE',
     'Latencia sueño (min)','Valoración SOL','Despertar terminal (min)','Valoración','WASO (min)','Valoración WASO','Nº despertares','Tiempo despierto total (min)',
     'Acostarse','Levantarse','Punto medio','Variab. horaria (min)','SRI','SRI pares válidos','IS','Jet-lag social (h:min)','SJLsc (h:min)',
-    'Cronotipo (MSFsc)','Ventana CBT-I (h:min)','Calidad sueño (1-5)','Calidad despertar (1-5)','Estado día (1-5)','Escala original de calidad',
+    'Cronotipo (MSFsc)','Ventana CBT-I (h:min)','Calidad sueño (de 10)','Calidad despertar (de 10)','Estado día (de 10)','Escala original de calidad',
     'Noches anotadas en el editor','Noches fuera de su patrón','Acontecimientos anotados (noches)'];   // v4.9.9: sin ventana ni hitos
   const rows=[head];
   let exported=0;
@@ -6756,7 +6878,7 @@ async function exportAllPatients(){
         R2(m.waso), evtxt(cutWASO(m.waso,age)), R2(m.nWake), R2(m.twt),
         C(m.bed), C(m.rise), C(m.mid), R2(m.maxTimingSd), R2(m.SRI), m.sriPares==null?'':m.sriPares+'/'+(DAYS-1), R2(m.IS),
         m.jetSocial==null?'':HM(Math.abs(m.jetSocial)), m.jetSocialSc==null?'':HM(Math.abs(m.jetSocialSc)),
-        chronoName(m.MSFsc), HM(m.winTib), R2(m.qs), R2(m.qd), R2(m.qe), m.qEscTxt||'',
+        chronoName(m.MSFsc), HM(m.winTib), R2(qDiezN(m.qs,5)), R2(qDiezN(m.qd,5)), R2(qDiezN(m.qe,5)), m.qEscTxt||'',
         ...(()=>{ const x=extrasDeRegistro(obj); return [x.nGuiadas, x.desv==null?'':x.desv, x.factores]; })()
       ]);
       exported++;
@@ -6859,11 +6981,11 @@ function renderLongitudinal(periods){
     ['Punto medio del sueño', p=>C(p.mid), null],
     ['Variabilidad horaria (DE)', p=>R2(p.maxTimingSd)+'′', false],
     ['Jet-lag social', p=>p.jetSocial==null?'—':HM(Math.abs(p.jetSocial)), false],
-    ['Calidad sueño (1-5)', p=>R2(p.qs), true],
-    ['Estado diurno (1-5)', p=>R2(p.qe), true],
+    ['Calidad sueño (de 10)', p=>R2(qDiezN(p.qs,5)), true],   // v4.9.9: sobre 10
+    ['Estado diurno (de 10)', p=>R2(qDiezN(p.qe,5)), true],
     ['Ventana CBT-I sugerida', p=>HM(p.winTib), null],
   ];
-  const numFns={'Sueño total (TST)':p=>p.tst,'Eficiencia (SE %)':p=>p.se,'Latencia de sueño (SOL)':p=>p.sol,'Despertar terminal':p=>p.wakeLat,'WASO':p=>p.waso,'Nº despertares (NWAK)':p=>p.nWake,'Tiempo despierto (TWT)':p=>p.twt,'Variabilidad horaria (DE)':p=>p.maxTimingSd,'Calidad sueño (1-5)':p=>p.qs,'Estado diurno (1-5)':p=>p.qe};
+  const numFns={'Sueño total (TST)':p=>p.tst,'Eficiencia (SE %)':p=>p.se,'Latencia de sueño (SOL)':p=>p.sol,'Despertar terminal':p=>p.wakeLat,'WASO':p=>p.waso,'Nº despertares (NWAK)':p=>p.nWake,'Tiempo despierto (TWT)':p=>p.twt,'Variabilidad horaria (DE)':p=>p.maxTimingSd,'Calidad sueño (de 10)':p=>qDiezN(p.qs,5),'Estado diurno (de 10)':p=>qDiezN(p.qe,5)};
   // v4.8.1: la etiqueta procede del nombre del archivo o del paciente: se escapa
   let head=`<th>Métrica</th>${periods.map(p=>`<th>${escHtml(p.label)}</th>`).join('')}${periods.length>1?'<th>Tendencia</th>':''}`;
   let body=defs.map(([name,fmt,goodUp])=>{
@@ -7012,7 +7134,8 @@ const PDF_ANALISIS_PAGINAS=[
   {b:['Resumen por día, semana y total'], cls:'pg-resdia'},
   {b:['Noches fuera de su patrón habitual','Acontecimientos anotados'], cls:'pg-compacta'},
   {b:['Informe clínico provisional'], cls:'pg-informe'},
-  {b:['#longitBlock']}, {b:['Acontecimientos reportados']}, {b:['Referencias']}
+  {b:['#longitBlock','Acontecimientos reportados'], sigue:true},   // v4.9.9: a continuación de las conclusiones
+  {b:['Referencias'], cls:'pg-refs'}   // v4.9.9: en una sola hoja
 ];
 function _maquetarPdfAnalisis(){
   const c=$("analisisContent"); if(!c)return;
@@ -7023,12 +7146,12 @@ function _maquetarPdfAnalisis(){
     return hijos.find(e=>e.tagName==='DETAILS'&&e.dataset.sectitle===k)||null;
   };
   const seImprime=e=>e.tagName!=='DETAILS'||e.open;
-  hijos.forEach(e=>e.classList.remove('pg-salto','pg-tend','pg-compacta','pg-resdia','pg-informe'));
+  hijos.forEach(e=>e.classList.remove('pg-salto','pg-tend','pg-compacta','pg-resdia','pg-informe','pg-refs'));
   for(const g of PDF_ANALISIS_PAGINAS){
     const els=g.b.map(buscar).filter(Boolean);
     els.forEach(e=>{ c.appendChild(e); if(g.cls)e.classList.add(g.cls); });
     const primero=els.find(seImprime);
-    if(!g.inicio && primero && els.some(e=>e.tagName==='DETAILS'&&e.open)) primero.classList.add('pg-salto');
+    if(!g.inicio && !g.sigue && primero && els.some(e=>e.tagName==='DETAILS'&&e.open)) primero.classList.add('pg-salto');
   }
 }
 function prepararImpresionAnalisis(){
@@ -7055,6 +7178,9 @@ function _ajustarHojasPdf(){
       const alto=(w.getBoundingClientRect().bottom-inf.getBoundingClientRect().top)/pxmm;
       if(alto>PDF_ALTO_HOJA_MM) w.style.zoom=String(Math.max(0.7,Math.floor(PDF_ALTO_HOJA_MM/alto*1000)/1000));
     }
+    const rf=c.querySelector(':scope>details.pg-refs[open]');   // v4.9.9: las referencias, en una hoja
+    if(rf){ rf.style.zoom=''; const alto=rf.getBoundingClientRect().height/pxmm;
+      if(alto>PDF_ALTO_HOJA_MM) rf.style.zoom=String(Math.max(0.6,Math.floor(PDF_ALTO_HOJA_MM/alto*1000)/1000)); }
     const rd=c.querySelector(':scope>details.pg-resdia[open]');
     if(rd){ rd.style.zoom=''; const alto=rd.getBoundingClientRect().height/pxmm;
       if(alto>PDF_ALTO_HOJA_MM) rd.style.zoom=String(Math.max(0.7,Math.floor(PDF_ALTO_HOJA_MM/alto*1000)/1000)); }
@@ -8706,6 +8832,9 @@ $('edEvPanel').addEventListener('click',e=>{
 
 // para la Agenda y las pruebas automáticas
 window.EditorNoche={abrir,cerrar,estado:()=>E,irPaso,EV_TIPOS,EV,evDe,evNom,icoEv,insignia,notasDe,evTexto,ESC,ESC_F,QV,qv,cara,T,PASOS,aModelo,aRespuestas,normalizar};
+// v4.9.9: el editor se carga después de la Agenda. Lo que la Agenda pintó antes (al abrirla con la sesión guardada: la
+// lista de noches del paciente y la rejilla) salió sin los emoji de los acontecimientos (✕) ni las caras: se repinta.
+if(typeof window._trasCargarEditor==='function') window._trasCargarEditor();
 })();
 </script>
 </body>

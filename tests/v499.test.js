@@ -323,6 +323,30 @@ test('paciente (móvil): la lista de las 21 noches por semanas; la de anoche, de
   assert.deepEqual(app.errors, []);
 });
 
+test('paciente (móvil): al abrir la app con la sesión guardada, los acontecimientos salen con su emoji (no ✕) y las caras, aunque el editor se cargue después', async () => {
+  const app = await pacienteMovil();
+  const doc = app.doc;
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const inicio = new Date(hoy); inicio.setDate(inicio.getDate() - 3);
+  const s2 = doc.getElementById('start2'); s2.value = iso(inicio); s2.dispatchEvent(new app.win.Event('change'));
+  await app.sleep(50);
+  app.ev(`AgendaPuente.guardar(1,{gd:{b:'23:15',s:20,w:[{t:'03:00',d:20}],f:'06:45',r:'07:00'},tA:'L',tB:'L',ev:[{t:'03:00',q:'Tos'},{t:'05:00',q:'Ir al baño'}],sie:[],qs:4,qd:3,qe:4,trat:'',obs:''})`);
+  // los emoji de la Agenda (por si el editor aún no está) son los del editor
+  assert.deepEqual(app.evj(`EVK.map(x=>[x.e,x.nom])`), app.evj(`EVK.map(x=>{ const d=EditorNoche.evDe(x.q); return [d.e,d.nom]; })`));
+  // como al abrir la app: la Agenda pinta la lista antes de que el editor esté
+  app.ev(`window._edGuardado=window.EditorNoche; window.EditorNoche=undefined; buildBody();`);
+  const b = () => doc.querySelector('#nochesPac .pn[data-noche="1"]');
+  assert.deepEqual([...b().querySelectorAll('.nb-ev')].map(x => x.textContent), ['😷', '🚽']);
+  assert.equal(b().querySelectorAll('.pn-d svg').length, 0);
+  // en cuanto el editor se carga, avisa a la Agenda y la lista se repinta, ya con las caras
+  assert.match(app.ev(`[...document.scripts].map(s=>s.textContent).join('')`), /window\.EditorNoche=\{[^\n]*\};\n[^]*?if\(typeof window\._trasCargarEditor==='function'\) window\._trasCargarEditor\(\);\n\}\)\(\);/);
+  app.ev(`window.EditorNoche=window._edGuardado; _trasCargarEditor();`);
+  assert.deepEqual([...b().querySelectorAll('.nb-ev')].map(x => x.textContent), ['😷', '🚽']);
+  assert.equal(b().querySelectorAll('.pn-d svg').length, 3);
+  assert.doesNotMatch(doc.getElementById('nochesPac').textContent, /✕/);
+  assert.deepEqual(app.errors, []);
+});
+
 test('paciente (móvil): lo anotado en el editor sigue ahí al volver a abrir la app, y el profesional lo recibe por el enlace', async () => {
   const app = await pacienteMovil();
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0); const inicio = new Date(hoy); inicio.setDate(inicio.getDate() - 2);
@@ -1014,7 +1038,7 @@ test('D · paciente (móvil): el fondo de cada noche lleva el color de sus dos d
   assert.deepEqual(app.errors, []);
 });
 
-test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (media y mediana) y la leyenda sin numerar; la valoración sigue en 1–5', async () => {
+test('E · análisis: los anillos de la calidad percibida, sobre 10 como el doble del valor (media y mediana) y la leyenda sin numerar; la valoración sigue en 1–5', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-normal')`);
@@ -1026,16 +1050,16 @@ test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (media y me
   ['qs', 'qd', 'qe'].forEach((k, i) => {
     const R = app.evj(`qResumen('${k}')`);
     const t = [...svgs[i].querySelectorAll('text')].map(x => x.textContent);
-    const diez = String(Math.round((R.avg - 1) / (R.esc - 1) * 100) / 10).replace('.', ',');
+    const diez = String(Math.round(R.avg * 2 * 10) / 10).replace('.', ',');   // el doble del valor: 1 → 2 … 5 → 10
     assert.deepEqual(t, [diez, 'de 10'], k);
     assert.equal(R.esc, 5);
-    assert.ok(+diez.replace(',', '.') >= 0 && +diez.replace(',', '.') <= 10);
+    assert.ok(+diez.replace(',', '.') >= 2 && +diez.replace(',', '.') <= 10);
   });
-  assert.match(sec.textContent, /La media \(en el centro de cada anillo\) y la mediana se expresan de 0 a 10/);
-  // una sola escala en los anillos: la mediana también de 0 a 10 y la leyenda sin numerar
+  assert.match(sec.textContent, /La media \(en el centro de cada anillo\) y la mediana se expresan sobre 10, como el doble del valor de cada categoría: la más baja vale 2 y la más alta, 10 \(2 puntos entre categorías\)/);
+  // una sola escala en los anillos: la mediana también sobre 10 y la leyenda sin numerar
   ['qs', 'qd', 'qe'].forEach((k, i) => {
     const R = app.evj(`qResumen('${k}')`);
-    const med = String(Math.round((R.med - 1) / (R.esc - 1) * 100) / 10).replace('.', ',');
+    const med = String(Math.round(R.med * 2 * 10) / 10).replace('.', ',');
     const bloque = svgs[i].parentElement.textContent;
     assert.ok(bloque.includes('Mediana: ' + med + ' de 10'), bloque);
     assert.doesNotMatch(bloque, /de 5\b|\(1–2\)|\b[1-5] (Muy|Mala|Mal|Regular|Buena|Bien|Nada|Poco|Algo)\b/);
@@ -1064,29 +1088,154 @@ test('F · casos de ejemplo al día: ninguna noche fuera de los saltos del despe
 });
 
 // ---------- PDF del análisis completo y Word (v4.9.9, noviembre) ----------
-test('G · calidades de 0 a 10 en todo el análisis: RU-SATED, comparativa, acontecimientos, resumen por día e informe clínico', async () => {
+test('G · calidades sobre 10 (el doble del valor) en todo el análisis: RU-SATED, comparativa, acontecimientos, resumen por día e informe clínico', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-tcci')`);
   app.ev('renderAnalysis()');
   const sec = t => app.doc.querySelector(`#analisisContent details[data-sectitle="${t}"]`).textContent.replace(/\s+/g, ' ');
   const T = app.evj(`(()=>{ const A=analysisData(); return {qs:A.total.qs,qe:A.total.qe}; })()`);
-  const diez = v => String(Math.round((v - 1) / 4 * 100) / 10).replace('.', ',');
+  const diez = v => String(Math.round(v * 2 * 10) / 10).replace('.', ',');   // 1 → 2 … 5 → 10
   const rus = sec('Salud del sueño (índice compuesto RU-SATED)');
   assert.ok(rus.includes(diez(T.qs) + '/10') && rus.includes(diez(T.qe) + '/10'), rus);
   assert.doesNotMatch(rus, /\/5\b/);
+  assert.match(app.ev(`analysisData().rusated.dims.find(d=>d.clave==='S').detalle`), /media > 7,2 de 10/);   // 65 % del máximo = 3,6 de 5
   assert.match(sec('Comparativa laborables vs. festivos'), /Calidad del sueño\s*\d+(,\d)?\/10 \(regular\)\s*\d+(,\d)?\/10 \(regular\)\s*[+−]\d+,\d/);
-  assert.match(sec('Resumen por día, semana y total'), /en las filas de media, la media de 0 a 10/);
-  assert.match(sec('Acontecimientos anotados'), /C\. sueño \(0–10\)/);
+  assert.match(sec('Resumen por día, semana y total'), /en las filas de media, la media sobre 10 \(el doble del valor\)/);
+  assert.match(sec('Acontecimientos anotados'), /C\. sueño \(de 10\)/);
   const inf = sec('Informe clínico provisional');
-  assert.ok(inf.includes('Valoración media (de 0 a 10): calidad del sueño'), inf);
+  assert.ok(inf.includes('Valoración media (sobre 10): calidad del sueño'), inf);
   assert.ok(inf.includes('(' + diez(T.qs) + '/10)'));
   assert.match(inf, /Mediana: sueño \S+ \(\d+(,\d)?\/10\)/);
   assert.doesNotMatch(inf, /\(1–2\)|\/5\)/);
   assert.deepEqual(app.errors, []);
 });
 
-test('G · Word del análisis = PDF del análisis completo: mismos apartados, en el mismo orden, solo los desplegados, y la rejilla como anexo apaisado', async () => {
+test('G · calidades sobre 10 también en el Excel (periodos), el CSV (medias y medianas) y la comparación de periodos; el valor de cada día sigue en 1–5', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-tcci')`);
+  const T = app.evj(`(()=>{ const A=analysisData(); return {qs:A.total.qs,qd:A.total.qd,qe:A.total.qe,med:qResumen('qs').med,esc:A.qEsc}; })()`);
+  assert.equal(T.esc, 5);
+  const r2 = x => Math.round(x * 100) / 100;
+  // CSV: se conservan las medias en la escala del diario y se añaden sobre 10
+  const csv = app.ev('buildUnifiedCsv()').split('\n');
+  const fila = k => (csv.find(l => l.startsWith(k + ';')) || '').split(';');
+  assert.equal(+fila('calidad_sueno_media')[1], r2(T.qs));
+  assert.equal(+fila('calidad_sueno_media_sobre10')[1], r2(Math.round(T.qs * 2 * 10) / 10));
+  assert.equal(fila('calidad_sueno_media_sobre10')[2], '2-10 (doble del valor)');
+  assert.equal(+fila('calidad_sueno_mediana_sobre10')[1], T.med * 2);
+  assert.ok(fila('estado_dia_media_sobre10')[1] !== undefined && fila('calidad_despertar_mediana_sobre10')[1] !== undefined);
+  // Excel: hoja de análisis, medias por periodo sobre 10; hoja diaria, el valor de cada día (1–5)
+  const hojas = {};
+  app.win.XLSX = { utils: { book_new: () => ({}), aoa_to_sheet: a => a, book_append_sheet: (wb, ws, n) => { hojas[n] = ws; } }, writeFile: () => {} };
+  app.ev('exportExcel()');
+  const an = hojas['Análisis'].map(f => [...f]);
+  const cab = an.find(f => f[0] === 'Periodo');
+  assert.deepEqual(cab.slice(-3), ['C. sueño (de 10)', 'C. despertar (de 10)', 'Estado día (de 10)']);
+  const tot = an.find(f => f[0] === 'TOTAL 3 semanas');
+  assert.equal(tot[cab.indexOf('C. sueño (de 10)')], Math.round(T.qs * 2 * 10) / 10);
+  const dia = hojas['Diario'].map(f => [...f]);
+  const vals = dia.slice(1).map(f => f[dia[0].findIndex(h => /^C(alidad)?\.? ?sue/i.test(h))]).filter(v => v !== '' && v != null);
+  assert.ok(vals.length && vals.every(v => /^[1-5] · /.test(v)), String(vals));   // «4 · buena»
+  // comparación de periodos
+  const html = app.ev(`renderLongitudinal([{label:'a',m:metricsOfState(state)},{label:'b',m:metricsOfState(state)}])`);
+  assert.match(html, /Calidad sueño \(de 10\)/);
+  assert.doesNotMatch(html, /\(1-5\)/);
+  assert.deepEqual(app.errors, []);
+});
+
+test('G · PDF del análisis: las referencias, en una sola hoja; «Acontecimientos reportados» sigue a las conclusiones (sin hojas casi vacías)', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`document.querySelector('nav.tabs button[data-view="analisis"]').click(); renderAnalysis();
+    document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=true; }); renderAnalysis()`);
+  app.win.print = () => {};
+  app.ev(`printView('analisis')`);
+  const cls = t => app.ev(`document.querySelector('#analisisContent>details[data-sectitle="${t}"]').className`);
+  assert.doesNotMatch(cls('Acontecimientos reportados'), /pg-salto/);
+  assert.match(cls('Referencias'), /pg-salto/);
+  assert.match(cls('Referencias'), /pg-refs/);
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /body\[data-print="analisis"\] \.pg-refs\{break-inside:avoid/);
+  assert.match(css, /\.pg-refs ol\.refnote\{font-size:7\.6pt!important/);
+  assert.match(app.ev('_ajustarHojasPdf.toString()'), /details\.pg-refs\[open\]/);   // y, si no cupiera, zoom
+  // el informe clínico: sus conclusiones empiezan hoja y lo siguiente va a continuación
+  const orden = app.evj(`[...document.querySelectorAll('#analisisContent>*')].map(e=>e.dataset.sectitle||e.id)`);
+  assert.ok(orden.indexOf('Acontecimientos reportados') === orden.indexOf('Informe clínico provisional') + 2, orden.join(' | '));
+  assert.deepEqual(app.errors, []);
+});
+
+// PNG de 1×1 (la captura de html2canvas, en las pruebas)
+const PNG1 = [137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,6,0,0,0,31,21,196,137,0,0,0,13,73,68,65,84,120,156,99,248,255,255,63,0,5,254,2,254,167,53,129,132,0,0,0,0,73,69,78,68,174,66,96,130];
+test('G · Word del análisis: la cabecera y el informe clínico provisional, editables; el resto de apartados, imágenes del PDF (partidas por hojas) y el anexo, una imagen apaisada', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-menopausia')`);
+  app.ev(`document.querySelector('nav.tabs button[data-view="analisis"]').click(); renderAnalysis();
+    document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=true; }); renderAnalysis()`);
+  app.win.print = () => {};
+  app.ev(`printView('analisis')`);
+  const ordenPdf = app.evj(`[...document.querySelectorAll('#analisisContent>*')].filter(e=>e.tagName!=='DETAILS'||e.open)
+    .map(e=>e.dataset.sectitle==='__resumen__'?'Resumen para la consulta':e.dataset.sectitle||((e.querySelector('.kgh')||{}).textContent||'').trim()||null).filter(Boolean)`);
+  const saltosPdf = app.evj(`[...document.querySelectorAll('#analisisContent>.pg-salto')].map(e=>e.dataset.sectitle==='__resumen__'?'Resumen para la consulta':e.dataset.sectitle||((e.querySelector('.kgh')||{}).textContent||'').trim())`);
+  app.win.dispatchEvent(new app.win.Event('afterprint'));
+  // en el navegador, cada apartado lo dibuja html2canvas; aquí, una captura simulada (las acontecimientos, de casi tres hojas)
+  app.ev(`window._capturas=[]; _wdPuedeCapturar=()=>true;
+    _wdCapturar=async(el,z)=>{ _capturas.push(_wdTitulo(el)); const largo=el.dataset&&el.dataset.sectitle==='Acontecimientos reportados';
+      return {sc:1,wpx:688,hpx:largo?2400:500,cortes:largo?Array.from({length:70},(_,i)=>60+i*33):[],tablas:largo?[[30,58,2390]]:[]}; };
+    _wdTrozo=()=>new Uint8Array(${JSON.stringify(PNG1)});`);
+  const { D } = await wordAnalisis(app);
+  assert.equal(D.imagenes, true);
+  const V = D.secciones[0].bloques, imgs = [];
+  V.forEach(b => { if (b.t === 'p') b.runs.forEach(r => { if (r.img && b.imagen) imgs.push({ alt: r.alt.replace(/ \(del PDF del análisis\)$/, ''), w: r.w, h: r.h, salto: !!b.salto }); }); });
+  // editables: la cabecera (con los datos del paciente) y el informe clínico provisional, con sus conclusiones
+  const txt = textoBloques(V);
+  assert.match(txt, /Agenda de Sueño — Informe de análisis/); assert.match(txt, /Paciente: .*Caso · Mujer 52a/);
+  assert.match(txt, /MODO PILOTO/);
+  assert.match(txt, /Informe clínico provisional/); assert.match(txt, /Conclusiones clínicas/); assert.match(txt, /Propuesta de plan terapéutico/);
+  assert.match(txt, /Valoración media \(sobre 10\)/);
+  // el resto, solo en imagen: su texto no está en el Word
+  assert.doesNotMatch(txt, /Tendencias a lo largo del registro|Evolución noche a noche|Marco multidimensional|Fuentes que respaldan|Sucesos puntuales marcados|Resumen por día|Resumen para la consulta|Duración y continuidad del sueño/i);
+  // las imágenes, en el orden del PDF (el informe, editable, entre ellas) y del ancho de la hoja
+  const ancho = app.ev('_WD_A4.w-2*_WD_MV'), alto = app.ev('_WD_A4.h-2*_WD_MV');
+  assert.deepEqual([...new Set(imgs.map(i => i.alt))], ordenPdf.filter(t => t !== 'Informe clínico provisional'));
+  assert.ok(imgs.every(i => i.w === ancho && i.h > 0 && i.h <= alto), JSON.stringify(imgs.map(i => [i.alt, i.w, i.h])));
+  const iInf = V.findIndex(b => b.t !== 'p' && /Informe clínico provisional/.test(textoBloques([b])));
+  const iAcR = V.findIndex(b => b.t === 'p' && b.imagen && /Acontecimientos reportados/.test(b.runs[0].alt));
+  const iAcA = V.findIndex(b => b.t === 'p' && b.imagen && /Acontecimientos anotados/.test(b.runs[0].alt));
+  assert.ok(iAcA < iInf && iInf < iAcR, [iAcA, iInf, iAcR].join(' '));
+  // las hojas, como en el PDF: el apartado que allí empieza hoja, aquí también
+  for (const t of saltosPdf.filter(t => t !== 'Informe clínico provisional')) assert.equal(imgs.find(i => i.alt === t).salto, true, t);
+  assert.equal(imgs.find(i => i.alt === 'Indicadores de regularidad').salto, false);
+  // un apartado que no cabe en una hoja se parte por filas: una imagen por hoja, cada una empieza hoja
+  const ac = imgs.filter(i => i.alt === 'Acontecimientos reportados');
+  assert.ok(ac.length >= 3, ac.length);
+  assert.ok(ac.slice(1).every(i => i.salto));
+  // el anexo, una sola imagen en la hoja apaisada
+  assert.equal(D.secciones[1].apaisada, true);
+  const an = D.secciones[1].bloques;
+  assert.equal(an.length, 1); assert.match(an[0].runs[0].alt, /Anexo · Diario de sueño/);
+  assert.ok(an[0].runs[0].w <= app.ev('_WD_A4.h-2*_WD_MA') && an[0].runs[0].h <= app.ev('_WD_A4.w-2*_WD_MA'));
+  assert.deepEqual(app.evj('_capturas').filter(t => !/^Anexo/.test(t)), [...new Set(imgs.map(i => i.alt))]);
+  // el .docx (librería docx en Node): las imágenes, las dos secciones y el texto editable
+  const docx = require('docx'), JSZip = require('jszip');
+  const aBytes = o => { if (Array.isArray(o)) return o.map(aBytes); if (o && typeof o === 'object') { if (o.img && !(o.img instanceof Uint8Array)) o.img = Uint8Array.from(Object.values(o.img)); Object.values(o).forEach(aBytes); } return o; };
+  aBytes(D);
+  const src = ['_wdOrdena', '_wdDocx'].map(n => app.win[n].toString()).join('\n');
+  const crea = new Function('docx', '_WD_A4', '_WD_MV', '_WD_MA', src + '\nreturn _wdDocx;')(docx, app.evj('_WD_A4'), app.ev('_WD_MV'), app.ev('_WD_MA'));
+  const z = await JSZip.loadAsync(await docx.Packer.toBuffer(crea(D)));
+  const xml = await z.file('word/document.xml').async('string');
+  assert.equal((xml.match(/<w:sectPr/g) || []).length, 2);
+  assert.equal((xml.match(/w:orient="landscape"/g) || []).length, 1);
+  assert.ok(Object.keys(z.files).filter(f => /^word\/media\//.test(f)).length >= imgs.length + 1);
+  assert.match(xml.replace(/<[^>]+>/g, ''), /Conclusiones clínicas/);
+  assert.equal(app.doc.getElementById('annexGrid'), null);
+  assert.deepEqual(app.errors, []);
+});
+
+test('G · Word del análisis sin html2canvas (todo editable, como antes) = PDF del análisis completo: mismos apartados, en el mismo orden, solo los desplegados, y la rejilla como anexo apaisado', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-ins-mantenimiento')`);
