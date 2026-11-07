@@ -307,4 +307,9 @@ Comprobado en Chromium (iPhone 13, iPhone SE, Pixel 7 y iPhone 14 Pro Max, en ve
   - El anexo es una sola imagen en su hoja apaisada.
   - Cómo se hace: html2canvas dibuja cada apartado en la maqueta de impresión. Sin html2canvas o sin la librería docx, todo el Word se escribe editable, como antes.
   - Comprobado en Chromium y convirtiendo el .docx a PDF con LibreOffice: el caso de TCC-I da 11 hojas, como su PDF; el de menopausia, 14 (su PDF tiene 15). Pesa de 6 a 7 MB y se genera en unos 15 s.
+- **Documentación, casos e intercambio de datos.**
+  - Documento técnico: escala sobre 10 (anillos, RU-SATED, informe, Excel), PDF sin hojas en blanco y Word por apartados. En el esquema de datos (CSV), las métricas `*_media_sobre10` y `*_mediana_sobre10`; al importar se ignoran, porque se recalculan. El esquema sigue en la versión 5.
+  - Tabla IV.1 de los casos de ejemplo, con la calidad media sobre 10 de cada caso (sueño, despertar y día).
+  - Guías del paciente (castellano y catalán): cada noche anotada de la lista muestra su horario, las tres caras de la valoración y el icono de cada acontecimiento.
+  - Los datos de los casos de ejemplo no cambian (la valoración de cada día sigue en 1–5), así que no se vuelven a cargar.
 - Pruebas: cuatro nuevas (113 en la raíz), entre ellas la del Word por apartados, con una captura simulada y el .docx generado en Node.
