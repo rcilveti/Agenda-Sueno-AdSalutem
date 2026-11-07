@@ -32,6 +32,18 @@ async function pacienteMovil(opts = {}) {
 const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const rangos = (app, d) => app.ev(`slotsToRanges(state[${d}].slots,'s')`);
 // una noche como la daría el editor (horas en HH:MM, acontecimientos con el nombre del tipo)
+// Word del análisis (sin la librería docx, como .doc en HTML): devuelve el HTML y la descripción del documento
+async function wordAnalisis(app) {
+  let html = '', nombre = '';
+  const B = app.win.Blob;
+  app.win.Blob = function (parts, o) { html = parts.join(''); return new B(parts, o); };
+  app.win.URL.createObjectURL = () => 'blob:x'; app.win.URL.revokeObjectURL = () => {};
+  const clic = app.win.HTMLAnchorElement.prototype.click;
+  app.win.HTMLAnchorElement.prototype.click = function () { nombre = this.download; };
+  try { await app.ev('exportAnalysisWord()'); } finally { app.win.Blob = B; app.win.HTMLAnchorElement.prototype.click = clic; }
+  return { html, nombre, D: app.evj('window._ultimoWordAnalisis') };
+}
+const textoBloques = bs => bs.map(b => b.t === 'p' ? b.runs.map(r => r.text || (r.br ? ' ' : '')).join('') : b.rows.map(r => r.cells.map(c => textoBloques(c.blocks || [])).join(' ')).join(' ')).join(' ');
 const NOCHE = { gd: { b: '23:50', s: 30, w: [{ t: '03:00', d: 30 }, { t: '05:10', d: 10 }], f: '06:30', r: '07:00' }, tA: 'L', tB: 'L',
   ev: [{ t: '03:10', q: 'Ir al baño' }, { t: '05:10', q: 'Ruido' }], qs: 4, qd: 3, qe: 5, trat: 'Melatonina 1 mg a las 23:00', obs: 'Cena tarde' };
 
@@ -456,17 +468,16 @@ test('informes: análisis en pantalla, PDF, Word y Excel con los acontecimientos
   assert.match(res, /Más anotados: 🚽 Baño \(3\) · 🔊 Ruido \(3\)/);
   assert.match(res, /Tratamiento: Melatonina 1 mg a las 23:00 \(3 noches\)/);
   assert.match(res, /18 de una versión anterior/);
-  // Word
-  let html = '';
-  const B = app.win.Blob;
-  app.win.Blob = function (parts, o) { html = parts.join(''); return new B(parts, o); };
-  app.win.URL.createObjectURL = () => 'blob:x'; app.win.URL.revokeObjectURL = () => {};
-  await app.ev('exportAnalysisWord()');
-  app.win.Blob = B;
-  assert.match(html, /Patrón propio, acontecimientos y tratamiento/);
-  assert.match(html, /<b>Tratamiento anotado por el paciente:<\/b> Melatonina 1 mg a las 23:00 \(3 noches\)/);
-  assert.match(html, /<b>Acontecimientos anotados:<\/b> Baño 3/);
-  assert.doesNotMatch(html, /Ventana de sueño objetivo|Hitos:|Modo guiado/);
+  // Word (v4.9.9, noviembre): lo mismo que el PDF del análisis completo, con todos los apartados desplegados
+  app.ev(`document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=true; }); renderAnalysis()`);
+  const { html, D } = await wordAnalisis(app);
+  const txt = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+  assert.match(txt, /Tratamiento: Melatonina 1 mg a las 23:00 \(3 noches\)/);
+  assert.match(txt, /Más anotados: 🚽 Baño \(3\) · 🔊 Ruido \(3\)/);
+  assert.match(txt, /Acontecimientos anotados.*🚽 Baño/);
+  assert.match(txt, /03:10 .*🚽 Baño — Cena tarde/);
+  assert.doesNotMatch(txt, /Ventana de sueño objetivo|Hitos:|Modo guiado/);
+  assert.equal(D.secciones.length, 2);
   // Excel
   const hojas = {};
   app.win.XLSX = { utils: { book_new: () => ({}), aoa_to_sheet: a => a, book_append_sheet: (wb, ws, n) => { hojas[n] = ws; } }, writeFile: () => {} };
@@ -882,4 +893,254 @@ test('C · pantalla del paciente: «Cómo se anota», «Recordatorio» y «Ajust
   const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
   assert.match(css, /\.pacv-links\{display:flex;gap:6px;flex-wrap:nowrap\}/);
   assert.equal(app.doc.querySelectorAll('.pacv-links button').length, 3);
+});
+
+// ---------- más cambios de noviembre (misma v4.9.9) ----------
+test('D · despertar final → levantarse: saltos de 5, 10, 15, 20 y 30 minutos y luego de 30 en 30', async () => {
+  const app = await loadApp();
+  const esperado = [0, 5, 10, 15, 20]; for (let v = 30; v <= 720; v += 30) esperado.push(v);
+  assert.deepEqual(app.evj('EditorNoche.ESC_F'), esperado);
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
+  app.ev(`AgendaPuente.guardar(1,{gd:{b:'23:00',s:15,w:[],f:'06:45',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  app.ev('abrirEditorNoche(1)'); app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
+  const tfa = () => app.ev('EditorNoche.estado().m.R-EditorNoche.estado().m.F');
+  assert.equal(tfa(), 15);
+  const vistos = [];
+  for (let i = 0; i < 6; i++) { app.doc.getElementById('edMas').click(); vistos.push(tfa()); }
+  assert.deepEqual(vistos, [20, 30, 60, 90, 120, 150], 'después de 30 min, de 30 en 30 (sin 45)');
+  for (let i = 0; i < 9; i++) app.doc.getElementById('edMenos').click();
+  assert.equal(tfa(), 0);
+  // la latencia sigue con sus escalones (45 incluido)
+  app.ev(`document.querySelector('#edCats [data-cat="S"]').click()`);
+  const lat = () => app.ev('EditorNoche.estado().m.S-EditorNoche.estado().m.B'), l = [];
+  for (let i = 0; i < 5; i++) { app.doc.getElementById('edMas').click(); l.push(lat()); }
+  assert.deepEqual(l, [20, 25, 30, 45, 60]);
+  app.ev('EditorNoche.cerrar(false)');
+  // una noche anterior con 40 o 50 minutos se propone con el escalón más próximo; sin tocarla, se guarda como estaba
+  app.ev(`AgendaPuente.guardar(2,{gd:{b:'23:00',s:15,w:[],f:'06:10',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  app.ev('abrirEditorNoche(2)'); assert.equal(tfa(), 60);
+  valorarYGuardar(app);
+  assert.equal(app.ev('state[2].gd.f'), '06:10');
+  assert.deepEqual(app.errors, []);
+});
+
+test('D · cabecera del editor: si no cabe, se compacta por niveles y el texto de la noche no pisa los pasos', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  // jsdom no maqueta: se simula una fila de días que solo cabe a partir del nivel 4 (más juntos)
+  app.ev(`(()=>{ const P=HTMLElement.prototype, cab=()=>document.querySelector('#ed .ed-cab');
+    Object.defineProperty(P,'offsetWidth',{configurable:true,get(){ return 10; }});
+    Object.defineProperty(P,'clientWidth',{configurable:true,get(){ return this.id==='edDias'?400:100; }});
+    Object.defineProperty(P,'scrollWidth',{configurable:true,get(){ return this.id==='edDias'?(cab().classList.contains('k4')?390:520):100; }}); })()`);
+  app.ev('abrirEditorNoche(3)');
+  assert.equal(app.ev(`document.querySelector('#ed .ed-cab').className`), 'ed-cab k1 k2 k3 k4');
+  // con sitio de sobra, sin niveles
+  app.ev(`Object.defineProperty(HTMLElement.prototype,'scrollWidth',{configurable:true,get(){ return 100; }})`);
+  app.ev(`EditorNoche.irPaso('siestas')`);
+  assert.equal(app.ev(`document.querySelector('#ed .ed-cab').className`), 'ed-cab');
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /#ed \.ed-cab\.k1 \.dchip \.cam\{display:none\}/);
+  assert.match(css, /#ed \.ed-cab\.k3 \.pasos button span\{display:none\}/);
+  assert.match(css, /#ed \.ed-cab\.k5 \.dtrans\{display:none\}/);
+  assert.match(css, /#ed \.ed-cab\.k7\{flex-wrap:wrap/);
+  // el texto de la noche sigue en la ayuda de los días aunque se oculte
+  assert.match(app.doc.getElementById('edDias').getAttribute('title'), /laborable|festivo/i);
+  app.ev('EditorNoche.cerrar(false)');
+  assert.deepEqual(app.errors, []);
+});
+
+test('D · notas con el móvil en vertical (caja girada): al escribir, la caja se pone derecha como el teclado y luego vuelve', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`Object.defineProperty(window,'innerWidth',{configurable:true,value:390}); Object.defineProperty(window,'innerHeight',{configurable:true,value:664});`);
+  app.ev('abrirEditorNoche(3)'); await app.sleep(100);   // (al abrir, el foco va al tirador seleccionado)
+  const caja = () => app.doc.getElementById('edCaja');
+  assert.ok(caja().classList.contains('girada'));
+  app.ev(`EditorNoche.irPaso('notas')`);
+  assert.match(app.doc.getElementById('edGiroNota').textContent, /teclado sale en vertical/);
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /#ed \.ed-caja\.vertical \.giro-nota\{display:block\}/);
+  app.doc.getElementById('edTrat').focus();
+  assert.ok(!caja().classList.contains('girada') && caja().classList.contains('escribe'), 'mientras escribe, derecha');
+  assert.equal(caja().style.transform, '');
+  // pasar al otro campo no la gira
+  app.doc.getElementById('edObs').focus(); await app.sleep(450);
+  assert.ok(caja().classList.contains('escribe'));
+  // al dejar de escribir, vuelve a girarse (con una pequeña espera)
+  app.doc.getElementById('edObs').blur();
+  assert.ok(caja().classList.contains('escribe'), 'no se mueve bajo el dedo al instante');
+  await app.sleep(450);
+  assert.ok(caja().classList.contains('girada') && !caja().classList.contains('escribe'));
+  // escribir y guardar: se guarda y se cierra; al volver a abrir, girada otra vez
+  app.doc.getElementById('edTrat').focus();
+  app.ev(`EditorNoche.estado().trat='Melatonina 1 mg'; EditorNoche.estado().q={qs:4,qd:4,qe:4};`);
+  app.doc.getElementById('edGuardar').click();
+  assert.equal(app.doc.getElementById('ed').hidden, true);
+  assert.equal(app.ev('state[3].trat'), 'Melatonina 1 mg');
+  app.ev('abrirEditorNoche(3)');
+  assert.ok(caja().classList.contains('girada'));
+  // en horizontal no se gira nunca, tampoco al escribir
+  app.ev(`EditorNoche.cerrar(false); Object.defineProperty(window,'innerWidth',{configurable:true,value:844}); Object.defineProperty(window,'innerHeight',{configurable:true,value:390}); abrirEditorNoche(3); EditorNoche.irPaso('notas')`); await app.sleep(100);
+  app.doc.getElementById('edTrat').focus();
+  assert.ok(!caja().classList.contains('girada') && !caja().classList.contains('escribe') && !caja().classList.contains('vertical'));
+  // en catalán
+  app.ev(`EditorNoche.cerrar(false); setLang('ca'); abrirEditorNoche(3); EditorNoche.irPaso('notas')`);
+  assert.match(app.doc.getElementById('edGiroNota').textContent, /teclat surt en vertical/);
+  app.ev(`EditorNoche.cerrar(false); setLang('es')`);
+  assert.deepEqual(app.errors, []);
+});
+
+test('D · paciente (móvil): el fondo de cada noche lleva el color de sus dos días, también sin anotar', async () => {
+  const app = await pacienteMovil();
+  const doc = app.doc;
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const inicio = new Date(hoy); inicio.setDate(inicio.getDate() - 3);
+  const s2 = doc.getElementById('start2'); s2.value = iso(inicio); s2.dispatchEvent(new app.win.Event('change'));
+  await app.sleep(50);
+  app.ev(`state[1].lf='F'; AgendaPuente.guardar(1,${JSON.stringify(Object.assign({}, NOCHE, { tA: 'L', tB: 'F' }))})`);
+  await app.sleep(50);
+  const pn = [...doc.querySelectorAll('#nochesPac .pn')];
+  const fondo = i => pn[i].querySelector('.nbar').getAttribute('style');
+  // la barra va de 18:00 a 14:00: la medianoche, al 30 %
+  assert.equal(fondo(1), 'background:linear-gradient(to right,#e3ecf4 0 30%,#fdeccf 30% 100%)');
+  assert.equal(fondo(2), 'background:linear-gradient(to right,#fdeccf 0 30%,#e3ecf4 30% 100%)', 'sin anotar: la tarde, festivo; la mañana, laborable');
+  assert.ok(pn[2].querySelector('.nbar.vacia .pn-vacia'));
+  assert.equal(fondo(5), 'background:linear-gradient(to right,#e3ecf4 0 30%,#e3ecf4 30% 100%)');
+  assert.deepEqual([...pn[1].querySelectorAll('.pn-t i')].map(x => x.className + ':' + x.textContent), ['L:lab.', 'F:fest.']);
+  const css = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /\.pn-t i\.F\{background:#fdeccf/);
+  assert.deepEqual(app.errors, []);
+});
+
+test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (media y mediana) y la leyenda sin numerar; la valoración sigue en 1–5', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-normal')`);
+  app.ev(`renderAnalysis()`);
+  const sec = app.doc.querySelector('#analisisContent details[data-sectitle="Calidad percibida"]');
+  assert.ok(sec, 'sección Calidad percibida');
+  const svgs = [...sec.querySelectorAll('svg')].filter(s => s.querySelectorAll('circle').length);
+  assert.equal(svgs.length, 3);
+  ['qs', 'qd', 'qe'].forEach((k, i) => {
+    const R = app.evj(`qResumen('${k}')`);
+    const t = [...svgs[i].querySelectorAll('text')].map(x => x.textContent);
+    const diez = String(Math.round((R.avg - 1) / (R.esc - 1) * 100) / 10).replace('.', ',');
+    assert.deepEqual(t, [diez, 'de 10'], k);
+    assert.equal(R.esc, 5);
+    assert.ok(+diez.replace(',', '.') >= 0 && +diez.replace(',', '.') <= 10);
+  });
+  assert.match(sec.textContent, /La media \(en el centro de cada anillo\) y la mediana se expresan de 0 a 10/);
+  // una sola escala en los anillos: la mediana también de 0 a 10 y la leyenda sin numerar
+  ['qs', 'qd', 'qe'].forEach((k, i) => {
+    const R = app.evj(`qResumen('${k}')`);
+    const med = String(Math.round((R.med - 1) / (R.esc - 1) * 100) / 10).replace('.', ',');
+    const bloque = svgs[i].parentElement.textContent;
+    assert.ok(bloque.includes('Mediana: ' + med + ' de 10'), bloque);
+    assert.doesNotMatch(bloque, /de 5\b|\(1–2\)|\b[1-5] (Muy|Mala|Mal|Regular|Buena|Bien|Nada|Poco|Algo)\b/);
+  });
+  assert.match(sec.textContent, /● Muy buena \d+ \(\d+%\)/, 'cada categoría, con su nombre, sin número');
+  assert.match(sec.textContent, /días malos \(muy mala o mala\)/);
+  assert.equal(sec.querySelector('svg circle title').textContent.match(/^\d/), null);
+  assert.deepEqual(app.errors, []);
+});
+
+test('F · casos de ejemplo al día: ninguna noche fuera de los saltos del despertar final y se vuelven a cargar sobre los de la marca 16', async () => {
+  // un navegador que ya tenía los casos de la primera v4.9.9 (marca 16), con una noche antigua de 45 min
+  const viejo = { patient: 'caso-normal', name: 'Caso · Sueño normal', start: '2026-01-05', ver: '4.9.9',
+    state: [{ gd: { b: '23:00', s: 15, w: [], f: '06:15', r: '07:00' } }] };
+  const app = await loadApp({ storage: { agenda_demo_seeded16: '1', 'agendasueno3:caso-normal': JSON.stringify(viejo),
+    agenda_patient_index3: JSON.stringify([{ id: 'caso-normal', name: 'Caso · Sueño normal' }]) } });
+  await loginDoctor(app);
+  assert.equal(app.ev(`localStorage.getItem('agenda_demo_seeded17')`), '1');
+  assert.equal(app.ev(`JSON.parse(localStorage.getItem('agendasueno3:caso-normal')).start`), app.ev(`DEMO_CASES.records['caso-normal'].start`));
+  const fuera = app.evj(`(()=>{ const F=EditorNoche.ESC_F, u=t=>+t.slice(0,2)*60+ +t.slice(3), r=[];
+    DEMO_CASES.index.forEach(({id})=>DEMO_CASES.records[id].state.forEach((d,i)=>{ if(d&&d.gd){ const t=((u(d.gd.r)-u(d.gd.f))%1440+1440)%1440; if(!F.includes(t)) r.push(id+' '+i+' '+t); } }));
+    return r; })()`);
+  assert.deepEqual(fuera, []);
+  assert.equal(app.ev('DEMO_CASES.index.length'), 17);
+  assert.deepEqual(app.errors, []);
+});
+
+// ---------- PDF del análisis completo y Word (v4.9.9, noviembre) ----------
+test('G · calidades de 0 a 10 en todo el análisis: RU-SATED, comparativa, acontecimientos, resumen por día e informe clínico', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-tcci')`);
+  app.ev('renderAnalysis()');
+  const sec = t => app.doc.querySelector(`#analisisContent details[data-sectitle="${t}"]`).textContent.replace(/\s+/g, ' ');
+  const T = app.evj(`(()=>{ const A=analysisData(); return {qs:A.total.qs,qe:A.total.qe}; })()`);
+  const diez = v => String(Math.round((v - 1) / 4 * 100) / 10).replace('.', ',');
+  const rus = sec('Salud del sueño (índice compuesto RU-SATED)');
+  assert.ok(rus.includes(diez(T.qs) + '/10') && rus.includes(diez(T.qe) + '/10'), rus);
+  assert.doesNotMatch(rus, /\/5\b/);
+  assert.match(sec('Comparativa laborables vs. festivos'), /Calidad del sueño\s*\d+(,\d)?\/10 \(regular\)\s*\d+(,\d)?\/10 \(regular\)\s*[+−]\d+,\d/);
+  assert.match(sec('Resumen por día, semana y total'), /en las filas de media, la media de 0 a 10/);
+  assert.match(sec('Acontecimientos anotados'), /C\. sueño \(0–10\)/);
+  const inf = sec('Informe clínico provisional');
+  assert.ok(inf.includes('Valoración media (de 0 a 10): calidad del sueño'), inf);
+  assert.ok(inf.includes('(' + diez(T.qs) + '/10)'));
+  assert.match(inf, /Mediana: sueño \S+ \(\d+(,\d)?\/10\)/);
+  assert.doesNotMatch(inf, /\(1–2\)|\/5\)/);
+  assert.deepEqual(app.errors, []);
+});
+
+test('G · Word del análisis = PDF del análisis completo: mismos apartados, en el mismo orden, solo los desplegados, y la rejilla como anexo apaisado', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await app.ev(`selectPatient('caso-ins-mantenimiento')`);
+  // como en el PDF: con todos los apartados desplegados…
+  app.ev(`document.querySelector('nav.tabs button[data-view="analisis"]').click(); renderAnalysis();
+    document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=true; }); renderAnalysis()`);
+  // el orden del PDF (la misma maquetación que imprime «PDF del análisis completo»)
+  app.win.print = () => {};
+  app.ev(`printView('analisis')`);
+  const ordenPdf = app.evj(`[...document.querySelectorAll('#analisisContent>*')].filter(e=>e.tagName!=='DETAILS'||e.open)
+    .map(e=>e.dataset.sectitle==='__resumen__'?'Resumen para la consulta':e.dataset.sectitle||((e.querySelector('.kgh')||{}).textContent)||(e.id==='annexGrid'?'Anexo · Diario de sueño':null)).filter(Boolean)`);
+  app.win.dispatchEvent(new app.win.Event('afterprint'));
+  const { html, nombre, D } = await wordAnalisis(app);
+  assert.match(nombre, /_analisis_completo_v4_9_9\.doc$/);
+  const txt = textoBloques(D.secciones[0].bloques) + ' ' + textoBloques(D.secciones[1].bloques);
+  let pos = -1;
+  for (const t of ['Agenda de Sueño — Informe de análisis', ...ordenPdf]) {
+    const i = txt.indexOf(t, pos + 1);
+    assert.ok(i > pos, `«${t}» en el Word, después del apartado anterior (${i} > ${pos})`);
+    pos = i;
+  }
+  assert.ok(ordenPdf.includes('Informe clínico provisional') && ordenPdf.includes('Referencias') && ordenPdf.length >= 16, JSON.stringify(ordenPdf));
+  // la rejilla del diario, en una sección apaisada aparte
+  assert.equal(D.secciones.length, 2); assert.equal(D.secciones[1].apaisada, true);
+  assert.match(textoBloques(D.secciones[1].bloques), /Anexo · Diario de sueño/);
+  // saltos de página donde el PDF empieza hoja (grupos de apartados y conclusiones del informe)
+  const saltos = JSON.stringify(D).match(/"salto":true/g) || [];
+  assert.ok(saltos.length >= 8, 'saltos: ' + saltos.length);
+  // lo que no se imprime tampoco va al Word (botones, notas de pantalla)
+  assert.doesNotMatch(txt, /Desplegar todos|🖨 Imprimir resumen/);
+  assert.match(html, /Section2/);   // .doc: la sección apaisada
+  assert.match(txt, /© 2026 AdSalutem|/);
+  assert.equal(D.pie, app.ev('APP_COPYRIGHT'));
+  // el mismo .docx con la librería docx (la de la página, en Node): dos secciones, la segunda apaisada, y el pie
+  const docx = require('docx'), JSZip = require('jszip');
+  const src = ['_wdOrdena', '_wdDocx'].map(n => app.win[n].toString()).join('\n');
+  const crea = new Function('docx', '_WD_A4', '_WD_MV', '_WD_MA', src + '\nreturn _wdDocx;')(docx, app.evj('_WD_A4'), app.ev('_WD_MV'), app.ev('_WD_MA'));
+  const z = await JSZip.loadAsync(await docx.Packer.toBuffer(crea(D)));
+  const xml = await z.file('word/document.xml').async('string');
+  assert.equal((xml.match(/<w:sectPr/g) || []).length, 2);
+  assert.equal((xml.match(/w:orient="landscape"/g) || []).length, 1);
+  assert.ok((xml.match(/<w:pageBreakBefore/g) || []).length >= 8);
+  const xtxt = xml.replace(/<[^>]+>/g, '');
+  assert.ok(xtxt.indexOf('Informe clínico provisional') > xtxt.indexOf('Calidad percibida'));
+  assert.match(await z.file('word/footer1.xml').async('string'), /AdSalutem/);
+  // …y solo con «Calidad percibida» desplegado: el Word lleva lo mismo que ese PDF (las métricas, ese apartado y el anexo)
+  app.ev(`document.querySelectorAll('#analisisContent details.secblock').forEach(d=>{ secOpenState[d.dataset.sectitle]=d.dataset.sectitle==='Calidad percibida'; }); renderAnalysis()`);
+  const W2 = await wordAnalisis(app), t2 = textoBloques(W2.D.secciones[0].bloques);
+  assert.match(t2, /Calidad percibida/); assert.match(t2, /Duración y continuidad del sueño/i);
+  assert.doesNotMatch(t2, /Tendencias a lo largo del registro|Informe clínico provisional|Referencias/);
+  assert.equal(W2.D.secciones[1].apaisada, true);
+  // después, el análisis vuelve a la pantalla tal cual (sin anexo ni estilos de impresión)
+  assert.equal(app.doc.getElementById('annexGrid'), null);
+  assert.equal(app.doc.getElementById('wdImpresion'), null);
+  assert.equal(app.doc.body.getAttribute('data-print'), null);
+  assert.deepEqual(app.errors, []);
 });

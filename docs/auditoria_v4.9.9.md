@@ -212,8 +212,8 @@ Los pendientes 1, 2, 4, 5, 9 y 10 se resolvieron tras la auditoría (apartado 8)
   - con una variación pequeña y reproducible: acostarse y levantarse ±15 min, y la latencia, los despertares y el tiempo final en cama a un escalón del editor dentro de ±15 min.
 - Las ✕ pasan a ser acontecimientos con el tipo propio de cada caso, las siestas pintadas pasan al paso 2 y el tratamiento se anota desde la noche en que empezaba el hito (TCC-I, cronoterapia y hierro oral).
 - **Ningún caso cambia de categoría clínica** (TST, eficiencia, latencia y WASO por edad, cronotipo y RU-SATED). La única excepción es la latencia del bebé, que pasa de 60 a unos 14 min: la de la rejilla era un artefacto de acostarse a las 19:00.
-- Frente a la v4.9.7, el TST medio de cada caso cambia como mucho 12 min y la eficiencia, 2,5 puntos (6 en el bebé, por la latencia). Las noches fuera del patrón propio del caso de TCC-I son las mismas (días 5, 6, 7 y 13).
-- Se cargan una vez al abrir la v4.9.9 (marca 16).
+- Frente a la v4.9.7, el TST medio de cada caso cambia como mucho 14 min y la eficiencia, 2,5 puntos (6 en el bebé, por la latencia). Las noches fuera del patrón propio del caso de TCC-I son las mismas (días 5, 6, 7 y 13).
+- Se cargan una vez al abrir la v4.9.9 (marca 17; la 16 fue la primera, antes de los saltos nuevos del despertar final).
 
 ### Documentación
 
@@ -253,3 +253,36 @@ Los pendientes 1, 2, 4, 5, 9 y 10 se resolvieron tras la auditoría (apartado 8)
 
 Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al día. Seis pruebas nuevas.
 
+### D · Editor: teclado, despertar final y cabecera
+
+1. **Notas con el móvil en horizontal.** En vertical, la caja del editor se gira 90° para verla con el móvil en horizontal. Con la rotación de la pantalla bloqueada (lo habitual en iPhone, y en Android con la rotación automática desactivada), el sistema sigue en vertical y el teclado sale en vertical: una página web no puede girarlo. Ahora, mientras se escribe en «Tratamiento» u «Observaciones», la caja se pone derecha, como el teclado, y vuelve a girarse al dejar de escribir (con una pequeña espera, para que «Guardar» o el otro campo no se muevan bajo el dedo). Un aviso en el paso 4, solo con la caja girada, lo explica y recuerda que con la rotación desbloqueada se escribe en horizontal. Con la rotación activada, en horizontal la caja no se gira y el teclado sale en horizontal (iPhone y Android). En un móvil apaisado con el teclado abierto (Android reduce el alto de la ventana) quedan solo los campos y el pie.
+2. **Despertar final → levantarse:** 5, 10, 15, 20 y 30 minutos y, después, de 30 en 30 (sin 45). Las demás duraciones siguen igual. Una noche anterior con otro valor (por ejemplo, 40 min) se propone con el escalón más próximo y, si no se toca, se guarda tal cual.
+3. **Cabecera sin solapes.** El texto de la noche («Noche entre laborables», «Noche antes de festivo», «Noche antes de laborable») pisaba la pestaña «1 Noche» en móviles apaisados (iPhone SE, Pixel 7, iPhone 14 Pro Max). Si no cabe en una fila, la cabecera se compacta por niveles hasta que cabe: sin ⇄, nombre solo en el paso actual, pasos solo con número, más juntos y, en último caso, sin el texto de la noche (el tipo de cada día sigue en su botón y el texto, en la ayuda). Se mide en el plano de la caja, también girada.
+
+### E · Pantalla del paciente y análisis
+
+- **Colores de los días en la lista de noches (móvil).** El fondo de la barra de cada noche lleva el color de sus dos días, partido a medianoche como en la escala del editor: azul claro, laborable; naranja claro, festivo. También en las noches sin anotar, para ver de un vistazo los festivos. «lab.» y «fest.» van en una etiqueta del mismo color, y la fecha y los tipos ya no se parten (las siestas pasan a su propia línea).
+- **Anillos de la calidad percibida de 0 a 10.** La valoración sigue en la escala Likert de cinco categorías (en el editor, los datos, el CSV y los informes). Para no mezclar dos escalas en un mismo gráfico, los anillos se leen solo de 0 a 10 (la categoría más baja vale 0 y la más alta, 10; es el porcentaje del máximo posible dividido entre 10): la media en el centro, con su nombre debajo («Media: 1,2 de 10 · «muy mala»»), y la mediana. La leyenda lleva el nombre de cada categoría, sin numerar, y los días malos se nombran por sus categorías («muy mala o mala»). En un diario con la escala antigua de tres niveles, mala, regular y buena valen 0, 5 y 10.
+
+### G · PDF del análisis completo, informe clínico provisional y Word
+
+- **Revisión del PDF del análisis completo** (todos los apartados desplegados, casos de menopausia y de TCC-I):
+  - Los anillos de la calidad percibida ya salían de 0 a 10, con la leyenda sin numerar.
+  - En cambio, otras medias de las calidades seguían de 1 a 5, y en un caso con punto decimal («1.48/5»): la satisfacción y la alerta del RU-SATED, la comparativa laborables/festivos, los acontecimientos anotados, las filas de media del resumen por día y el informe clínico provisional («Valoración media… (1.48/5)», «mala o muy mala (1–2)»).
+  - Ahora todas las medias y medianas de las calidades van de 0 a 10 («1,2/10»; criterio del RU-SATED, > 6,5 de 10). La valoración de cada día sigue en su escala de cinco categorías.
+- **La rejilla del anexo no cabía en su hoja.** El título quedaba solo en una hoja y la rejilla se partía en dos, con el pie de página encima de las últimas filas.
+  - Causa: en la copia de la rejilla, las notas de cada noche no tenían altura máxima.
+  - Ahora caben la rejilla, su título y su leyenda en una hoja apaisada, que deja 9 mm abajo para el pie.
+- **El Word del análisis reproduce el PDF del análisis completo.** Antes era un resumen propio, con otros apartados y otro orden.
+  - Lleva los mismos apartados desplegados, en el mismo orden y con los mismos saltos de página, y la rejilla del diario como anexo en una sección apaisada.
+  - Conserva colores, fondos, recuadros y tablas, y los gráficos van como imágenes.
+  - El texto y las tablas son editables.
+  - Cómo se hace: se maqueta el análisis como al imprimir (las reglas de impresión, al ancho de la hoja) y se recorre. De ahí sale el .docx o, sin la librería, un .doc con el mismo contenido.
+  - Comprobado en Chromium, convirtiendo el .docx a PDF con LibreOffice: el Word sigue página a página al PDF. Solo cambia el número de hojas de las listas largas (acontecimientos reportados y referencias), porque en Word la letra es Arial.
+- Pruebas: dos nuevas (109 en la raíz), entre ellas la del .docx generado con la misma librería en Node; `docx` 8.5.0 pasa a dependencia de desarrollo.
+
+### F · Casos de ejemplo al día
+
+Los 17 casos se han vuelto a generar con el editor de noviembre, con las mismas variaciones que la primera vez: 31 de sus 357 noches tenían 25 o 45 min entre el despertar final y levantarse, que el editor ya no ofrece; ahora van en los saltos nuevos (20 o 30 min, el más próximo). Solo el de hipersomnia ha necesitado otra variación para conservar sus categorías. Ningún caso cambia de categoría clínica; frente a los casos anteriores de la v4.9.9, el TST medio cambia como mucho 2 min y la eficiencia, medio punto, y las noches fuera del patrón propio del caso de TCC-I son las mismas. Se vuelven a cargar una vez (marca 17), también en los navegadores que ya tenían los anteriores. El anexo IV del documento técnico está al día. Una prueba nueva (107 en la raíz).
+
+Comprobado en Chromium (iPhone 13, iPhone SE, Pixel 7 y iPhone 14 Pro Max, en vertical y en horizontal, en castellano y en catalán, y con el alto que deja el teclado). Guías del paciente y documento técnico al día. Cinco pruebas nuevas (106 en la raíz).
