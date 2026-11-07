@@ -262,7 +262,7 @@ Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al 
 ### E · Pantalla del paciente y análisis
 
 - **Colores de los días en la lista de noches (móvil).** El fondo de la barra de cada noche lleva el color de sus dos días, partido a medianoche como en la escala del editor: azul claro, laborable; naranja claro, festivo. También en las noches sin anotar, para ver de un vistazo los festivos. «lab.» y «fest.» van en una etiqueta del mismo color, y la fecha y los tipos ya no se parten (las siestas pasan a su propia línea).
-- **Anillos de la calidad percibida de 0 a 10.** La valoración sigue en la escala Likert 1–5 (en el editor, los datos, el CSV y los informes). En el centro de cada anillo, la media pasa a una escala de 0 a 10 (1 = 0, 5 = 10; es el porcentaje del máximo posible dividido entre 10); debajo, la media en la escala 1–5. Los cinco segmentos y la leyenda no cambian.
+- **Anillos de la calidad percibida de 0 a 10.** La valoración sigue en la escala Likert de cinco categorías (en el editor, los datos, el CSV y los informes). Para no mezclar dos escalas en un mismo gráfico, los anillos se leen solo de 0 a 10 (la categoría más baja vale 0 y la más alta, 10; es el porcentaje del máximo posible dividido entre 10): la media en el centro, con su nombre debajo («Media: 1,2 de 10 · «muy mala»»), y la mediana. La leyenda lleva el nombre de cada categoría, sin numerar, y los días malos se nombran por sus categorías («muy mala o mala»). En un diario con la escala antigua de tres niveles, mala, regular y buena valen 0, 5 y 10.
 
 ### F · Casos de ejemplo al día
 

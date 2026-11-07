@@ -1003,7 +1003,7 @@ test('D · paciente (móvil): el fondo de cada noche lleva el color de sus dos d
   assert.deepEqual(app.errors, []);
 });
 
-test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (la valoración sigue en 1–5)', async () => {
+test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (media y mediana) y la leyenda sin numerar; la valoración sigue en 1–5', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-normal')`);
@@ -1020,9 +1020,18 @@ test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (la valorac
     assert.equal(R.esc, 5);
     assert.ok(+diez.replace(',', '.') >= 0 && +diez.replace(',', '.') <= 10);
   });
-  assert.match(sec.textContent, /de 0 a 10 \(1 = 0 y 5 = 10\)/);
-  assert.match(sec.textContent, /\d,\d de 5/);
-  assert.match(sec.textContent, /5 Muy buena/, 'la leyenda sigue con los cinco valores de la escala');
+  assert.match(sec.textContent, /La media \(en el centro de cada anillo\) y la mediana se expresan de 0 a 10/);
+  // una sola escala en los anillos: la mediana también de 0 a 10 y la leyenda sin numerar
+  ['qs', 'qd', 'qe'].forEach((k, i) => {
+    const R = app.evj(`qResumen('${k}')`);
+    const med = String(Math.round((R.med - 1) / (R.esc - 1) * 100) / 10).replace('.', ',');
+    const bloque = svgs[i].parentElement.textContent;
+    assert.ok(bloque.includes('Mediana: ' + med + ' de 10'), bloque);
+    assert.doesNotMatch(bloque, /de 5\b|\(1–2\)|\b[1-5] (Muy|Mala|Mal|Regular|Buena|Bien|Nada|Poco|Algo)\b/);
+  });
+  assert.match(sec.textContent, /● Muy buena \d+ \(\d+%\)/, 'cada categoría, con su nombre, sin número');
+  assert.match(sec.textContent, /días malos \(muy mala o mala\)/);
+  assert.equal(sec.querySelector('svg circle title').textContent.match(/^\d/), null);
   assert.deepEqual(app.errors, []);
 });
 

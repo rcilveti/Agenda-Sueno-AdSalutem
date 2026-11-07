@@ -130,8 +130,8 @@ de la v4.9.8 (que no se llegó a publicar):
   añadirla a la pantalla de inicio (en iPhone tienen almacenamientos separados): la dirección lleva
   una copia comprimida del diario, que la app fusiona noche a noche.
 - *PDF del análisis*: la cabecera lleva el código de acceso del paciente y un solo logo.
-- *Calidad percibida*: la valoración sigue en la escala 1–5; los anillos del análisis dan la media de
-  0 a 10 (1 = 0, 5 = 10).
+- *Calidad percibida*: la valoración sigue en la escala 1–5; los anillos del análisis se leen en una
+  sola escala, de 0 a 10 (media y mediana; 1 = 0, 5 = 10), con la leyenda sin numerar.
 - Se mantienen de la v4.9.7 el recordatorio, el aviso de noche pendiente, las tendencias, el patrón
   propio y el resumen para la consulta. Se retiran el registro con preguntas, los factores del día,
   la ventana de sueño y los hitos (sus datos se conservan).

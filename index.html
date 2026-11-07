@@ -5035,12 +5035,13 @@ function renderAnalysis(){
     for(let i=1;i<=esc;i++){
       const nv=c[i]||0; if(!nv)continue;
       const len=nv/n*C2;
-      arcs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${cols[i-1]}" stroke-width="${sw}" stroke-dasharray="${len} ${C2-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${cx} ${cy})"><title>${i} · ${labs[i-1]}: ${nv} día(s)</title></circle>`;
+      arcs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${cols[i-1]}" stroke-width="${sw}" stroke-dasharray="${len} ${C2-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${cx} ${cy})"><title>${labs[i-1]}: ${nv} día(s)</title></circle>`;
       off+=len;
     }
     const pct=i=>Math.round((c[i]||0)/n*100);
-    const avg10=Math.round(qPomp(avg,esc))/10, d10=v=>String(v).replace('.',',');   // v4.9.9: media de 0 a 10 (1 → 0, máximo → 10)
-    const leyenda=[];for(let i=1;i<=esc;i++)leyenda.push(`<span style="white-space:nowrap"><span style="color:${cols[i-1]}">●</span> ${esc===5?i+' ':''}${labs[i-1]} ${c[i]||0} (${pct(i)}%)</span>`);
+    const a10=v=>v==null?null:Math.round(qPomp(v,esc))/10, d10=v=>String(v).replace('.',',');   // v4.9.9: de 0 a 10
+    const avg10=a10(avg), med10=a10(med), malos=esc===5?labs[0].toLowerCase()+' o '+labs[1].toLowerCase():labs[0].toLowerCase();
+    const leyenda=[];for(let i=1;i<=esc;i++)leyenda.push(`<span style="white-space:nowrap"><span style="color:${cols[i-1]}">●</span> ${labs[i-1]} ${c[i]||0} (${pct(i)}%)</span>`);
     return `<div style="text-align:center;flex:1;min-width:170px">
       <div style="font-size:.84rem;font-weight:600;margin-bottom:6px;color:${QCOL[key]}">${qLabel[key]}</div>
       <svg viewBox="0 0 140 140" style="width:140px;height:140px;max-width:100%">
@@ -5049,13 +5050,13 @@ function renderAnalysis(){
         <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="26" font-weight="700" fill="${QCOL[key]}">${d10(avg10)}</text>
         <text x="${cx}" y="${cy+22}" text-anchor="middle" font-size="11" fill="#7c8a9b">de 10</text>
       </svg>
-      <div style="font-size:.74rem;color:${QCOL[key]};font-weight:600;margin-top:2px">Media «${qTexto(avg,esc,key)}» · ${d10(r1(avg))} de ${esc}</div>
+      <div style="font-size:.74rem;color:${QCOL[key]};font-weight:600;margin-top:2px">Media: ${d10(avg10)} de 10 · «${qTexto(avg,esc,key)}»</div>
       <div style="font-size:.7rem;color:var(--mist);margin-top:4px;line-height:1.55;display:flex;flex-wrap:wrap;gap:2px 8px;justify-content:center">${leyenda.join('')}</div>
-      <div style="font-size:.7rem;color:var(--slate);margin-top:3px">Mediana: <b>${qTexto(med,esc,key)}</b> · días ${esc===5?'malos (1–2)':'«mala»'}: <b>${Rq.pctMalo}%</b></div></div>`;
+      <div style="font-size:.7rem;color:var(--slate);margin-top:3px">Mediana: <b>${d10(med10)} de 10</b> · «${qTexto(med,esc,key)}» · días malos (${malos}): <b>${Rq.pctMalo}%</b></div></div>`;
   }
   html+=sec('Calidad percibida', `
-    <p class="sub">Valoración del paciente sobre su sueño, su despertar y su estado diurno (escala ${qInfo.escala===5?'Likert 1–5':'1–3 de versiones anteriores'}), con la distribución a lo largo de las 3 semanas. En el centro de cada anillo, la media en una escala de 0 a 10 (${qInfo.escala===5?'1 = 0 y 5 = 10':'1 = 0 y 3 = 10'}); debajo, la media en la escala del diario.</p>
-    ${qInfo.mixto?`<p class="secnote" style="margin:0 0 10px"><b>Escalas mezcladas:</b> ${qInfo.n3} día(s) se valoraron con la escala antigua de 3 niveles. Para el análisis se han pasado a 1–5 de forma lineal (mala = 1, regular = 3, buena = 5).</p>`:''}
+    <p class="sub">Valoración del paciente sobre su sueño, su despertar y su estado diurno (escala ${qInfo.escala===5?'Likert de cinco categorías':'de tres categorías de versiones anteriores'}), con la distribución a lo largo de las 3 semanas. La media (en el centro de cada anillo) y la mediana se expresan de 0 a 10: la categoría más baja vale 0 y la más alta, 10${qInfo.escala===5?' (2,5 entre categorías)':''}.</p>
+    ${qInfo.mixto?`<p class="secnote" style="margin:0 0 10px"><b>Escalas mezcladas:</b> ${qInfo.n3} día(s) se valoraron con la escala antigua de 3 niveles. Para el análisis se han pasado a la escala de cinco categorías de forma lineal (mala, la más baja; regular, la central; buena, la más alta), que de 0 a 10 valen 0, 5 y 10.</p>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-around;align-items:flex-start">
       ${qDonut('qs')}${qDonut('qd')}${qDonut('qe')}
     </div>
