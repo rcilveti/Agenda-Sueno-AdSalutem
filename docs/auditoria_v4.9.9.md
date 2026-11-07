@@ -212,8 +212,8 @@ Los pendientes 1, 2, 4, 5, 9 y 10 se resolvieron tras la auditoría (apartado 8)
   - con una variación pequeña y reproducible: acostarse y levantarse ±15 min, y la latencia, los despertares y el tiempo final en cama a un escalón del editor dentro de ±15 min.
 - Las ✕ pasan a ser acontecimientos con el tipo propio de cada caso, las siestas pintadas pasan al paso 2 y el tratamiento se anota desde la noche en que empezaba el hito (TCC-I, cronoterapia y hierro oral).
 - **Ningún caso cambia de categoría clínica** (TST, eficiencia, latencia y WASO por edad, cronotipo y RU-SATED). La única excepción es la latencia del bebé, que pasa de 60 a unos 14 min: la de la rejilla era un artefacto de acostarse a las 19:00.
-- Frente a la v4.9.7, el TST medio de cada caso cambia como mucho 12 min y la eficiencia, 2,5 puntos (6 en el bebé, por la latencia). Las noches fuera del patrón propio del caso de TCC-I son las mismas (días 5, 6, 7 y 13).
-- Se cargan una vez al abrir la v4.9.9 (marca 16).
+- Frente a la v4.9.7, el TST medio de cada caso cambia como mucho 14 min y la eficiencia, 2,5 puntos (6 en el bebé, por la latencia). Las noches fuera del patrón propio del caso de TCC-I son las mismas (días 5, 6, 7 y 13).
+- Se cargan una vez al abrir la v4.9.9 (marca 17; la 16 fue la primera, antes de los saltos nuevos del despertar final).
 
 ### Documentación
 
@@ -263,5 +263,9 @@ Las guías del paciente y el documento técnico (nuevo apartado 5.18) están al 
 
 - **Colores de los días en la lista de noches (móvil).** El fondo de la barra de cada noche lleva el color de sus dos días, partido a medianoche como en la escala del editor: azul claro, laborable; naranja claro, festivo. También en las noches sin anotar, para ver de un vistazo los festivos. «lab.» y «fest.» van en una etiqueta del mismo color, y la fecha y los tipos ya no se parten (las siestas pasan a su propia línea).
 - **Anillos de la calidad percibida de 0 a 10.** La valoración sigue en la escala Likert 1–5 (en el editor, los datos, el CSV y los informes). En el centro de cada anillo, la media pasa a una escala de 0 a 10 (1 = 0, 5 = 10; es el porcentaje del máximo posible dividido entre 10); debajo, la media en la escala 1–5. Los cinco segmentos y la leyenda no cambian.
+
+### F · Casos de ejemplo al día
+
+Los 17 casos se han vuelto a generar con el editor de noviembre, con las mismas variaciones que la primera vez: 31 de sus 357 noches tenían 25 o 45 min entre el despertar final y levantarse, que el editor ya no ofrece; ahora van en los saltos nuevos (20 o 30 min, el más próximo). Solo el de hipersomnia ha necesitado otra variación para conservar sus categorías. Ningún caso cambia de categoría clínica; frente a los casos anteriores de la v4.9.9, el TST medio cambia como mucho 2 min y la eficiencia, medio punto, y las noches fuera del patrón propio del caso de TCC-I son las mismas. Se vuelven a cargar una vez (marca 17), también en los navegadores que ya tenían los anteriores. El anexo IV del documento técnico está al día. Una prueba nueva (107 en la raíz).
 
 Comprobado en Chromium (iPhone 13, iPhone SE, Pixel 7 y iPhone 14 Pro Max, en vertical y en horizontal, en castellano y en catalán, y con el alto que deja el teclado). Guías del paciente y documento técnico al día. Cinco pruebas nuevas (106 en la raíz).

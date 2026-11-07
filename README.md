@@ -47,7 +47,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
 | `docs/` | Documentación de la v4.9.9: documento técnico (`Agenda_Sueno_v4.9.9_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v4.9.9_castellano.pdf`) y en catalán (`Guia_del_pacient_v4.9.9_catala.pdf`) y auditoría (`auditoria_v4.9.9.md`). Las de versiones anteriores están en `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
-| `tests/`, `package.json` | Pruebas automáticas (106 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
+| `tests/`, `package.json` | Pruebas automáticas (107 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
 | `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
@@ -139,8 +139,8 @@ de la v4.9.8 (que no se llegó a publicar):
   datos sigue en la versión 5.
 - *Una sola versión por diario*: cada diario guarda la versión que lo guardó, y las versiones
   anteriores (v4.9.5, v4.9.6 y v4.9.7) ya no sobrescriben un diario de la v4.9.9.
-- Casos de ejemplo regenerados con el editor (acontecimientos con tipo, siestas y tratamiento), sin
-  cambiar sus categorías clínicas.
+- Casos de ejemplo regenerados con el editor (acontecimientos con tipo, siestas y tratamiento, y el
+  rato tras el despertar final en sus saltos), sin cambiar sus categorías clínicas.
 - Documento técnico y guía del paciente (castellano y catalán) en PDF en `docs/`; auditoría completa
   en `docs/auditoria_v4.9.9.md`.
 

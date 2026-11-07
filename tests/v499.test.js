@@ -1025,3 +1025,20 @@ test('E · análisis: los anillos de la calidad percibida, de 0 a 10 (la valorac
   assert.match(sec.textContent, /5 Muy buena/, 'la leyenda sigue con los cinco valores de la escala');
   assert.deepEqual(app.errors, []);
 });
+
+test('F · casos de ejemplo al día: ninguna noche fuera de los saltos del despertar final y se vuelven a cargar sobre los de la marca 16', async () => {
+  // un navegador que ya tenía los casos de la primera v4.9.9 (marca 16), con una noche antigua de 45 min
+  const viejo = { patient: 'caso-normal', name: 'Caso · Sueño normal', start: '2026-01-05', ver: '4.9.9',
+    state: [{ gd: { b: '23:00', s: 15, w: [], f: '06:15', r: '07:00' } }] };
+  const app = await loadApp({ storage: { agenda_demo_seeded16: '1', 'agendasueno3:caso-normal': JSON.stringify(viejo),
+    agenda_patient_index3: JSON.stringify([{ id: 'caso-normal', name: 'Caso · Sueño normal' }]) } });
+  await loginDoctor(app);
+  assert.equal(app.ev(`localStorage.getItem('agenda_demo_seeded17')`), '1');
+  assert.equal(app.ev(`JSON.parse(localStorage.getItem('agendasueno3:caso-normal')).start`), app.ev(`DEMO_CASES.records['caso-normal'].start`));
+  const fuera = app.evj(`(()=>{ const F=EditorNoche.ESC_F, u=t=>+t.slice(0,2)*60+ +t.slice(3), r=[];
+    DEMO_CASES.index.forEach(({id})=>DEMO_CASES.records[id].state.forEach((d,i)=>{ if(d&&d.gd){ const t=((u(d.gd.r)-u(d.gd.f))%1440+1440)%1440; if(!F.includes(t)) r.push(id+' '+i+' '+t); } }));
+    return r; })()`);
+  assert.deepEqual(fuera, []);
+  assert.equal(app.ev('DEMO_CASES.index.length'), 17);
+  assert.deepEqual(app.errors, []);
+});
