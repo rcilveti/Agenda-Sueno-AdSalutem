@@ -285,7 +285,7 @@ test('valoraciones y conclusión con los umbrales de la AASM, editables (y qué 
   assert.deepEqual(app.errors, []);
 });
 
-test('apartado «Comparación de diarios del paciente»: tabla de diarios, casillas por sistema, abrir, resultados y su hoja en el PDF', async () => {
+test('apartado «Comparación de diarios del paciente»: tabla de diarios, casillas por sistema, abrir, resumen, evolución por métrica, gráficos, detalle y sus hojas apaisadas en el PDF', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   await app.ev(`selectPatient('caso-seg-tcci')`);
@@ -299,14 +299,49 @@ test('apartado «Comparación de diarios del paciente»: tabla de diarios, casil
   assert.match(filas[0].textContent, /Rejilla de media hora.*Otro sistema de registro/s);
   assert.match(filas[3].textContent, /Seguimiento a los 3 meses \(abierto\).*Ventana ampliada/s);
   const txt = blk().textContent;
-  assert.match(txt, /Diario 3 · Tras TCC-I \(6 semanas\) frente a Diario 2 · Basal \(referencia\) Respuesta/);
-  assert.match(txt, /Diario 4 · Seguimiento a los 3 meses frente a Diario 3 · Tras TCC-I \(6 semanas\) \(el anterior: ¿se mantiene\?\)/);
+  // resumen: resultado del último diario frente a la referencia, los demás pares, el mantenimiento y la remisión
+  const ver = blk().querySelector('.cmp-ver').textContent.replace(/\s+/g, ' ');
+  assert.match(ver, /^ ?Respuesta D4 · Seguimiento a los 3 meses frente a D2 · Basal \(referencia\) Mejoría clínicamente relevante en latencia de sueño, WASO, despertares, tiempo total de sueño, eficiencia del sueño y calidad del sueño\. Ninguna métrica que cuenta para la respuesta empeora\./);
+  assert.match(ver, /D3 · Tras TCC-I \(6 semanas\) frente a la referencia: respuesta/);
+  assert.match(ver, /Frente al diario anterior \(D3 · Tras TCC-I \(6 semanas\)\): se mantiene/);
+  assert.match(ver, /Remisión por diario: D2 no · D3 sí · D4 sí/);
+  // las métricas más significativas: los cambios relevantes, por orden clínico (no por veces el umbral)
+  const tarj = [...blk().querySelectorAll('.cmp-card')].map(c => c.querySelector('.cmp-card-n').textContent);
+  assert.deepEqual(tarj, ['Latencia de sueño', 'WASO', 'Eficiencia del sueño', 'Tiempo total de sueño']);
+  assert.match(blk().querySelector('.cmp-card').textContent.replace(/\s+/g, ' '), /59 → 15 min ✓ −44 min IC 95 %: −57 a −31 min Umbral −20 min · 2,2 veces Mejoría clínicamente relevante/);
+  // evolución por métrica: una columna por diario, el cambio respecto a la referencia con su símbolo, y la remisión
+  const mz = blk().querySelector('table.cmp-matriz');
+  assert.deepEqual([...mz.querySelectorAll('thead th')].map(t => t.textContent.replace(/\s+/g, ' ').trim()),
+    ['Métrica', 'D2 · Basalreferencia01/09/2025 · 20 noches', 'D3 · Tras TCC-I (6 semanas)20/10/2025 · 19 noches', 'D4 · Seguimiento a los 3 meses19/01/2026 · 17 noches', 'Umbral clínico']);
+  const fila = n => [...mz.querySelectorAll('tbody tr')].find(tr => tr.querySelector('.cmp-m') && tr.querySelector('.cmp-m').textContent.startsWith(n));
+  assert.deepEqual([...fila('Latencia de sueño').cells].slice(1).map(c => c.textContent.replace(/\s+/g, ' ').trim()), ['59', '16✓ −43 min', '15✓ −44 min', '−20 min']);
+  assert.match(fila('Tiempo total de sueño').cells[2].textContent, /\? \+23 min/);   // D3: alcanza el umbral, no concluyente
+  assert.deepEqual([...fila('Criterios de remisión').cells].slice(1, 4).map(c => c.textContent.trim()), ['No', 'Sí', 'Sí']);
+  assert.equal(mz.querySelectorAll('tr.cmp-grupo').length, 4);
+  // gráficos: cambio en veces el umbral, horario medio y noche a noche (latencia, WASO, tiempo de sueño, eficiencia)
+  assert.equal(blk().querySelectorAll('svg.cmp-fp').length, 1);
+  assert.equal(blk().querySelectorAll('svg.cmp-hz').length, 1);
+  assert.equal(blk().querySelectorAll('svg.cmp-nn').length, 4);
+  assert.match(blk().querySelector('svg.cmp-fp').textContent, /D3: −43 min · 2,2×.*D4: −44 min · 2,2×/s);
+  assert.match(blk().querySelector('svg.cmp-hz').textContent, /D2 · Basal.*23:19.*07:33.*Cama 8h 14min · sueño 5h 40min · 69 %/s);
+  // detalle estadístico: plegado en pantalla (se imprime siempre), con las tres comparaciones
+  assert.match(txt, /D3 · Tras TCC-I \(6 semanas\) frente a D2 · Basal \(referencia\) Respuesta/);
+  assert.match(txt, /D4 · Seguimiento a los 3 meses frente a D3 · Tras TCC-I \(6 semanas\) \(el anterior: ¿se mantiene\?\)/);
   assert.match(txt, /Se mantiene:/);
-  assert.equal(blk().querySelectorAll('svg.cmp-svg').length, 5);
+  assert.equal(blk().querySelectorAll('.cmp-detalle .cmp-par').length, 3);
+  assert.doesNotMatch(app.doc.getElementById('cmpDetalle').className, /\bver\b/);
+  app.doc.getElementById('cmpDetalleBtn').click();
+  assert.match(app.doc.getElementById('cmpDetalle').className, /\bver\b/);
+  assert.match(app.doc.getElementById('cmpDetalleBtn').textContent, /^▾ Ocultar el detalle estadístico \(3 comparaciones\)/);
+  app.doc.getElementById('cmpDetalleBtn').click();
+  assert.doesNotMatch(app.doc.getElementById('cmpDetalle').className, /\bver\b/);
+  assert.deepEqual([...[...blk().querySelectorAll('.cmp-detalle .cmp-tabla tbody tr')][4].cells].map(c => c.textContent.replace(/\s+/g, ' ').trim()),
+    ['Eficiencia del sueño ●', '69 ± 7', '92 ± 2', '+23,1 puntos', '+19,6 a +26,7 puntos', '±3,5 puntos', '1,00', '4,47', '+10 puntos', 'Mejoría clínicamente relevante']);
   assert.match(txt, /Edinger et al\., 2021/); assert.match(txt, /Parker y Vannest, 2009/); assert.match(txt, /Lichstein et al\., 2003/);
   // quitar el diario 3: queda una sola comparación
   chk[2].checked = false; chk[2].dispatchEvent(new app.win.Event('change', { bubbles: true })); await app.sleep(50);
   assert.equal(blk().querySelectorAll('.cmp-par').length, 1);
+  assert.doesNotMatch(blk().querySelector('.cmp-ver').textContent, /diario anterior/);
   assert.deepEqual(app.evj('compSel.ids').length, 2);
   // con todos quitados se pueden elegir los de otro sistema (el antiguo, en la rejilla), pero solo hay uno: no compara
   [...blk().querySelectorAll('.cmp-chk')].forEach(c => { if (c.checked) { c.checked = false; } });
@@ -320,15 +355,27 @@ test('apartado «Comparación de diarios del paciente»: tabla de diarios, casil
   // «Abrir» abre ese diario
   blk().querySelector('.cmp-abrir[data-id]').click(); await app.sleep(400);
   assert.equal(app.ev('getStartInput().value'), '2024-10-07');
-  // PDF: la comparación, en su hoja, tras la primera
-  await app.ev(`selectPatient('caso-seg-tcci')`); await analisis(app);
+  // PDF: la comparación, en su hoja, tras la primera (con el diario 4 abierto y los diarios por defecto)
+  await app.ev(`abrirDiario(diariosPac.find(x=>x.etiqueta==='Seguimiento a los 3 meses').id)`); await app.sleep(400);
+  app.ev('compSel={pid:null,ids:null}'); await analisis(app);
+  assert.equal(blk().querySelectorAll('.cmp-detalle .cmp-par').length, 3);
   app.win.print = () => {};
   app.ev(`printView('analisis')`);
   const orden = app.evj(`[...document.querySelectorAll('#analisisContent>*')].map(e=>e.dataset.sectitle||e.id||((e.querySelector('.kgh')||{}).textContent||'').trim())`);
   const i = orden.indexOf('Comparación de diarios');
   assert.ok(i > 0 && /Duración y continuidad/.test(orden[i - 1]), orden.join(' | '));
   assert.match(app.ev(`document.getElementById('cmpBlock').className`), /pg-salto/);
+  // en hojas apaisadas (página con nombre). El pie de página va en el margen de cada hoja si el navegador lo admite
+  // (Chromium; comprobado con el PDF real); jsdom no lo admite: se queda el pie de siempre, sin errores
+  const ps = app.ev(`document.getElementById('pageOrientStyle').textContent`);
+  assert.match(ps, /@page comparacion\{size:A4 landscape;margin:9mm 10mm 13mm\}/);
+  assert.equal(app.doc.getElementById('piePaginasStyle'), null);
+  assert.doesNotMatch(app.doc.body.className, /pie-paginas/);
+  const css = app.ev(`[...document.querySelectorAll('style')].map(s=>s.textContent).join('\\n')`);
+  assert.match(css, /body\[data-print="analisis"\] #cmpBlock\{page:comparacion\}/);
+  assert.match(css, /body\[data-print="analisis"\] #cmpBlock \.cmp-detalle\{display:block!important/);
   app.win.dispatchEvent(new app.win.Event('afterprint'));
+  assert.equal(app.ev(`document.getElementById('pageOrientStyle').textContent`), '');
   // un paciente de un solo diario: sin apartado (ni hoja en el PDF)
   await app.ev(`selectPatient('caso-normal')`); await analisis(app);
   assert.equal(blk(), null);
@@ -378,6 +425,13 @@ test('Excel del paciente: hoja «Comparación»; Word del análisis: la comparac
   assert.equal(c[i][1], 'Respuesta');
   assert.deepEqual(c[i + 1].slice(0, 4), ['Métrica', 'Unidad', 'Media D1', 'Media D2']);
   assert.equal(c[i + 2][0], 'Latencia de sueño'); assert.equal(c[i + 2][10], 'Mejoría clínicamente relevante');
+  // resumen: la media de cada diario y la valoración del cambio respecto a la referencia
+  const r = c.findIndex(f => f[0] === 'Resumen');
+  assert.ok(r > 0 && r < i);
+  assert.deepEqual(c[r], ['Resumen', 'D2 frente a D1 (referencia)', 'Respuesta']);
+  assert.deepEqual(c[r + 1], ['Métrica', 'Unidad', 'Media D1 (referencia)', 'Media D2', 'Cambio D2', 'Umbral']);
+  assert.equal(c[r + 2][0], 'Latencia de sueño'); assert.equal(c[r + 2][4], 'Mejoría clínicamente relevante'); assert.equal(c[r + 2][5], 20);
+  assert.deepEqual(c.find(f => f[0] === 'Remisión por diario').slice(2, 4), ['No', 'Sí']);
   // un paciente de un solo diario: sin hoja
   await app.ev(`selectPatient('caso-normal')`); delete hojas['Comparación']; app.ev('exportExcel()');
   assert.equal(hojas['Comparación'], undefined);
@@ -385,5 +439,17 @@ test('Excel del paciente: hoja «Comparación»; Word del análisis: la comparac
   await app.ev(`selectPatient('caso-seg-nino')`); await analisis(app);
   assert.equal(app.ev(`_wdTitulo(document.getElementById('cmpBlock'))`), 'Comparación de diarios');
   assert.equal(app.ev(`_wdEditable(document.getElementById('cmpBlock'))`), false);
+  // el Word: la comparación, en su sección apaisada entre dos verticales (como en el PDF); el anexo, al final
+  let D = null;
+  { const B = app.win.Blob; app.win.Blob = function (parts, o) { return new B(parts, o); };
+    app.win.URL.createObjectURL = () => 'blob:x'; app.win.URL.revokeObjectURL = () => {};
+    const clic = app.win.HTMLAnchorElement.prototype.click; app.win.HTMLAnchorElement.prototype.click = function () {};
+    try { await app.ev('exportAnalysisWord()'); } finally { app.win.Blob = B; app.win.HTMLAnchorElement.prototype.click = clic; }
+    D = app.evj('window._ultimoWordAnalisis'); }
+  assert.deepEqual(D.secciones.map(x => x.apaisada), [false, true, false, true]);
+  const txt = bs => bs.map(b => b.t === 'p' ? b.runs.map(r => r.text || '').join('') : b.rows.map(r => r.cells.map(c => txt(c.blocks || [])).join(' ')).join(' ')).join(' ');
+  assert.match(txt(D.secciones[1].bloques), /Comparación de diarios del paciente.*Resumen.*Respuesta.*Evolución por métrica.*Detalle estadístico de cada comparación/s);
+  assert.doesNotMatch(txt(D.secciones[0].bloques), /Comparación de diarios del paciente/);
+  assert.ok(!D.secciones[1].bloques[0].salto && !D.secciones[2].bloques[0].salto);   // cada sección empieza hoja: sin salto de más
   assert.deepEqual(app.errors, []);
 });

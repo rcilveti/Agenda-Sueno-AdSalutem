@@ -876,53 +876,120 @@
 /* ===== v5.0.0: varios diarios por paciente y su comparación ===== */
 .dlg-l{display:block;font-size:.8rem;font-weight:600;color:var(--brand-deep);margin:10px 0 4px}
 .cmp-badge{display:inline-block;font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;vertical-align:middle}
-.cmp-h{font-size:.98rem;margin:14px 0 4px;color:var(--brand-deep);font-weight:700}
+.cmp-h{font-size:1rem;margin:0 0 6px;color:var(--brand-deep);font-weight:700}
+.cmp-h4{font-size:.9rem;margin:14px 0 4px;color:var(--brand-deep);font-weight:700}
 .cmp-sub{font-weight:400;color:var(--mist);font-size:.82em}
-.cmp-concl{margin:0 0 8px;font-size:.88rem}
+.cmp-concl{margin:0 0 6px;font-size:.86rem}
 .cmp-de{font-size:.72rem;color:var(--mist);font-weight:400}
-.cmp-nota{font-size:.7rem;color:#8a5200;margin-top:2px;white-space:normal;max-width:200px}
-table.summary td.cmp-m,.cmp-m{text-align:left!important;font-weight:600}
+.cmp-intro{margin:0 0 6px}
+table.summary td.cmp-m,table.summary th.cmp-m,.cmp-m{text-align:left!important;font-weight:600}
 .cmp-diana{color:#1f5f8b;font-size:.7em;vertical-align:middle}
 .cmp-tabla td,.cmp-diarios td{vertical-align:top}
 .cmp-diarios tr.cmp-on td{background:#f2f8fc}
+.cmp-pt{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
 .cmp-no{color:#8a5200;font-size:.78rem}
 .cmp-si{color:#1f6b3a;font-weight:700;font-size:.8rem}
 .cmp-abrir{font-size:.72rem;padding:2px 8px;margin-left:4px}
-.cmp-avisos{font-size:.8rem;color:#8a5200;margin:6px 0 0;padding-left:18px}
-.cmp-graf{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.cmp-svg{width:230px;height:150px;background:#fff;border:1px solid #e3e9ef;border-radius:6px}
-.cmp-st{font:600 10px system-ui,-apple-system,Segoe UI,sans-serif;fill:#143f5e}
-.cmp-ax{font:9px system-ui,-apple-system,Segoe UI,sans-serif;fill:#6b7a89}
-.cmp-pie{font-size:.72rem;color:var(--mist);margin-top:10px;line-height:1.45}
+.cmp-avisos{font-size:.8rem;color:#8a5200;margin:8px 0 0;padding-left:18px}
+.cmp-pie{font-size:.72rem;color:var(--mist);margin:6px 0 0;line-height:1.45}
 .cmp-umbrales{background:#f7f9fb;border:1px solid #e3e9ef;border-radius:8px;padding:10px 12px;margin:0 0 12px}
+.cmp-blq{margin-top:18px}
+.cmp-lista{margin-top:4px}
+/* resumen: resultado y métricas más significativas */
+.cmp-res{display:grid;grid-template-columns:minmax(230px,1fr) 2.7fr;gap:12px;align-items:stretch}
+.cmp-ver{border:1px solid;border-left-width:6px;border-radius:10px;padding:12px 14px}
+.cmp-ver-t{font-size:1.35rem;font-weight:800;line-height:1.15}
+.cmp-ver-s{font-size:.8rem;color:#42546a;margin:3px 0 8px;font-weight:600}
+.cmp-ver-p{font-size:.85rem;margin:0 0 8px;line-height:1.4}
+.cmp-ver-l{margin:0;padding-left:16px;font-size:.8rem;line-height:1.55;color:#26384a}
+.cmp-dest-t{font-size:.7rem;font-weight:700;color:#55616e;text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
+.cmp-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.cmp-card{background:#fff;border:1px solid #e3e9ef;border-top:4px solid;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.cmp-card-n{font-size:.78rem;font-weight:700;color:#143f5e}
+.cmp-card-v{font-size:.9rem;color:#26384a}
+.cmp-card-v b{font-size:1.1rem}
+.cmp-card-d{font-size:1.3rem;font-weight:800;line-height:1.2}
+.cmp-card-x{font-size:.7rem;color:#6b7a89;line-height:1.35}
+.cmp-card-b{margin-top:auto;padding-top:5px}
+.cmp-card-b .cmp-badge{white-space:normal}
+/* evolución por métrica */
+.cmp-matriz th,.cmp-matriz td{text-align:center;vertical-align:middle}
+.cmp-matriz th.cmp-dcol{min-width:110px;text-transform:none;letter-spacing:0}
+.cmp-matriz .cmp-cel{font-size:.95rem;font-weight:600;min-width:96px}
+.cmp-matriz .cmp-um{font-size:.78rem;color:#55616e;white-space:nowrap}
+.cmp-dl{font-size:.74rem;font-weight:700;margin-top:1px}
+.cmp-matriz tr.cmp-grupo td{background:#f4f7fa;font-size:.68rem;font-weight:700;color:#55616e;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding-top:5px;padding-bottom:3px}
+.cmp-leyenda{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;font-size:.7rem}
+.cmp-lg{padding:2px 8px;border-radius:10px;font-weight:600;color:#55616e}
+/* gráficos */
+.cmp-fig{min-width:640px}
+.cmp-fig svg{width:100%;height:auto;display:block;background:#fff}
+.cmp-noches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cmp-ld{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.76rem;font-weight:600;color:#26384a;margin:0 0 6px}
+.cmp-ld i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.cmp-noches svg{width:100%;height:auto;display:block;background:#fff;border:1px solid #e3e9ef;border-radius:6px}
+.cmp-st{font:600 12px system-ui,-apple-system,Segoe UI,sans-serif;fill:#143f5e}
+.cmp-ax{font:11px system-ui,-apple-system,Segoe UI,sans-serif;fill:#6b7a89}
+.cmp-ax2{font:700 12px system-ui,-apple-system,Segoe UI,sans-serif;fill:#42546a}
+.cmp-lbl{font:600 12.5px system-ui,-apple-system,Segoe UI,sans-serif;fill:#26384a}
+/* detalle estadístico (en pantalla, plegado) */
+.cmp-detbtn{margin:18px 0 4px}
+.cmp-detalle{display:none;margin-top:8px}
+.cmp-detalle.ver{display:block}
 .cmp-par{border-top:1px solid #e3e9ef;padding-top:4px;margin-top:10px}
+.cmp-tabla td,.cmp-tabla th{white-space:nowrap}
+.cmp-tabla td.cmp-m{white-space:normal}
+@media (max-width:760px){ .cmp-res,.cmp-noches{grid-template-columns:1fr} .cmp-card-d{font-size:1.1rem} .cmp-ver-t{font-size:1.2rem} }
 @media print{
-  body[data-print="analisis"] .cmp-tabla,body[data-print="analisis"] .cmp-diarios{font-size:7.2pt!important}
-  body[data-print="analisis"] .cmp-svg{width:48mm!important;height:31.3mm!important;max-width:none!important}
-  body[data-print="analisis"] .cmp-tabla th,body[data-print="analisis"] .cmp-diarios th{text-transform:none!important;letter-spacing:0!important;font-size:6.6pt!important;white-space:normal!important}
-  body[data-print="analisis"] .cmp-graf{gap:2mm;break-inside:avoid;page-break-inside:avoid}
-  body[data-print="analisis"] .cmp-tabla,body[data-print="analisis"] .cmp-diarios{table-layout:fixed;width:100%}
-  body[data-print="analisis"] .cmp-tabla th,body[data-print="analisis"] .cmp-tabla td,
-  body[data-print="analisis"] .cmp-diarios th,body[data-print="analisis"] .cmp-diarios td{padding:.9mm 1.1mm!important;line-height:1.25}
-  body[data-print="analisis"] .cmp-tabla th:nth-child(1){width:24%} body[data-print="analisis"] .cmp-tabla th:nth-child(2),
-  body[data-print="analisis"] .cmp-tabla th:nth-child(3){width:11.5%} body[data-print="analisis"] .cmp-tabla th:nth-child(4){width:17%}
-  body[data-print="analisis"] .cmp-tabla th:nth-child(5){width:7.5%} body[data-print="analisis"] .cmp-tabla th:nth-child(6){width:9.5%}
-  body[data-print="analisis"] .cmp-tabla th:nth-child(7){width:19%}
-  /* la 1.ª columna (casillas) no se imprime */
-  body[data-print="analisis"] .cmp-diarios th:nth-child(2){width:23%} body[data-print="analisis"] .cmp-diarios th:nth-child(3){width:10.5%}
-  body[data-print="analisis"] .cmp-diarios th:nth-child(4){width:11%} body[data-print="analisis"] .cmp-diarios th:nth-child(5),
-  body[data-print="analisis"] .cmp-diarios th:nth-child(6){width:6.5%} body[data-print="analisis"] .cmp-diarios th:nth-child(12){width:8%}
-  body[data-print="analisis"] .cmp-diarios th:nth-child(13){width:9%}
-  body[data-print="analisis"] .cmp-badge{font-size:6.3pt!important;white-space:normal;padding:.3mm 1.4mm;line-height:1.2}
-  body[data-print="analisis"] .cmp-de{font-size:6.2pt!important}
-  body[data-print="analisis"] .cmp-nota{font-size:5.8pt!important;max-width:none}
-  body[data-print="analisis"] .cmp-concl{font-size:8pt!important;margin-bottom:1.5mm}
-  body[data-print="analisis"] .cmp-h{font-size:9.5pt!important;margin:3mm 0 1mm;break-after:avoid;page-break-after:avoid}
-  body[data-print="analisis"] .cmp-tabla tr,body[data-print="analisis"] .cmp-diarios tr{break-inside:avoid;page-break-inside:avoid}
-  /* cada comparación, entera en una hoja (así no llega al pie de página) */
+  /* la comparación, en hojas apaisadas (página con nombre «comparacion»; ver printView) */
+  body[data-print="analisis"] #cmpBlock{page:comparacion}
+  body[data-print="analisis"] #cmpBlock .scroll{overflow:visible!important}
+  body[data-print="analisis"] #cmpBlock .cmp-detalle{display:block!important;break-before:page;page-break-before:always}
+  body[data-print="analisis"] #cmpBlock>.dbody>.sub{font-size:7.5pt!important}
+  body[data-print="analisis"] .cmp-blq{margin-top:4mm;break-inside:avoid;page-break-inside:avoid}
+  body[data-print="analisis"] .cmp-evol,body[data-print="analisis"] .cmp-g1{break-before:page;page-break-before:always;margin-top:0}
+  body[data-print="analisis"] .cmp-h{font-size:11pt!important;margin:0 0 1.5mm;break-after:avoid;page-break-after:avoid}
+  body[data-print="analisis"] .cmp-h4{font-size:9.5pt!important;margin:3mm 0 1mm;break-after:avoid;page-break-after:avoid}
+  body[data-print="analisis"] .cmp-de{font-size:6.8pt!important}
+  body[data-print="analisis"] .cmp-pie{font-size:7pt!important;margin-top:1.5mm}
+  body[data-print="analisis"] .cmp-avisos{font-size:7.5pt!important}
+  body[data-print="analisis"] .cmp-badge{font-size:7pt!important;padding:.3mm 1.6mm;line-height:1.25}
+  body[data-print="analisis"] .cmp-diarios{font-size:8pt!important;width:100%}
+  body[data-print="analisis"] .cmp-diarios th,body[data-print="analisis"] .cmp-matriz th,body[data-print="analisis"] .cmp-tabla th{text-transform:none!important;letter-spacing:0!important;font-size:7.5pt!important;white-space:normal!important}
+  body[data-print="analisis"] .cmp-diarios th,body[data-print="analisis"] .cmp-diarios td{padding:1mm 1.6mm!important}
+  body[data-print="analisis"] .cmp-res{grid-template-columns:78mm 1fr;gap:4mm}
+  body[data-print="analisis"] .cmp-ver{padding:3mm 4mm}
+  body[data-print="analisis"] .cmp-ver-t{font-size:15pt!important}
+  body[data-print="analisis"] .cmp-ver-s{font-size:8pt!important}
+  body[data-print="analisis"] .cmp-ver-p,body[data-print="analisis"] .cmp-ver-l{font-size:8.5pt!important}
+  body[data-print="analisis"] .cmp-cards{grid-template-columns:repeat(4,1fr);gap:3mm}
+  body[data-print="analisis"] .cmp-card{padding:2.4mm 3mm}
+  body[data-print="analisis"] .cmp-card-n{font-size:8.5pt!important}
+  body[data-print="analisis"] .cmp-card-v{font-size:8.5pt!important}
+  body[data-print="analisis"] .cmp-card-v b{font-size:10pt!important}
+  body[data-print="analisis"] .cmp-card-d{font-size:12.5pt!important}
+  body[data-print="analisis"] .cmp-card-x{font-size:7pt!important}
+  body[data-print="analisis"] .cmp-dest-t{font-size:7pt!important}
+  body[data-print="analisis"] .cmp-matriz{font-size:8.5pt!important;width:100%}
+  body[data-print="analisis"] .cmp-matriz td,body[data-print="analisis"] .cmp-matriz th{padding:1mm 2mm!important;line-height:1.25}
+  body[data-print="analisis"] .cmp-matriz .cmp-cel{font-size:9.5pt!important}
+  body[data-print="analisis"] .cmp-dl{font-size:7.5pt!important}
+  body[data-print="analisis"] .cmp-matriz tr.cmp-grupo td{font-size:7pt!important;padding:.8mm 2mm!important}
+  body[data-print="analisis"] .cmp-leyenda{font-size:7pt!important;gap:2mm}
+  body[data-print="analisis"] .cmp-fig{min-width:0}
+  body[data-print="analisis"] .cmp-g1 .cmp-fig{width:100%}
+  body[data-print="analisis"] .cmp-noches{grid-template-columns:1fr 1fr;gap:3mm}
+  body[data-print="analisis"] .cmp-tabla{font-size:8pt!important;width:100%}
+  body[data-print="analisis"] .cmp-tabla th,body[data-print="analisis"] .cmp-tabla td{padding:.9mm 1.6mm!important;line-height:1.25}
+  body[data-print="analisis"] .cmp-concl{font-size:8.5pt!important;margin-bottom:1.5mm}
+  body[data-print="analisis"] .cmp-tabla tr,body[data-print="analisis"] .cmp-diarios tr,body[data-print="analisis"] .cmp-matriz tr{break-inside:avoid;page-break-inside:avoid}
+  /* cada comparación del detalle, entera en una hoja */
   body[data-print="analisis"] .cmp-par{break-inside:avoid;page-break-inside:avoid}
-  body[data-print="analisis"] .cmp-avisos{font-size:7pt!important}
-  body[data-print="analisis"] .cmp-pie{font-size:6.6pt!important}
+  body[data-print="analisis"] .cmp-metodo{font-size:6.8pt!important}
+  body[data-print="analisis"] .cmp-ld{font-size:7.5pt!important}
+  body[data-print="analisis"] .cmp-tabla td.cmp-m{white-space:nowrap}
+  /* con hojas apaisadas en medio, el pie fijo se descoloca: va en el margen de cada hoja (ver printView) */
+  body.pie-paginas .print-copyright{display:none!important}
 }
 
 /* ===== v4.9.9: EDITOR DE LA NOCHE (prototipo v7, pasos de 15 min) ===== */
@@ -6538,7 +6605,7 @@ function _wdCortes(el){
   const R0=el.getBoundingClientRect(), t0=R0.top, iv=[];
   const tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT), rg=document.createRange();
   for(let n=tw.nextNode();n;n=tw.nextNode()){ if(!n.nodeValue.trim()) continue; rg.selectNodeContents(n); for(const q of rg.getClientRects()) if(q.height) iv.push([q.top-t0,q.bottom-t0]); }
-  el.querySelectorAll('tr,svg,img,canvas,summary,li,.kpi,.trend,.chip,.qbox,.cmp-par,.cmp-graf').forEach(e=>{ const q=e.getBoundingClientRect(); if(q.height) iv.push([q.top-t0,q.bottom-t0]); });
+  el.querySelectorAll('tr,svg,img,canvas,summary,li,.kpi,.trend,.chip,.qbox,.cmp-par,.cmp-blq').forEach(e=>{ const q=e.getBoundingClientRect(); if(q.height) iv.push([q.top-t0,q.bottom-t0]); });
   const c=new Set(); iv.forEach(([a,b])=>{ c.add(b); c.add(a); });   // entre dos filas seguidas, el borde común
   return [...c].filter(y=>y>4&&y<R0.height-4&&!iv.some(([a,b])=>a+.5<y&&y<b-.5)).sort((a,b)=>a-b);
 }
@@ -6593,7 +6660,8 @@ async function _wdApartadoImagen(el,C,X,pag,z){
   let cap=null; try{ cap=await _wdCapturar(el,z); }catch(e){ console.error('captura del apartado',e); }
   if(!cap){ const bl=await _wdBloque(el,C,X); _wdAvanza(pag,el,C,X); return bl; }   // sin imagen: editable
   const gap=(salto||pag.fondo==null)?0:Math.round(Math.max(0,r.top-pag.fondo)*C.esc); pag.fondo=r.bottom;
-  const k=C.ancho/cap.wpx, HB=_WD_ALTO-_WD_HOLGURA, alt=_wdTitulo(el)+' (del PDF del análisis)';
+  const k=C.ancho/cap.wpx, HB=(C.alto||_WD_ALTO)-_WD_HOLGURA, alt=_wdTitulo(el)+' (del PDF del análisis)';   // v5.0.0: C.alto, hoja apaisada
+  const r0=el.getBoundingClientRect(), forz=[...el.querySelectorAll('div')].filter(e=>X.VIS(e)&&X.SALTO(e)).map(e=>e.getBoundingClientRect().top-r0.top);   // v5.0.0: saltos de hoja de dentro
   const evita=/avoid/.test((X.P(el,'break-inside')||'')+(X.P(el,'page-break-inside')||''));
   let nueva=salto, disp=salto?HB:HB-pag.y-gap; const total=cap.hpx*k;
   if(!nueva&&total>disp&&(evita||disp<3000||total<=HB&&disp<total*.4)){ nueva=true; disp=HB; }
@@ -6602,6 +6670,7 @@ async function _wdApartadoImagen(el,C,X,pag,z){
     const cab=primero?null:(cap.tablas||[]).find(([a,b,f])=>b<=y0+1&&y0<f-1)||null, hc=cab?cab[1]-cab[0]:0;
     const lim=y0+disp/k-hc; let y1=cap.hpx;
     if(lim<cap.hpx){ y1=null; for(const c of cap.cortes) if(c>y0+20&&c<=lim) y1=c; if(y1==null) y1=lim; }
+    { const f=forz.find(f=>f>y0+20&&f<Math.min(y1,cap.hpx)-1); if(f!=null) y1=f; }
     const h=Math.round((y1-y0+hc)*k), img=_wdTrozo(cap,y0,y1,cab);
     out.push({t:'p',runs:[{img,w:C.ancho,h,alt}],align:'left',antes:(primero&&!nueva)?gap:0,despues:0,salto:nueva,imagen:true});
     pag.y=nueva?h:pag.y+gap+h;
@@ -6632,6 +6701,7 @@ async function _wdDescribir(){
   pon(wrap,{width:'182mm',maxWidth:'none',marginLeft:'0',marginRight:'0',paddingLeft:'0',paddingRight:'0',boxSizing:'border-box'});
   pon(cab,{width:'182mm',boxSizing:'border-box'});
   pon(anexo,{width:'285mm'});
+  pon($("cmpBlock"),{width:'285mm',maxWidth:'none'});   // v5.0.0: la comparación de diarios, con el ancho de la hoja apaisada del Word
   // sin el zoom de ajuste a una hoja del PDF (Word no lo tiene): la letra del informe se reduce igual y los apartados
   // en imagen se dibujan más anchos y se reducen
   const zooms=new Map(); if(an) an.querySelectorAll('[style*="zoom"]').forEach(e=>{ const z=parseFloat(e.style.zoom); if(z>0&&z<1) zooms.set(e,z); pon(e,{zoom:''}); });
@@ -6644,16 +6714,25 @@ async function _wdDescribir(){
     const C={ancho:anchoV,esc:anchoV/pxV,fondo:'FFFFFF'};
     const vertical=[];
     if(cab&&X.VIS(cab)) vertical.push(...await _wdBloque(cab,Object.assign({},C,{esc:anchoV/((cab.getBoundingClientRect().width)||pxV)}),X));
+    // v5.0.0: la comparación de diarios va en su sección apaisada, entre dos verticales (como en el PDF)
+    const secs=[{apaisada:false,bloques:vertical}]; let cur=vertical;
+    const apaisar=async el=>{ const pxC=el.getBoundingClientRect().width||1047, CA={ancho:anchoA,esc:anchoA/pxC,fondo:'FFFFFF',alto:_WD_A4.w-2*_WD_MA-200};
+      const bl=img?await _wdApartadoImagen(el,CA,X,{y:0,fondo:null},1):await _wdBloque(el,CA,X);
+      secs.push({apaisada:true,bloques:bl}); cur=[]; secs.push({apaisada:false,bloques:cur}); };
     if(img){   // v4.9.9: la cabecera y el informe, editables; el resto, imágenes del PDF
       const pag={y:cab&&X.VIS(cab)?Math.round(cab.getBoundingClientRect().height*anchoV/((cab.getBoundingClientRect().width)||pxV))+200:0,fondo:null};
       for(const el of (an?[...an.children]:[])){ if(el===anexo||!X.VIS(el)) continue;
-        if(_wdEditable(el)){ vertical.push(...await _wdBloque(el,C,X)); _wdAvanza(pag,el,C,X); }
-        else vertical.push(...await _wdApartadoImagen(el,C,X,pag,zooms.get(el)||1)); }
-    } else for(const el of (an?[...an.children]:[])){ if(el===anexo) continue; vertical.push(...await _wdBloque(el,C,X)); }
+        if(el.id==='cmpBlock'){ await apaisar(el); pag.y=0; pag.fondo=null; continue; }
+        if(_wdEditable(el)){ cur.push(...await _wdBloque(el,C,X)); _wdAvanza(pag,el,C,X); }
+        else cur.push(...await _wdApartadoImagen(el,C,X,pag,zooms.get(el)||1)); }
+    } else for(const el of (an?[...an.children]:[])){ if(el===anexo) continue; if(el.id==='cmpBlock'&&X.VIS(el)){ await apaisar(el); continue; } cur.push(...await _wdBloque(el,C,X)); }
     let apaisada=[];
     if(anexo&&X.VIS(anexo)){ const pxA=anexo.getBoundingClientRect().width||1077;
       apaisada=(img&&await _wdAnexoImagen(anexo,X))||await _wdFlujo(anexo,{ancho:anchoA,esc:anchoA/pxA,fondo:'FFFFFF',altoMax:_WD_A4.w-2*_WD_MA-200-1500},X); }
-    return {secciones:[{apaisada:false,bloques:vertical},...(apaisada.length?[{apaisada:true,bloques:apaisada}]:[])],pie:APP_COPYRIGHT,imagenes:img};
+    if(apaisada.length) secs.push({apaisada:true,bloques:apaisada});
+    // cada sección empieza hoja: su primer bloque no lleva salto (saldría una hoja en blanco)
+    const sinSalto=bs=>{ const o=bs.slice(); for(let i=0;i<o.length;i++){ const b=o[i]; if(b.salto) o[i]=Object.assign({},b,{salto:false}); if(!(b.t==='p'&&b.mini&&!(b.runs&&b.runs.length))) break; } return o; };
+    return {secciones:secs.filter(s=>s.bloques.length).map((s,i)=>i?{apaisada:s.apaisada,bloques:sinSalto(s.bloques)}:s),pie:APP_COPYRIGHT,imagenes:img};
   }finally{
     guarda.reverse().forEach(([el,v])=>{ if(v==null) el.removeAttribute('style'); else el.setAttribute('style',v); });
     st.remove(); tapa.remove();
@@ -7336,7 +7415,7 @@ function compararSeries(A,B,mejor){   // B frente a A
   if(mejor){ let s=0; for(const a of A) for(const b of B){ const x=(b-a)*mejor; s+=x>0?1:x===0?.5:0; } nap=s/(A.length*B.length); }
   const sp=Math.sqrt(((A.length-1)*sA*sA+(B.length-1)*sB*sB)/Math.max(1,A.length+B.length-2));
   const J=1-3/(4*(A.length+B.length)-9), g=sp>0?dif/sp*J:(dif===0?0:Math.sign(dif)*9.99);
-  return {mA,mB,sA,sB,nA:A.length,nB:B.length,dif,ic,dmd:t*se,nap,g:Math.max(-9.99,Math.min(9.99,g))};
+  return {mA,mB,sA,sB,nA:A.length,nB:B.length,dif,ic,dmd:t*se,nap,g:Math.max(-9.99,Math.min(9.99,g)),sp,J};
 }
 // valoración de un cambio: mejora/empeora, clínicamente relevante (supera el umbral) y fiable (el IC no incluye 0)
 const _nomMin=M=>M.n.toLowerCase().replace('(waso)','(WASO)');
@@ -7375,7 +7454,7 @@ function nochesDeDiario(dia){
       const f=dateFor(d), q=k=>{ const v=qValor(state[d],k,5); return v>=1?v*2:null; };   // calidades sobre 10 (el doble)
       N.push({d,dow:f?f.getDay():null,fes:state[d].lf==='F',fuente:m.fuente==='editor'?'editor':'rejilla',
         sol:m.sol,waso:m.waso,nw:m.nWake,tst:m.tst+((edad!=null&&edad<18)?(m.napMin||0):0),se:m.se,lat:m.wakeLat,tib:m.tib,
-        bed:m.bedDisp,rise:m.riseDisp,qs:q('qs'),qd:q('qd'),qe:q('qe'),trat:state[d].trat||''});
+        bed:m.bedDisp,rise:m.riseDisp,on:m.sleepStart,off:m.sleepEnd,qs:q('qs'),qd:q('qd'),qe:q('qe'),trat:state[d].trat||''});
     }
     let sri=null; try{ sri=sriDetalle().sri; }catch(e){}
     return {N,sri};
@@ -7456,49 +7535,227 @@ function _badge(V){ return `<span class="cmp-badge" style="color:${V.c};backgrou
 function _fmtDe(M,x){ return (M.k==='tst'||M.k==='tib')?(x==null?'—':Math.round(x)+' min'):_fmtVal(M,x); }
 function _unidad(M){ return M.k==='tst'||M.k==='tib'||!M.u?'':' '+M.u; }
 function _fraseCambio(r){ const M=r.M; return `${_nomMin(M)} ${_fmtVal(M,r.mA)} → ${_fmtVal(M,r.mB)}${_unidad(M)} (${_fmtDif(M,r.dif)}; IC 95 %: ${_fmtDif(M,r.ic[0])} a ${_fmtDif(M,r.ic[1])})`; }
-function _parHtml(p,U){
-  const G=GLOBAL[p.global];
-  const tit=p.tipo==='ref'?`${escHtml(p.B.dia.nombre)} frente a ${escHtml(p.A.dia.nombre)} <span class="cmp-sub">(referencia)</span>`:`${escHtml(p.B.dia.nombre)} frente a ${escHtml(p.A.dia.nombre)} <span class="cmp-sub">(el anterior: ¿se mantiene?)</span>`;
-  const filas=p.filas.map(r=>{ const M=r.M, V=VALORACION[r.val], d=U[M.k]&&U[M.k].d;
-    const nota=(r.val==='mej-nc'||r.val==='peor-nc')?`<div class="cmp-nota">Con esta variabilidad, la diferencia mínima detectable es ${_fmtDif(M,r.dmd).replace(/^\+/,'±')}</div>`:'';
-    return `<tr><td class="cmp-m">${escHtml(M.n)}${d?' <span class="cmp-diana" title="Cuenta para la respuesta">●</span>':''}</td>
-      <td>${_fmtVal(M,r.mA)}<span class="cmp-de"> ± ${_fmtDe(M,r.sA)}</span></td><td>${_fmtVal(M,r.mB)}<span class="cmp-de"> ± ${_fmtDe(M,r.sB)}</span></td>
-      <td>${_fmtDif(M,r.dif)}<div class="cmp-de">${_fmtDif(M,r.ic[0])} a ${_fmtDif(M,r.ic[1])}</div></td>
-      <td>${r.nap==null?'—':r.nap.toFixed(2).replace('.',',')}${M.tipo==='g'?`<div class="cmp-de">g ${r.g.toFixed(2).replace('.',',')}</div>`:''}</td>
-      <td>${_fmtUmbral(M,U)}</td><td>${_badge(V)}${nota}</td></tr>`; }).join('');
-  let concl;
-  if(p.tipo==='anterior') concl=p.peor.length?`<b>Pérdida de respuesta</b> respecto al diario anterior en ${p.peor.map(r=>_nomMin(r.M)).join(', ')}.`:`<b>Se mantiene:</b> ninguna métrica que cuenta para la respuesta empeora de forma clínicamente relevante respecto al diario anterior.`;
-  else concl=p.global==='respuesta'?`Mejoría clínicamente relevante en ${p.mej.map(r=>_nomMin(r.M)).join(', ')}, sin empeoramiento relevante en las demás métricas que cuentan para la respuesta.`
-    :p.global==='mixta'?`Mejoría clínicamente relevante en ${p.mej.map(r=>_nomMin(r.M)).join(', ')}, pero empeoramiento relevante en ${p.peor.map(r=>_nomMin(r.M)).join(', ')}.`
-    :p.global==='empeora'?`Empeoramiento clínicamente relevante en ${p.peor.map(r=>_nomMin(r.M)).join(', ')}.`
+const _CMP_COL=['#6b7c8f','#1f5f8b','#0f7a6c','#7a4fa3','#b3541e','#8a6d00'];   // la referencia (gris azulado) y los diarios posteriores
+const _colD=(C,p)=>_CMP_COL[Math.max(0,Math.min(C.sel.indexOf(p),_CMP_COL.length-1))];
+const _nomD=d=>'D'+d.n+(d.etiqueta?' · '+d.etiqueta:'');
+const _dec=(x,n)=>(Math.round(x*10**n)/10**n).toFixed(n).replace('.',',');
+const _CORTO={sol:'Latencia de sueño',waso:'WASO',nw:'Despertares',tst:'Tiempo total de sueño',se:'Eficiencia del sueño',qs:'Calidad del sueño',
+  qd:'Calidad al despertar',qe:'Estado durante el día',lat:'Del despertar a levantarse',tib:'Tiempo en la cama'};
+const _UNID={sol:'min',waso:'min',nw:'por noche',tst:'h y min',se:'%',qs:'de 10',qd:'de 10',qe:'de 10',lat:'min',tib:'h y min'};
+const VAL_SIM={'mej-rel':'✓','peor-rel':'✗','mej-nc':'?','peor-nc':'?'};
+let cmpVerDetalle=false;   // detalle estadístico desplegado en pantalla (en el PDF y en el Word se imprime siempre)
+// intervalo «a a b» con la unidad solo al final (+20,5 a +27,4 puntos)
+function _fmtIC(M,ic){ const a=_fmtDif(M,ic[0]), b=_fmtDif(M,ic[1]), u=M.u&&M.u!=='de 10'&&M.u!=='%'?' '+M.u:M.k==='se'?' puntos':'';
+  return (u&&a.endsWith(u)?a.slice(0,-u.length):a)+' a '+b; }
+function _reloj(m){ m=((Math.round(m)%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+const _svgTxt=(x,y,t,cls,extra)=>`<text x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" class="${cls}"${extra||''}>${t}</text>`;
+// el cambio en veces el umbral, orientado (positivo: mejora). Para las calidades (umbral en DE), con la g de Hedges.
+function _relUmbral(r,U){
+  const u=U&&U[r.M.k]&&U[r.M.k].u; if(!u||!r.M.mejor) return null;
+  const k=r.M.tipo==='g'?(r.sp>0?r.J/r.sp:0):1, s=r.M.mejor/u, a=r.ic[0]*k*s, b=r.ic[1]*k*s;
+  return {x:(r.M.tipo==='g'?r.g:r.dif)*s, lo:Math.min(a,b), hi:Math.max(a,b)};
+}
+function _listaCorta(a){ const n=a.map(r=>{ const t=_CORTO[r.M.k]; return t==='WASO'?t:t[0].toLowerCase()+t.slice(1); });
+  return n.length>1?n.slice(0,-1).join(', ')+' y '+n[n.length-1]:(n[0]||''); }
+function _conclusionCorta(p){
+  return p.global==='respuesta'?`Mejoría clínicamente relevante en ${_listaCorta(p.mej)}. Ninguna métrica que cuenta para la respuesta empeora.`
+    :p.global==='mixta'?`Mejoría clínicamente relevante en ${_listaCorta(p.mej)}; empeoramiento relevante en ${_listaCorta(p.peor)}.`
+    :p.global==='empeora'?`Empeoramiento clínicamente relevante en ${_listaCorta(p.peor)}.`
+    :'Ninguna métrica que cuenta para la respuesta cambia de forma clínicamente relevante y fiable.';
+}
+function _conclusionPar(p){
+  const L=a=>a.map(r=>_nomMin(r.M)).join(', ');
+  if(p.tipo==='anterior') return p.peor.length?`<b>Pérdida de respuesta</b> respecto al diario anterior en ${L(p.peor)}.`
+    :`<b>Se mantiene:</b> ninguna métrica que cuenta para la respuesta empeora de forma clínicamente relevante respecto al diario anterior.`;
+  return p.global==='respuesta'?`Mejoría clínicamente relevante en ${L(p.mej)}, sin empeoramiento relevante en las demás métricas que cuentan para la respuesta.`
+    :p.global==='mixta'?`Mejoría clínicamente relevante en ${L(p.mej)}, pero empeoramiento relevante en ${L(p.peor)}.`
+    :p.global==='empeora'?`Empeoramiento clínicamente relevante en ${L(p.peor)}.`
     :'Ninguna de las métricas que cuentan para la respuesta cambia de forma clínicamente relevante y fiable.';
-  return `<div class="cmp-par"><h3 class="cmp-h">${tit} ${p.tipo==='ref'?_badge(G):''}</h3>
-    <p class="cmp-concl">${concl}</p>
-    <div class="scroll"><table class="summary cmp-tabla"><thead><tr><th>Métrica</th><th>${escHtml('D'+p.A.dia.n)}<div class="cmp-de">media ± DE</div></th><th>${escHtml('D'+p.B.dia.n)}<div class="cmp-de">media ± DE</div></th><th>Diferencia<div class="cmp-de">IC 95 %</div></th><th>NAP</th><th>Umbral</th><th>Valoración</th></tr></thead><tbody>${filas}</tbody></table></div>
+}
+// las métricas más significativas (hasta 4): primero los cambios clínicamente relevantes y fiables, después los no
+// concluyentes y los pequeños; a igualdad, por orden clínico (latencia, WASO, eficiencia, tiempo de sueño, despertares,
+// calidades). No se ordena por veces el umbral: el de las calidades (en DE) no es comparable con los demás.
+const _PRIORIDAD=['sol','waso','se','tst','nw','qs','qd','qe'];
+function _destacadas(pr,U){
+  const peso={'mej-rel':3,'peor-rel':3,'mej-nc':2,'peor-nc':2,'mej-peq':1,'peor-peq':1};
+  return pr.filas.filter(r=>U[r.M.k]&&_PRIORIDAD.includes(r.M.k)&&(U[r.M.k].d||peso[r.val]===3))
+    .sort((a,b)=>(peso[b.val]||0)-(peso[a.val]||0)||_PRIORIDAD.indexOf(a.M.k)-_PRIORIDAD.indexOf(b.M.k)).slice(0,4);
+}
+function _tarjetaHtml(r,U){
+  const M=r.M, V=VALORACION[r.val], ru=_relUmbral(r,U);
+  return `<div class="cmp-card" style="border-top-color:${V.c}">
+    <div class="cmp-card-n">${escHtml(_CORTO[M.k]||M.n)}</div>
+    <div class="cmp-card-v">${_fmtVal(M,r.mA)} → <b>${_fmtVal(M,r.mB)}</b>${_unidad(M)}</div>
+    <div class="cmp-card-d" style="color:${V.c}">${VAL_SIM[r.val]?VAL_SIM[r.val]+' ':''}${_fmtDif(M,r.dif)}</div>
+    <div class="cmp-card-x">IC 95 %: ${_fmtIC(M,r.ic)}</div>
+    <div class="cmp-card-x">Umbral ${_fmtUmbral(M,U)}${ru?` · <b>${_dec(Math.abs(ru.x),1)}</b> veces`:''}</div>
+    <div class="cmp-card-b">${_badge(V)}</div></div>`;
+}
+function _resumenHtml(C,U){
+  const ref=C.sel[0], ult=C.sel[C.sel.length-1];
+  const pr=C.pares.find(p=>p.tipo==='ref'&&p.B===ult), ant=C.pares.find(p=>p.tipo==='anterior');
+  if(!pr) return '';
+  const G=GLOBAL[pr.global], li=[];
+  C.pares.filter(p=>p.tipo==='ref'&&p!==pr).forEach(p=>li.push(`${escHtml(_nomD(p.B.dia))} frente a la referencia: <b>${GLOBAL[p.global].t.toLowerCase()}</b>`));
+  if(ant) li.push(`Frente al diario anterior (${escHtml(_nomD(ant.A.dia))}): <b>${ant.peor.length?'pérdida de respuesta en '+_listaCorta(ant.peor):'se mantiene'}</b>`);
+  li.push('Remisión por diario: '+C.sel.map(p=>`D${p.dia.n} ${p.remision?(p.remision.ok?'<b>sí</b>':'no'):'—'}`).join(' · '));
+  const avisos=[...new Set(C.pares.flatMap(p=>p.avisos))];
+  return `<div class="cmp-blq cmp-resumen"><h3 class="cmp-h">Resumen</h3>
+    <div class="cmp-res">
+      <div class="cmp-ver" style="border-color:${G.c};background:${G.b}">
+        <div class="cmp-ver-t" style="color:${G.c}">${G.t}</div>
+        <div class="cmp-ver-s">${escHtml(_nomD(ult.dia))} frente a ${escHtml(_nomD(ref.dia))} (referencia)</div>
+        <p class="cmp-ver-p">${_conclusionCorta(pr)}</p>
+        <ul class="cmp-ver-l">${li.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+      <div class="cmp-dest"><div class="cmp-dest-t">Métricas más significativas · ${escHtml(_nomD(ult.dia))} frente a la referencia</div>
+        <div class="cmp-cards">${_destacadas(pr,U).map(r=>_tarjetaHtml(r,U)).join('')}</div></div>
+    </div>
+    ${avisos.length?`<ul class="cmp-avisos">${avisos.map(a=>`<li>${escHtml(a)}</li>`).join('')}</ul>`:''}</div>`;
+}
+// tabla de evolución: la media de cada diario y, en los posteriores, el cambio respecto a la referencia con su valoración
+const _GRUPOS=[['Continuidad y duración del sueño',['sol','waso','nw','tst','se']],['Calidad percibida (de 10)',['qs','qd','qe']],['Tiempo en la cama',['lat','tib']]];
+function _leyendaHtml(){
+  const ch=(k,t)=>{ const V=VALORACION[k]; return `<span class="cmp-lg" style="color:${V.c};background:${V.b}">${t}</span>`; };
+  return `<div class="cmp-leyenda">${ch('mej-rel','✓ Mejoría clínicamente relevante')}${ch('mej-nc','? Alcanza el umbral, no concluyente')}${ch('mej-peq','Mejoría pequeña')}${ch('igual','Sin cambios')}${ch('peor-peq','Empeoramiento pequeño')}${ch('peor-rel','✗ Empeoramiento clínicamente relevante')}${ch('cambio','Cambio fiable (sin mejor ni peor)')}<span class="cmp-lg"><span class="cmp-diana">●</span> Cuenta para la respuesta</span></div>`;
+}
+function _evolucionHtml(C,U){
+  const ref=C.sel[0], pares=new Map(C.pares.filter(p=>p.tipo==='ref').map(p=>[p.B,p])), nc=C.sel.length+2;
+  const cab=C.sel.map((p,i)=>`<th class="cmp-dcol" style="border-top:3px solid ${_colD(C,p)}">${escHtml(_nomD(p.dia))}${i===0?'<div class="cmp-de">referencia</div>':''}<div class="cmp-de">${_fechaCorta(p.dia.inicio)} · ${p.noches} noches</div></th>`).join('');
+  let filas='';
+  _GRUPOS.forEach(([g,ks])=>{
+    const rows=ks.map(k=>{ const M=COMP_METRICAS.find(x=>x.k===k); if(ref.serie(k).length<2) return '';
+      const celdas=C.sel.map((p,i)=>{
+        if(i===0) return `<td class="cmp-cel">${_fmtVal(M,ref.media(k))}</td>`;
+        const r=((pares.get(p)||{}).filas||[]).find(x=>x.M.k===k); if(!r) return '<td class="cmp-cel">—</td>';
+        const V=VALORACION[r.val], s=VAL_SIM[r.val];
+        return `<td class="cmp-cel" style="background:${V.b}" title="${escHtml(V.t)} · IC 95 %: ${_fmtIC(M,r.ic)}">${_fmtVal(M,r.mB)}<div class="cmp-dl" style="color:${V.c}">${s?s+' ':''}${_fmtDif(M,r.dif)}</div></td>`; }).join('');
+      return `<tr><td class="cmp-m">${escHtml(_CORTO[k])}${U[k]&&U[k].d?' <span class="cmp-diana" title="Cuenta para la respuesta">●</span>':''}<div class="cmp-de">${_UNID[k]}</div></td>${celdas}<td class="cmp-um">${U[k]?_fmtUmbral(M,U):'—'}</td></tr>`; }).join('');
+    if(rows) filas+=`<tr class="cmp-grupo"><td colspan="${nc}">${g}</td></tr>`+rows;
+  });
+  filas+=`<tr class="cmp-grupo"><td colspan="${nc}">Remisión por diario</td></tr><tr><td class="cmp-m">Criterios de remisión<div class="cmp-de">eficiencia ≥ 85 %, latencia y WASO ≤ 30 min</div></td>${C.sel.map(p=>`<td class="cmp-cel">${p.remision?(p.remision.ok?'<span class="cmp-si">Sí</span>':'No'):'—'}</td>`).join('')}<td></td></tr>`;
+  return `<div class="cmp-blq cmp-evol"><h3 class="cmp-h">Evolución por métrica</h3>
+    <p class="cmp-de cmp-intro">Media de las noches de cada diario. En los diarios posteriores, debajo, el cambio respecto a la referencia; el color, su valoración.</p>
+    <div class="scroll"><table class="summary cmp-matriz"><thead><tr><th class="cmp-m">Métrica</th>${cab}<th>Umbral clínico</th></tr></thead><tbody>${filas}</tbody></table></div>
+    ${_leyendaHtml()}${_metodoHtml(C.U||leerUmbrales())}</div>`;
+}
+function _leyendaDiarios(C){ return `<div class="cmp-ld">${C.sel.map((p,i)=>`<span><i style="background:${_colD(C,p)}"></i>${escHtml(_nomD(p.dia))}${i?'':' (referencia)'}</span>`).join('')}</div>`; }
+// --- gráfico 1: cambio respecto a la referencia en veces el umbral (forest plot)
+function _forestSvg(C,U){
+  const pares=C.pares.filter(p=>p.tipo==='ref'); if(!pares.length) return '';
+  const rows=COMP_METRICAS.filter(M=>U[M.k]&&M.mejor).map(M=>({M,it:pares.map(p=>{ const r=p.filas.find(x=>x.M.k===M.k), ru=r&&_relUmbral(r,U);
+    return ru?Object.assign({p,r},ru):null; }).filter(Boolean)})).filter(o=>o.it.length);
+  if(!rows.length) return '';
+  let mn=-2, mx=2; rows.forEach(o=>o.it.forEach(i=>{ mn=Math.min(mn,i.lo,i.x); mx=Math.max(mx,i.hi,i.x); }));
+  mn=Math.max(-6,Math.floor(mn)); mx=Math.min(6,Math.ceil(mx));
+  const W=960, L=200, R=190, T=34, sub=15, sep=9;
+  const H=T+rows.reduce((s,o)=>s+o.it.length*sub+sep,0)+22, yb=H-22;
+  const X=v=>L+(Math.max(mn,Math.min(mx,v))-mn)/(mx-mn)*(W-L-R);
+  let g=`<svg viewBox="0 0 ${W} ${H}" class="cmp-fp" role="img" aria-label="Cambio de cada métrica respecto a la referencia, en veces el umbral clínico">`;
+  g+=`<rect x="${X(-1)}" y="${T-6}" width="${(X(1)-X(-1)).toFixed(1)}" height="${(yb-T+6).toFixed(1)}" fill="#eef1f4"/>`;
+  for(let v=mn;v<=mx;v++){
+    g+=`<line x1="${X(v).toFixed(1)}" y1="${T-6}" x2="${X(v).toFixed(1)}" y2="${yb}" stroke="${v===0?'#55616e':Math.abs(v)===1?'#8aa0b4':'#e3e8ee'}" stroke-width="${v===0?1.3:1}"${Math.abs(v)===1?' stroke-dasharray="5 3"':''}/>`;
+    g+=_svgTxt(X(v),H-7,v===0?'0':(v>0?'+':'−')+Math.abs(v)+'×','cmp-ax',' text-anchor="middle"'); }
+  g+=_svgTxt(X(mn),15,'← Empeora','cmp-ax2')+_svgTxt(X(mx),15,'Mejora →','cmp-ax2',' text-anchor="end"')+_svgTxt(X(0),15,'Por debajo del umbral','cmp-ax',' text-anchor="middle"');
+  let y=T;
+  rows.forEach((o,ri)=>{ const h=o.it.length*sub;
+    if(ri) g+=`<line x1="8" y1="${(y-sep/2).toFixed(1)}" x2="${W-8}" y2="${(y-sep/2).toFixed(1)}" stroke="#eef1f4"/>`;
+    g+=_svgTxt(8,y+h/2+4,escHtml(_CORTO[o.M.k]),'cmp-lbl');
+    o.it.forEach((i,j)=>{ const yy=y+j*sub+sub/2, col=_colD(C,i.p.B), x1=X(i.lo), x2=X(i.hi), cx=X(i.x);
+      g+=`<line x1="${x1.toFixed(1)}" y1="${yy}" x2="${x2.toFixed(1)}" y2="${yy}" stroke="${col}" stroke-width="2"/>`;
+      if(i.lo<mn) g+=`<path d="M${X(mn).toFixed(1)} ${yy} l7 -4 v8 z" fill="${col}"/>`;
+      if(i.hi>mx) g+=`<path d="M${X(mx).toFixed(1)} ${yy} l-7 -4 v8 z" fill="${col}"/>`;
+      g+=`<circle cx="${cx.toFixed(1)}" cy="${yy}" r="4.6" fill="${col}" stroke="#fff" stroke-width="1"/>`;
+      g+=_svgTxt(W-R+12,yy+4,`D${i.p.B.dia.n}: ${_fmtDif(i.r.M,i.r.dif)}${i.r.M.tipo==='g'?' (g '+_dec(i.r.g,1)+')':''} · ${_dec(Math.abs(i.x),1)}×`,'cmp-ax',` style="fill:${col};font-weight:600"`); });
+    y+=h+sep; });
+  return g+'</svg>';
+}
+// --- gráfico 2: horario medio de cada diario (en la cama y periodo de sueño)
+function _horarioSvg(C){
+  const circ=a=>{ const c=circularStats(a); return c&&c.mean!=null?c.mean:null; };
+  const filas=C.sel.map(p=>{ const v=k=>p.N.map(x=>x[k]).filter(x=>x!=null&&isFinite(x));
+    return {p,bed:circ(v('bed')),on:circ(v('on')),off:circ(v('off')),rise:circ(v('rise')),tib:p.media('tib'),tst:p.media('tst'),se:p.media('se')}; })
+    .filter(f=>f.bed!=null&&f.rise!=null);
+  if(!filas.length) return '';
+  const ax=t=>((t-720)%1440+1440)%1440;   // minutos desde las 12:00
+  let lo=Math.min(...filas.map(f=>ax(f.bed))), hi=Math.max(...filas.map(f=>{ const b=ax(f.bed), r=ax(f.rise); return r<b?r+1440:r; }));
+  lo=Math.floor((lo-30)/60)*60; hi=Math.ceil((hi+30)/60)*60;
+  const W=960, L=200, R=290, T=24, fh=34, H=T+filas.length*fh+24, X=t=>L+(t-lo)/(hi-lo||1)*(W-L-R);
+  let g=`<svg viewBox="0 0 ${W} ${H}" class="cmp-hz" role="img" aria-label="Horario medio de cada diario">`;
+  const paso=(hi-lo)>720?120:60;
+  for(let t=Math.ceil(lo/paso)*paso;t<=hi;t+=paso){ g+=`<line x1="${X(t).toFixed(1)}" y1="${T-6}" x2="${X(t).toFixed(1)}" y2="${H-22}" stroke="#e3e8ee"/>`+_svgTxt(X(t),H-8,_reloj(t+720),'cmp-ax',' text-anchor="middle"'); }
+  filas.forEach((f,i)=>{ const y=T+i*fh, col=_colD(C,f.p);
+    const b=ax(f.bed), r0=ax(f.rise), r=r0<b?r0+1440:r0;
+    const on=f.on!=null?(ax(f.on)<b-60?ax(f.on)+1440:ax(f.on)):null, off=f.off!=null?(ax(f.off)<b?ax(f.off)+1440:ax(f.off)):null;
+    g+=_svgTxt(8,y+fh/2+4,escHtml(_nomD(f.p.dia)).slice(0,30),'cmp-lbl');
+    g+=`<rect x="${X(b).toFixed(1)}" y="${y+7}" width="${Math.max(1,X(r)-X(b)).toFixed(1)}" height="${fh-14}" rx="4" fill="${col}" fill-opacity=".22"/>`;
+    if(on!=null&&off!=null&&off>on) g+=`<rect x="${X(on).toFixed(1)}" y="${y+11}" width="${Math.max(1,X(off)-X(on)).toFixed(1)}" height="${fh-22}" rx="3" fill="${col}"/>`;
+    g+=_svgTxt(X(b)-4,y+fh/2+4,_reloj(f.bed),'cmp-ax',' text-anchor="end"')+_svgTxt(X(r)+4,y+fh/2+4,_reloj(f.rise),'cmp-ax');
+    g+=_svgTxt(W-R+16,y+fh/2+4,`Cama ${_durTxt(f.tib)} · sueño ${_durTxt(f.tst)} · ${Math.round(f.se)} %`,'cmp-ax',` style="fill:${col};font-weight:600"`); });
+  return g+'</svg>';
+}
+// --- gráfico 3: noche a noche (una métrica), los diarios uno tras otro
+function _ticks(lo,hi,n,base){ const span=hi-lo; if(!(span>0)) return [lo];
+  let st=span/n; const m=10**Math.floor(Math.log10(st)); st=[1,2,2.5,5,10].map(s=>s*m).find(s=>s>=st-1e-9)||10*m;
+  if(base){ st=Math.max(base,Math.ceil(st/base)*base); }
+  const out=[]; for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st) out.push(+v.toFixed(6)); return out; }
+function _nochesSvg(C,k){
+  const M=COMP_METRICAS.find(x=>x.k===k); let off=0;
+  const segs=C.sel.map(p=>{ const pts=p.N.filter(x=>x[k]!=null&&isFinite(x[k])).map(x=>({d:x.d,v:x[k],fes:x.fes}));
+    const len=Math.max(21,...p.N.map(x=>x.d+1)), s={p,pts,off,len}; off+=len+4; return s; });
+  const all=segs.flatMap(s=>s.pts.map(x=>x.v)); if(all.length<2) return '';
+  const mx=Math.max(...all), mn=Math.min(...all); let lo,hi;
+  if(k==='se'){ lo=Math.min(50,Math.floor(mn/10)*10); hi=100; }
+  else if(k==='tst'){ lo=Math.max(0,Math.floor((mn-20)/60)*60); hi=Math.ceil((mx+20)/60)*60; }
+  else { lo=0; hi=Math.max(mx*1.06,k==='sol'||k==='waso'?40:1); }
+  const W=470,H=230,L=42,R=10,T=26,B=30, n=off-4, X=i=>L+(i+.5)/n*(W-L-R), Y=v=>T+(hi-v)/(hi-lo||1)*(H-T-B);
+  const fm=v=>k==='tst'?(v/60).toFixed(v%60?1:0).replace('.',',')+' h':String(Math.round(v));
+  const tit={se:'Eficiencia del sueño (%)',sol:'Latencia de sueño (min)',waso:'WASO (min)',tst:'Tiempo total de sueño (horas)'}[k]||M.n;
+  let g=`<svg viewBox="0 0 ${W} ${H}" class="cmp-nn" role="img" aria-label="${escHtml(M.n)}, noche a noche">`+_svgTxt(L,15,escHtml(tit),'cmp-st');
+  _ticks(lo,hi,4,k==='tst'?60:0).forEach(v=>{ g+=`<line x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}" stroke="#eef1f4"/>`+_svgTxt(L-4,Y(v)+3,fm(v),'cmp-ax',' text-anchor="end"'); });
+  const refl={se:85,sol:30,waso:30}[k];
+  if(refl!=null&&refl>=lo&&refl<=hi) g+=`<line x1="${L}" y1="${Y(refl).toFixed(1)}" x2="${W-R}" y2="${Y(refl).toFixed(1)}" stroke="#8aa0b4" stroke-dasharray="5 3"/>`;
+  segs.forEach(s=>{ const col=_colD(C,s.p), v=s.pts.map(x=>x.v); const x0=X(s.off-.5), x1=X(s.off+s.len-.5);
+    g+=_svgTxt((x0+x1)/2,H-B+14,'D'+s.p.dia.n,'cmp-ax',` text-anchor="middle" style="fill:${col};font-weight:700"`);
+    if(!v.length) return;
+    const m=_cmMedia(v), ne=_cmNef(v), h=v.length>1?_cmT(ne-1)*_cmDe(v)/Math.sqrt(ne):0;
+    const ya=Y(Math.min(hi,m+h)), yb=Y(Math.max(lo,m-h));
+    g+=`<rect x="${x0.toFixed(1)}" y="${ya.toFixed(1)}" width="${(x1-x0).toFixed(1)}" height="${Math.max(1,yb-ya).toFixed(1)}" fill="${col}" fill-opacity=".14"/>`;
+    g+=`<line x1="${x0.toFixed(1)}" y1="${Y(m).toFixed(1)}" x2="${x1.toFixed(1)}" y2="${Y(m).toFixed(1)}" stroke="${col}" stroke-width="1.6"/>`;
+    s.pts.forEach(x=>{ g+=`<circle cx="${X(s.off+x.d).toFixed(1)}" cy="${Y(Math.max(lo,Math.min(hi,x.v))).toFixed(1)}" r="2.5" fill="${x.fes?'#fff':col}" stroke="${col}" stroke-width="1.1"/>`; });
+    g+=_svgTxt(x1-2,Y(m)-5,fm(m),'cmp-ax',` text-anchor="end" style="fill:${col};font-weight:700;stroke:#fff;stroke-width:3px;paint-order:stroke"`); });
+  return g+'</svg>';
+}
+function _graficosHtml(C,U){
+  const fp=_forestSvg(C,U), hz=_horarioSvg(C), nn=['sol','waso','tst','se'].map(k=>_nochesSvg(C,k)).filter(Boolean);
+  return (fp?`<div class="cmp-blq cmp-g1"><h3 class="cmp-h">Cambio respecto a la referencia, en veces el umbral clínico</h3>
+      ${_leyendaDiarios(C)}<div class="scroll"><div class="cmp-fig">${fp}</div></div>
+      <p class="cmp-pie">Punto: cambio de cada diario respecto a la referencia; línea: su IC del 95 %. Se mide en veces el umbral de relevancia clínica de cada métrica (en las calidades, con la g de Hedges); a la derecha, mejoría. Banda gris: por debajo del umbral. Un cambio es clínicamente relevante si el punto queda fuera de la banda y la línea no cruza el 0.</p></div>`:'')
+    +(hz?`<div class="cmp-blq cmp-g2"><h3 class="cmp-h">Horario medio de cada diario</h3>
+      <div class="scroll"><div class="cmp-fig">${hz}</div></div>
+      <p class="cmp-pie">Barra clara: en la cama (de acostarse a levantarse); barra oscura: periodo de sueño (de dormirse al despertar final). Horas medias de las noches de cada diario. En menores de 18 años, el sueño incluye las siestas.</p></div>`:'')
+    +(nn.length?`<div class="cmp-blq cmp-g3"><h3 class="cmp-h">Noche a noche</h3>${_leyendaDiarios(C)}<div class="cmp-noches">${nn.join('')}</div>
+      <p class="cmp-pie">Cada punto es una noche (hueco: noche antes de festivo). Línea: media del diario; franja: su IC del 95 %. Discontinua: eficiencia de 85 % y latencia y WASO de 30 min (criterios de remisión por diario).</p></div>`:'');
+}
+// detalle estadístico de cada comparación (la tabla completa)
+function _detalleParHtml(p,U){
+  const tit=`${escHtml(_nomD(p.B.dia))} frente a ${escHtml(_nomD(p.A.dia))} <span class="cmp-sub">(${p.tipo==='ref'?'referencia':'el anterior: ¿se mantiene?'})</span>`;
+  const filas=p.filas.map(r=>{ const M=r.M, V=VALORACION[r.val], d=U[M.k]&&U[M.k].d;
+    return `<tr><td class="cmp-m" title="${escHtml(M.n)}">${escHtml(_CORTO[M.k]||M.n)}${d?' <span class="cmp-diana" title="Cuenta para la respuesta">●</span>':''}</td>
+      <td>${_fmtVal(M,r.mA)} <span class="cmp-de">± ${_fmtDe(M,r.sA)}</span></td><td>${_fmtVal(M,r.mB)} <span class="cmp-de">± ${_fmtDe(M,r.sB)}</span></td>
+      <td><b>${_fmtDif(M,r.dif)}</b></td><td>${_fmtIC(M,r.ic)}</td><td>${_fmtDif(M,r.dmd).replace(/^\+/,'±')}</td>
+      <td>${r.nap==null?'—':_dec(r.nap,2)}</td><td>${_dec(r.g,2)}</td><td>${U[M.k]?_fmtUmbral(M,U):'—'}</td><td>${_badge(V)}</td></tr>`; }).join('');
+  return `<div class="cmp-par"><h4 class="cmp-h4">${tit} ${p.tipo==='ref'?_badge(GLOBAL[p.global]):''}</h4>
+    <p class="cmp-concl">${_conclusionPar(p)}</p>
+    <div class="scroll"><table class="summary cmp-tabla"><thead><tr><th class="cmp-m">Métrica</th><th>D${p.A.dia.n}<div class="cmp-de">media ± DE</div></th><th>D${p.B.dia.n}<div class="cmp-de">media ± DE</div></th><th>Diferencia</th><th>IC 95 %</th><th>Diferencia mínima detectable</th><th>NAP</th><th>g de Hedges</th><th>Umbral</th><th>Valoración</th></tr></thead><tbody>${filas}</tbody></table></div>
     ${p.avisos.length?`<ul class="cmp-avisos">${p.avisos.map(a=>`<li>${escHtml(a)}</li>`).join('')}</ul>`:''}</div>`;
 }
-// gráfico: media de cada diario con su IC del 95 % (por métrica), unidas por una línea
-function _cmpGraficos(sel){
-  const panel=(k,ref)=>{
-    const M=COMP_METRICAS.find(x=>x.k===k), pts=sel.map(p=>{ const s=p.serie(k); if(s.length<2) return null;
-      const m=_cmMedia(s), h=_cmT(_cmNef(s)-1)*_cmDe(s)/Math.sqrt(_cmNef(s)); return {m,lo:m-h,hi:m+h,n:p.dia.n}; });
-    const ok=pts.filter(Boolean); if(ok.length<2) return '';
-    let lo=Math.min(...ok.map(p=>p.lo),ref!=null?ref:Infinity), hi=Math.max(...ok.map(p=>p.hi),ref!=null?ref:-Infinity);
-    if(k==='se'){ lo=Math.max(0,Math.min(lo,60)); hi=Math.min(100,Math.max(hi,100)); } else { const pad=(hi-lo)*.12||1; lo=Math.max(0,lo-pad); hi+=pad; }
-    const W=230,H=150,L=40,R=10,T=22,B=26, X=i=>L+(sel.length===1?0:i*(W-L-R)/(sel.length-1)), Y=v=>T+(hi-v)/(hi-lo||1)*(H-T-B);
-    const fm=v=>k==='tst'?_durTxt(v).replace('min',''):k==='qs'?(Math.round(v*10)/10).toString().replace('.',','):String(Math.round(v));
-    const corto={se:'Eficiencia (%)',sol:'Latencia (min)',waso:'WASO (min)',tst:'Tiempo total de sueño',qs:'Calidad del sueño (de 10)'}[k]||M.n;
-    let g=`<svg viewBox="0 0 ${W} ${H}" class="cmp-svg" role="img" aria-label="${escHtml(M.n)} en cada diario"><text x="${L}" y="13" class="cmp-st">${escHtml(corto)}</text>`;
-    [lo,hi].forEach(v=>{ g+=`<text x="${L-4}" y="${Y(v)+3}" text-anchor="end" class="cmp-ax">${fm(v)}</text>`; });
-    g+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#c9d3dd"/><line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#c9d3dd"/>`;
-    if(ref!=null) g+=`<line x1="${L}" y1="${Y(ref)}" x2="${W-R}" y2="${Y(ref)}" stroke="#8aa0b4" stroke-dasharray="4 3"/><text x="${W-R}" y="${Y(ref)-3}" text-anchor="end" class="cmp-ax">${fm(ref)}</text>`;
-    const pp=pts.map((p,i)=>p?{x:X(i),...p}:null).filter(Boolean);
-    g+=`<polyline fill="none" stroke="#1f5f8b" stroke-width="1.6" points="${pp.map(p=>p.x.toFixed(1)+','+Y(p.m).toFixed(1)).join(' ')}"/>`;
-    pp.forEach(p=>{ g+=`<line x1="${p.x}" y1="${Y(p.lo).toFixed(1)}" x2="${p.x}" y2="${Y(p.hi).toFixed(1)}" stroke="#1f5f8b" stroke-width="1.2"/><circle cx="${p.x}" cy="${Y(p.m).toFixed(1)}" r="3.6" fill="#1f5f8b"/><text x="${p.x}" y="${H-B+14}" text-anchor="middle" class="cmp-ax">D${p.n}</text>`; });
-    return g+'</svg>';
-  };
-  return `<div class="cmp-graf">${panel('se',85)}${panel('sol',30)}${panel('waso',30)}${panel('tst',null)}${panel('qs',null)}</div>
-    <p class="cmp-pie">Punto: media de cada diario; barra: su IC del 95 %. Línea discontinua: eficiencia de 85 % y latencia y WASO de 30 min (criterios de remisión por diario).</p>`;
+function _detalleHtml(C,U){
+  const n=C.pares.length;
+  return `<div class="noprint cmp-detbtn"><button class="btn sec" id="cmpDetalleBtn" style="font-size:.8rem">${cmpVerDetalle?'▾ Ocultar':'▸ Ver'} el detalle estadístico (${n} comparaci${n===1?'ón':'ones'})</button></div>
+    <div class="cmp-detalle${cmpVerDetalle?' ver':''}" id="cmpDetalle"><h3 class="cmp-h">Detalle estadístico de cada comparación</h3>
+    <p class="cmp-de cmp-intro">Media ± desviación estándar de las noches de cada diario; diferencia con su IC del 95 %; diferencia mínima detectable con esa variabilidad (la mitad del IC); NAP y g de Hedges.</p>
+    ${C.pares.map(p=>_detalleParHtml(p,U)).join('')}</div>`;
 }
 function _tablaDiariosHtml(P,ids,editable){
   const selSis=(P.find(p=>ids.includes(p.dia.id)&&p.apto)||{}).sistema||null;
@@ -7506,11 +7763,10 @@ function _tablaDiariosHtml(P,ids,editable){
     const estado=!p.apto?`<span class="cmp-no">No apto: ${escHtml(p.motivos.join('; '))}</span>`:otroSis?`<span class="cmp-no">Otro sistema de registro</span>`:'<span class="cmp-si">Apto</span>';
     const rem=p.remision?(p.remision.ok?'<span class="cmp-si" title="Eficiencia ≥ 85 %, latencia y WASO ≤ 30 min y menos de 3 noches por semana con latencia o WASO ≥ 31 min">Sí</span>':'No'):'—';
     return `<tr${on?' class="cmp-on"':''}>${editable?`<td class="noprint"><input type="checkbox" class="cmp-chk" data-id="${escHtml(d.id)}"${on?' checked':''}${(!p.apto||otroSis)?' disabled':''} aria-label="Comparar ${escHtml(d.nombre)}"></td>`:''}
-      <td class="cmp-m">${escHtml(d.nombre)}${d.abierto?' <span class="cmp-sub">(abierto)</span>':''}${d.intervencion?`<div class="cmp-de">${escHtml(d.intervencion)}</div>`:''}</td>
+      <td class="cmp-m"><span class="cmp-pt" style="background:${on?_CMP_COL[Math.min(P.filter(x=>ids.includes(x.dia.id)&&x.apto).indexOf(p),_CMP_COL.length-1)]:'#d5dde5'}"></span>${escHtml(d.nombre)}${d.abierto?' <span class="cmp-sub">(abierto)</span>':''}${d.intervencion?`<div class="cmp-de">${escHtml(d.intervencion)}</div>`:''}</td>
       <td>${_fechaCorta(d.inicio)}<div class="cmp-de">a ${_fechaCorta(d.fin)}</div></td><td>${p.sistema?escHtml(SISTEMAS[p.sistema]):'—'}</td>
-      <td>${p.noches}</td><td>${p.findes}</td><td>${_fmtVal({k:'se'},p.media('se'))}</td><td>${_fmtVal({k:'sol'},p.media('sol'))}</td><td>${_fmtVal({k:'waso'},p.media('waso'))}</td>
-      <td>${p.pctSintomas==null?'—':Math.round(p.pctSintomas)+' %'}</td><td>${rem}</td><td>${estado}${editable&&!d.abierto?` <button class="btn sec cmp-abrir noprint" data-id="${escHtml(d.id)}">Abrir</button>`:''}</td></tr>`; }).join('');
-  return `<div class="scroll"><table class="summary cmp-diarios"><thead><tr>${editable?'<th class="noprint"></th>':''}<th>Diario</th><th>Fechas</th><th>Sistema de registro</th><th>Noches</th><th>Fines de semana</th><th>Eficiencia %</th><th>Latencia (min)</th><th>WASO (min)</th><th>Noches con latencia o WASO ≥ 31 min</th><th>Remisión por diario</th><th>Para comparar</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+      <td>${p.noches}<div class="cmp-de">${p.findes} fin${p.findes===1?'':'es'} de semana</div></td><td>${_fmtVal({k:'se'},p.media('se'))}</td><td>${_fmtVal({k:'sol'},p.media('sol'))}</td><td>${_fmtVal({k:'waso'},p.media('waso'))}</td><td>${rem}</td><td>${estado}${editable&&!d.abierto?` <button class="btn sec cmp-abrir noprint" data-id="${escHtml(d.id)}">Abrir</button>`:''}</td></tr>`; }).join('');
+  return `<div class="scroll"><table class="summary cmp-diarios"><thead><tr>${editable?'<th class="noprint"></th>':''}<th class="cmp-m">Diario</th><th>Fechas</th><th>Sistema de registro</th><th>Noches</th><th>Eficiencia (%)</th><th>Latencia (min)</th><th>WASO (min)</th><th>Remisión por diario</th><th>Para comparar</th></tr></thead><tbody>${filas}</tbody></table></div>`;
 }
 function _umbralesHtml(U){
   const A=umbralesAASM();
@@ -7523,6 +7779,7 @@ function _umbralesHtml(U){
     <table class="summary"><thead><tr><th>Métrica</th><th>Umbral</th><th>AASM 2021</th><th>Cuenta para la respuesta</th></tr></thead><tbody>${filas}</tbody></table>
     <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="cmpUGuardar">Aplicar</button><button class="btn sec" id="cmpUAasm">Restablecer los de la AASM</button></div></div>`;
 }
+function _metodoHtml(U){ return `<p class="cmp-pie cmp-metodo">Método: para cada métrica, media de las noches de cada diario (en menores de 18 años, el tiempo de sueño incluye las siestas; calidades sobre 10, el doble del valor). Diferencia con su intervalo de confianza del 95 % (Welch, con las noches corregidas por la autocorrelación de una noche a la siguiente) y NAP: proporción de parejas de noches (una de cada diario) en que la del diario posterior es mejor (0,5: sin cambio; 1: todas mejores; Parker y Vannest, 2009). Un cambio es <b>clínicamente relevante</b> si alcanza el umbral y el intervalo de confianza no incluye el 0; si alcanza el umbral pero el intervalo incluye el 0, es <b>no concluyente</b>. Umbrales ${umbralesEditados(U)?'<b>editados por el profesional</b> (los de la AASM: ':'de la AASM ('}latencia y WASO −20 min, tiempo de sueño +15 min, eficiencia +10 puntos, despertares −0,5 por noche, calidad 0,5 DE; Edinger et al., 2021). Son umbrales de comparación entre grupos: en un paciente orientan sobre el cambio que importa. <b>Respuesta</b>: al menos una métrica marcada con ● mejora de forma clínicamente relevante y ninguna empeora así. <b>Remisión por diario</b>: eficiencia ≥ 85 %, latencia y WASO ≤ 30 min y menos de 3 noches por semana con latencia o WASO ≥ 31 min (Lichstein et al., 2003).</p>`; }
 function seccionComparacionHtml(){
   // solo con varios diarios (con uno, «＋ Nuevo diario» en la ficha); si no hay nada que comparar, no se imprime
   if(!patient||!diariosPac.length) return '';
@@ -7533,22 +7790,23 @@ function seccionComparacionHtml(){
   let cuerpo;
   if(C.error) cuerpo=`<div class="secnote">${escHtml(C.error)}</div>`;
   else if(C.sel.length<2) cuerpo=`<div class="secnote">Elige al menos dos diarios aptos del mismo sistema de registro. Cada diario necesita al menos ${COMP_MIN_NOCHES} noches anotadas, con ${COMP_MIN_FINDES} fines de semana completos.</div>`;
-  else cuerpo=C.pares.map(p=>_parHtml(p,U)).join('')+_cmpGraficos(C.sel);
+  else cuerpo=_resumenHtml(C,U)+_evolucionHtml(C,U)+_graficosHtml(C,U)+_detalleHtml(C,U);
   const nada=!!C.error||C.sel.length<2;
   return `<details class="card secblock${nada?' noprint':''}" data-sectitle="Comparación de diarios" id="cmpBlock" style="margin-bottom:16px"${secOpenState['Comparación de diarios']?' open':''}>
     <summary><h2>Comparación de diarios del paciente</h2></summary>
     <div class="dbody">
-      <p class="sub">Evolución entre diarios del mismo paciente (antes y después de una intervención, seguimiento). El más antiguo de los elegidos es la referencia. Para comparar, cada diario necesita al menos ${COMP_MIN_NOCHES} noches anotadas, con ${COMP_MIN_FINDES} fines de semana completos (las noches del viernes al sábado y del sábado al domingo), y todos el mismo sistema de registro.</p>
-      ${_tablaDiariosHtml(P,ids,true)}
-      <div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px">
+      <p class="sub">Evolución entre diarios del mismo paciente (antes y después de una intervención, seguimiento). El más antiguo de los elegidos es la referencia. Cada diario necesita al menos ${COMP_MIN_NOCHES} noches anotadas, con ${COMP_MIN_FINDES} fines de semana completos (las noches del viernes al sábado y del sábado al domingo), y todos el mismo sistema de registro.</p>
+      <div class="cmp-blq cmp-lista">${_tablaDiariosHtml(P,ids,true)}</div>
+      <div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px">
         <button class="btn sec" id="cmpUmbralesBtn" style="font-size:.8rem">⚙️ Umbrales de relevancia clínica${umbralesEditados(U)?' (editados)':' (AASM)'}</button>
         <button class="btn sec" id="cmpCargarBtn" style="font-size:.8rem">📂 Añadir un diario desde un archivo…</button>
       </div>
       ${_umbralesHtml(U)}
       ${cuerpo}
-      <p class="cmp-pie">Método: para cada métrica, media de las noches de cada diario (en menores de 18 años, el tiempo de sueño incluye las siestas; calidades sobre 10, el doble del valor). Diferencia con su intervalo de confianza del 95 % (Welch, con las noches corregidas por la autocorrelación de una noche a la siguiente) y NAP: proporción de parejas de noches (una de cada diario) en que la del diario posterior es mejor (0,5: sin cambio; 1: todas mejores; Parker y Vannest, 2009). Un cambio es <b>clínicamente relevante</b> si alcanza el umbral y el intervalo de confianza no incluye el 0; si alcanza el umbral pero el intervalo incluye el 0, es <b>no concluyente</b>. Umbrales ${umbralesEditados(U)?'<b>editados por el profesional</b> (los de la AASM: ':'de la AASM ('}latencia y WASO −20 min, tiempo de sueño +15 min, eficiencia +10 puntos, despertares −0,5 por noche, calidad 0,5 DE; Edinger et al., 2021). Son umbrales de comparación entre grupos: en un paciente orientan sobre el cambio que importa. <b>Respuesta</b>: al menos una métrica marcada con ● mejora de forma clínicamente relevante y ninguna empeora así. <b>Remisión por diario</b>: eficiencia ≥ 85 %, latencia y WASO ≤ 30 min y menos de 3 noches por semana con latencia o WASO ≥ 31 min (Lichstein et al., 2003).</p>
+
     </div></details>`;
 }
+
 // lo que el informe clínico dice de la evolución: el diario abierto frente a los anteriores comparables
 function evolucionInforme(){
   if(!patient||!diariosPac.length) return null;
@@ -7579,6 +7837,8 @@ document.addEventListener('click',e=>{
   const t=e.target; if(!t||!t.closest) return;
   if(t.closest('#cmpUmbralesBtn')){ const u=$('cmpUmbrales'); if(u) u.style.display=u.style.display==='none'?'':'none'; return; }
   if(t.closest('#cmpCargarBtn')){ const i=$('rawImportInput'); if(i) i.click(); return; }
+  const dt=t.closest('#cmpDetalleBtn'); if(dt){ cmpVerDetalle=!cmpVerDetalle; const d=$('cmpDetalle'); if(d) d.classList.toggle('ver',cmpVerDetalle);
+    dt.textContent=dt.textContent.replace(/^▸ Ver|^▾ Ocultar/,cmpVerDetalle?'▾ Ocultar':'▸ Ver'); return; }
   const ab=t.closest('.cmp-abrir'); if(ab){ abrirDiario(ab.dataset.id); return; }
   if(t.closest('#cmpUAasm')){ guardarUmbrales(null); secOpenState['Comparación de diarios']=true; renderAnalysis(); const u=$('cmpUmbrales'); if(u) u.style.display=''; toast('Umbrales de la AASM restablecidos'); return; }
   if(t.closest('#cmpUGuardar')){
@@ -7599,6 +7859,16 @@ function hojaComparacionExcel(){
   P.forEach(p=>filas.push(['D'+p.dia.n,p.dia.etiqueta||'',p.dia.intervencion||'',p.dia.inicio||'',p.sistema?SISTEMAS[p.sistema]:'',p.noches,p.findes,R2(p.media('se')),R2(p.media('sol')),R2(p.media('waso')),
     p.remision?(p.remision.ok?'Sí':'No'):'',p.apto?'Apto':'No apto: '+p.motivos.join('; ')]));
   if(C.error){ filas.push([],[C.error]); return filas; }
+  if(C.sel.length>=2&&C.pares.length){
+    const ult=C.sel[C.sel.length-1], pr=C.pares.find(p=>p.tipo==='ref'&&p.B===ult)||C.pares[0];
+    filas.push([],['Resumen','D'+ult.dia.n+' frente a D'+C.sel[0].dia.n+' (referencia)',GLOBAL[pr.global].t],
+      ['Métrica','Unidad',...C.sel.map((p,i)=>'Media D'+p.dia.n+(i?'':' (referencia)')),...C.sel.slice(1).map(p=>'Cambio D'+p.dia.n),'Umbral']);
+    const refP=new Map(C.pares.filter(p=>p.tipo==='ref').map(p=>[p.B,p]));
+    COMP_METRICAS.forEach(M=>{ if(C.sel[0].serie(M.k).length<2) return;
+      filas.push([M.n,M.u,...C.sel.map(p=>R2(p.media(M.k))),...C.sel.slice(1).map(p=>{ const r=((refP.get(p)||{}).filas||[]).find(x=>x.M.k===M.k); return r?VALORACION[r.val].t:''; }),
+        U[M.k]?(M.tipo==='g'?'g '+U[M.k].u:U[M.k].u):'']); });
+    filas.push(['Remisión por diario','',...C.sel.map(p=>p.remision?(p.remision.ok?'Sí':'No'):''),...C.sel.slice(1).map(()=>''),'']);
+  }
   (C.pares||[]).forEach(pr=>{
     filas.push([],['D'+pr.B.dia.n+' frente a D'+pr.A.dia.n+(pr.tipo==='ref'?' (referencia)':' (anterior)'),pr.tipo==='ref'?GLOBAL[pr.global].t:(pr.peor.length?'Pérdida de respuesta':'Se mantiene')],
       ['Métrica','Unidad','Media D'+pr.A.dia.n,'Media D'+pr.B.dia.n,'Diferencia','IC 95 % inferior','IC 95 % superior','NAP','g','Umbral','Valoración']);
@@ -7658,7 +7928,7 @@ function printView(which){
   if(!ps){ps=document.createElement('style');ps.id='pageOrientStyle';document.head.appendChild(ps);}
   ps.textContent = (which==='agenda')
     ? '@page{size:A4 landscape;margin:6mm}'
-    : '@page{size:A4 portrait;margin:14mm} @page anexo{size:A4 landscape;margin:6mm 6mm 9mm}';
+    : '@page{size:A4 portrait;margin:14mm} @page anexo{size:A4 landscape;margin:6mm 6mm 9mm} @page comparacion{size:A4 landscape;margin:9mm 10mm 13mm}';   // v5.0.0: la comparación, apaisada
   if(which==='resumen'){   // v4.9.7: resumen para la consulta (vertical), con los gráficos de tendencia
     const td=[...document.querySelectorAll('#analisisContent>details.secblock')].find(x=>x.dataset.sectitle==='Tendencias a lo largo del registro');
     if(td){ _printPrevOpen.push([td,td.open]); td.open=true; td.classList.add('restend');
@@ -7669,6 +7939,11 @@ function printView(which){
     // desplegaban todos). Se avisa si no hay ninguno: saldrían solo las métricas y el anexo.
     renderAnalysis();
     prepararImpresionAnalisis();
+    if(document.querySelector('#analisisContent>#cmpBlock[open]:not(.noprint)')){   // v5.0.0
+      const st=document.createElement('style'); st.id='piePaginasStyle'; document.head.appendChild(st);
+      try{ st.sheet.insertRule('@page{@bottom-center{content:"'+APP_COPYRIGHT.replace(/["\\]/g,'')+'";font-family:Arial,sans-serif;font-size:7pt;color:#8794a3}}',0);
+        if(/bottom-center/.test(st.sheet.cssRules[0].cssText)) document.body.classList.add('pie-paginas'); else st.remove(); }
+      catch(e){ st.remove(); } }
     const abiertos=document.querySelectorAll('#analisisContent details.secblock[open]').length;
     if(!abiertos)toast('Ningún apartado desplegado: el PDF incluirá las métricas principales y la rejilla');
     setTimeout(()=>window.print(),200);
@@ -7772,7 +8047,8 @@ function construirAnexoRejilla(){
 let _printPrevOpen=[];
 window.addEventListener('afterprint',()=>{
   const era=document.body.getAttribute('data-print');
-  document.body.removeAttribute('data-print');
+  document.body.removeAttribute('data-print'); document.body.classList.remove('pie-paginas');   // v5.0.0
+  { const pp=document.getElementById('piePaginasStyle'); if(pp) pp.remove(); }
   const ps=document.getElementById('pageOrientStyle'); if(ps)ps.textContent='';
   if(_printPrevOpen.length){_printPrevOpen.forEach(([d,st])=>{d.open=st;});_printPrevOpen=[];syncToggleAllLabel();}
   // v4.9.1: quitar el anexo y devolver el análisis a su orden habitual

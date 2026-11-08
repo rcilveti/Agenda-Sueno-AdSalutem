@@ -37,9 +37,9 @@ El CSV añade `diario_etiqueta` y `diario_intervencion` en los datos del pacient
 | Comprobación | Alcance |
 |---|---|
 | Pruebas automáticas (jsdom) | **124 pruebas, 124 superadas**: las 113 de la v4.9.9, copiadas en `v5.0.0/tests/` y adaptadas, y 11 nuevas (`v5.0.0/tests/v500.test.js`). Las de la raíz no cambian (la raíz no se ha tocado) |
-| Navegador real (Playwright, Chromium) | Escritorio a 1300 px, iPhone 13, iPhone SE y tableta (820 px): ficha con el selector de diario, ventana «Nuevo diario», apartado de comparación y umbrales. Sin errores de JavaScript |
+| Navegador real (Playwright, Chromium) | Escritorio a 1300 px, iPhone 13, iPhone SE y tableta (820 px): ficha con el selector de diario, ventana «Nuevo diario», apartado de comparación (resumen, evolución por métrica, gráficos y detalle) y umbrales. Sin errores de JavaScript ni desbordamiento lateral en el móvil |
 | Estadística a mano | Las medias, diferencias e intervalos de confianza del caso de insomnio se recalcularon en Python (SciPy) con los datos de cada noche (apartado 4) |
-| Impresión y exportaciones | PDF del análisis (la comparación en sus hojas), Word del análisis, Excel del paciente (hoja «Comparación»), CSV y JSON de ida y vuelta |
+| Impresión y exportaciones | PDF del análisis generado con Chromium (hojas apaisadas de la comparación entre las verticales, posición del pie en cada hoja), Word del análisis abierto con LibreOffice (secciones apaisadas), Excel del paciente (hoja «Comparación» con su resumen), CSV y JSON de ida y vuelta |
 | Compatibilidad | La v4.9.9 de la raíz, cargada en las pruebas, abre los pacientes de un solo diario guardados por la v5.0.0 y no sobrescribe los de varios diarios |
 | Casos de ejemplo | Los 20 casos (17 de la v4.9.9 y 3 nuevos con varios diarios) se abren en el editor sin errores y hacen el viaje de ida y vuelta por CSV |
 
@@ -63,15 +63,20 @@ El CSV añade `diario_etiqueta` y `diario_intervencion` en los datos del pacient
 | Flujo | Resultado |
 |---|---|
 | Apartado «Comparación de diarios del paciente» en el análisis, tras la primera hoja | Aparece solo si el paciente tiene más de un diario |
-| Tabla de diarios: fechas, sistema, noches, fines de semana, medias, remisión y si es apto, con «Abrir» | Correcto. Los no aptos explican el motivo (p. ej., «11 noches anotadas (mínimo 14)») |
+| Tabla de diarios: fechas, sistema, noches, fines de semana, medias, remisión y si es apto, con «Abrir» y el color de cada diario en los gráficos | Correcto. Los no aptos explican el motivo (p. ej., «11 noches anotadas (mínimo 14)») |
+| **Resumen**: resultado del último diario frente a la referencia (con una frase corta), los demás diarios frente a la referencia, mantenimiento respecto al anterior y remisión de cada diario; al lado, hasta 4 tarjetas con las métricas más significativas | Correcto. Las tarjetas muestran primero los cambios relevantes, por orden clínico (latencia, WASO, eficiencia, tiempo de sueño…), no por veces el umbral |
+| **Evolución por métrica**: una fila por métrica (agrupadas), una columna por diario con su media y, en los posteriores, el cambio respecto a la referencia con color y símbolo (✓, ?, ✗) | Correcto. Se lee también en blanco y negro gracias a los símbolos; leyenda debajo |
+| **Gráficos**: cambio en veces el umbral clínico con su IC (todas las métricas en una escala), horario medio de cada diario y noche a noche (latencia, WASO, tiempo de sueño, eficiencia) | Correcto. En el móvil, los gráficos anchos se desplazan dentro de su caja; la página no se ensancha |
+| **Detalle estadístico**: una tabla por comparación (media ± DE, diferencia, IC 95 %, diferencia mínima detectable, NAP, g, umbral, valoración) | Plegado en pantalla («Ver el detalle estadístico»); en el PDF y en el Word va siempre |
 | Casillas para elegir diarios | Desactivadas en los no aptos y en los de otro sistema de registro. Por defecto se eligen los aptos del sistema del diario abierto |
 | Mezcla de sistemas | No se compara: «Solo se pueden comparar diarios con el mismo sistema de registro» |
 | Umbrales (AASM): ver, editar, elegir qué métricas cuentan para la respuesta, restablecer | Correcto. Se guardan en el navegador (`agenda_umbrales_comparacion`) y el apartado indica si están editados |
 | Avisos | Proporción distinta de noches antes de festivo (más de 15 puntos) y tratamiento anotado en el diario posterior |
 | Informe clínico provisional | Apartado «Evolución respecto a los diarios anteriores» y una frase en las conclusiones |
-| PDF del análisis | La comparación empieza hoja y cada comparación va entera en una hoja. Si no hay nada que comparar, no se imprime |
-| Word | El apartado, como imagen del PDF; el informe clínico, con la evolución, editable |
-| Excel | Hoja «Comparación» con los diarios y cada comparación |
+| PDF del análisis | Hojas apaisadas (A4 horizontal) entre las verticales: 1) diarios y resumen; 2) evolución por métrica y método; 3) cambio en veces el umbral y horario medio; 4) noche a noche; 5 y 6) detalle estadístico. En el caso de insomnio, 6 hojas apaisadas. Si no hay nada que comparar, no se imprime |
+| Pie de página del PDF | Con hojas de dos tamaños, en el margen de cada hoja (Chrome y Edge, que admiten los márgenes de página); en los demás navegadores, el pie de siempre. Comprobado en el PDF: una vez por hoja, abajo, también en el anexo |
+| Word | El apartado, como imágenes del PDF, en una sección apaisada entre dos verticales y con las mismas hojas que el PDF; el informe clínico, con la evolución, editable |
+| Excel | Hoja «Comparación» con los diarios, un resumen (media de cada diario y valoración del cambio respecto a la referencia) y cada comparación |
 
 ## 4. Estadística comprobada a mano
 
@@ -118,6 +123,10 @@ Se cargan con la marca 18. Si los 17 de la v4.9.9 ya estaban en el navegador, no
 | Un archivo que se solapaba con un diario guardado, con el diario abierto vacío, se cargaba en el abierto (diario duplicado) | Primero se busca el diario guardado que se solapa. Un diario abierto vacío solo se sustituye si es el único y no tiene etiqueta |
 | El apartado de comparación aparecía con un solo diario y dejaba una hoja casi en blanco en el PDF | Solo aparece con varios diarios y no se imprime si no hay nada que comparar |
 | La comparación ocupaba 5 hojas en el PDF, con columnas mal cortadas | Estilos de impresión compactos con anchos fijos, y cada comparación entera en una hoja (sin chocar con el pie) |
+| Revisión de la presentación (a petición): las tablas eran densas y los gráficos, muy simples | Resumen con el resultado y las métricas más significativas; tabla de evolución con una columna por diario; gráficos del cambio en veces el umbral, del horario medio y noche a noche; detalle estadístico aparte; hojas apaisadas en el PDF y en el Word |
+| Con hojas apaisadas en medio del PDF, el pie fijo aparecía a media hoja (encima de las tablas) y, en la hoja vertical siguiente, dos veces | El pie va en el margen de cada hoja (@page) cuando el navegador lo admite |
+| En el Word, la tabla de evolución no cabía en la hoja apaisada (se dibujaba a 277 mm y se ampliaba a 285 mm) | Se dibuja con el ancho de la hoja del Word |
+| Las tarjetas del resumen ponían primero las calidades (su umbral en DE da muchas «veces el umbral») | Orden clínico entre los cambios relevantes |
 | Textos: «−0 min», unidades de minutos en los despertares, desviación del tiempo total sin minutos, títulos de los gráficos cortados | Corregidos |
 | Casos de ejemplo: en el niño, una noche sin anotar seguida de una noche con siesta dejaba en la fila anterior una siesta sola | El generador ya no anota la siesta de la noche que sigue a una noche sin anotar, y las marcas de tiempo quedan en las fechas del caso |
 | Ida y vuelta CSV de los casos nuevos: se perdía el tipo de día de la fila 0 | El generador no lo guarda cuando es el de por defecto (laborable), como el CSV |
@@ -129,6 +138,7 @@ Se cargan con la marca 18. Si los 17 de la v4.9.9 ya estaban en el navegador, no
 - La comparación no corrige la regresión a la media, la estación del año ni los periodos de vacaciones. Avisa si la proporción de noches antes de festivo es muy distinta.
 - Los fines de semana son el sábado y el domingo del calendario. En trabajo a turnos, los días libres pueden ser otros.
 - Sin cuestionarios (ISI): la respuesta y la remisión se valoran solo con el diario.
+- El pie de página en el margen de cada hoja necesita un navegador que admita los márgenes de página (Chrome y Edge). En Firefox y Safari se imprime el pie de siempre, que en las hojas apaisadas puede quedar a media hoja. Para el PDF del análisis con la comparación, mejor Chrome o Edge.
 - En el iPhone SE, la leyenda de las valoraciones de la rejilla del profesional ensancha la página unos 70 px. Viene de la v4.9.9 y no es de esta versión.
 - Las guías del paciente de la v4.9.9 siguen valiendo, porque su pantalla no cambia. El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
 

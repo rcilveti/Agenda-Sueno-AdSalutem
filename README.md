@@ -126,8 +126,13 @@ v4.9.9, para seguir a un paciente antes y después de una intervención:
   editable: mejoría clínicamente relevante, no concluyente, pequeña, sin cambios o empeoramiento.
   Conclusión: respuesta, respuesta mixta, empeoramiento o sin cambios clínicamente relevantes; remisión por diario
   (eficiencia ≥ 85 %, latencia y WASO ≤ 30 min).
+- *Presentación*: primero un **resumen** (resultado, mantenimiento, remisión y las métricas más
+  significativas en tarjetas) y la **evolución por métrica** (una columna por diario, con el cambio
+  respecto a la referencia en color y con símbolo); después, **gráficos** (cambio en veces el umbral
+  clínico, horario medio y noche a noche) y, plegado, el **detalle estadístico** de cada comparación.
 - *Informe clínico provisional*: apartado «Evolución respecto a los diarios anteriores» y una frase en
-  las conclusiones. *PDF y Word del análisis* con la comparación; *Excel* con la hoja «Comparación».
+  las conclusiones. *PDF del análisis* con la comparación en **hojas apaisadas**; *Word* con una sección
+  apaisada; *Excel* con la hoja «Comparación» (y su resumen).
 - *Compatibilidad*: un paciente con varios diarios se guarda como de la v5.0.0 y la v4.9.9 no lo
   sobrescribe; uno con un solo diario sigue siendo de la v4.9.9. El CSV y el JSON llevan la etiqueta y
   la intervención del diario (el formato de datos sigue en la versión 5).
