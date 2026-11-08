@@ -708,7 +708,7 @@ test('catalán: el editor entero en catalán (pasos, días, valoración, siestas
   assert.deepEqual(app.errors, []);
 });
 
-test('una sola versión por diario: la v4.9.9 guarda su versión y una versión anterior no sobrescribe ese diario', { skip: !require('fs').existsSync(require('path').join(__dirname, '..', 'v4.9.5', 'index.html')) }, async () => {
+test('una sola versión por diario: la v4.9.9 guarda su versión y una versión anterior no sobrescribe ese diario', { skip: !require('fs').existsSync(require('path').join(__dirname, '..', '..', 'v4.9.5', 'index.html')) }, async () => {
   const path = require('path');
   const app = await loadApp();
   await loginDoctor(app);
@@ -719,9 +719,9 @@ test('una sola versión por diario: la v4.9.9 guarda su versión y una versión 
   const rec = () => JSON.parse(app.storage()['agendasueno3:caso-normal']);
   assert.equal(rec().ver, '4.9.9');
   for (const v of ['v4.9.5', 'v4.9.6', 'v4.9.7']) {
-    const vieja = await loadApp({ file: path.join(__dirname, '..', v, 'index.html'), storage: app.storage() });
+    const vieja = await loadApp({ file: path.join(__dirname, '..', '..', v, 'index.html')   /* v5.0.0: las versiones anteriores están en la raíz */, storage: app.storage() });
     // al cargar sus casos de ejemplo (que ahora son de la v4.9.9) no los sobrescribe ni avisa
-    const limpia = await loadApp({ file: path.join(__dirname, '..', v, 'index.html'), storage: st0 });
+    const limpia = await loadApp({ file: path.join(__dirname, '..', '..', v, 'index.html')   /* v5.0.0: las versiones anteriores están en la raíz */, storage: st0 });
     await loginDoctor(limpia);
     assert.equal(limpia.ev('window._sembrandoDemo'), false);
     assert.equal(JSON.parse(limpia.storage()['agendasueno3:caso-tcci']).ver, '4.9.9', v + ': casos de la v4.9.9 intactos');
@@ -745,11 +745,11 @@ test('una sola versión por diario: la v4.9.9 guarda su versión y una versión 
     await vieja.ev(`selectPatient('caso-pseudoinsomnio')`);
     assert.equal(JSON.parse(vieja.storage()['agendasueno3:caso-pseudoinsomnio'] || '{}').ver === '4.9.9', true);
   }
-  // la v4.9.9 tampoco sobrescribe un diario de una versión posterior
-  app.ev(`localStorage.setItem('agendasueno3:caso-normal',JSON.stringify({...JSON.parse(localStorage.getItem('agendasueno3:caso-normal')),ver:'5.0.0'}))`);
+  // la v5.0.0 tampoco sobrescribe un diario de una versión posterior (la v5.0.0 guarda los suyos de un solo diario como de la v4.9.9)
+  app.ev(`localStorage.setItem('agendasueno3:caso-normal',JSON.stringify({...JSON.parse(localStorage.getItem('agendasueno3:caso-normal')),ver:'5.1.0'}))`);
   await app.ev(`selectPatient('caso-normal')`);
   app.doc.getElementById('saveBtn').click(); await app.sleep(400);
-  assert.equal(rec().ver, '5.0.0');
+  assert.equal(rec().ver, '5.1.0');
   assert.ok(app.doc.getElementById('avisoVersion'));
 });
 
