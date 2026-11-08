@@ -17,6 +17,8 @@ en castellano y en catalán.
 - v4.9.7 (pruebas: recordatorio diario, registro con preguntas, factores del día,
   ventana de sueño e hitos, tendencias, patrón propio y resumen para la consulta) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.7/
+- v5.0.0 (pruebas: varios diarios por paciente y comparación de diarios) en
+  https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v5.0.0/
 
 ---
 
@@ -46,9 +48,9 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `sw.js` | Hace que la app funcione sin conexión y recibe las actualizaciones. Debe estar junto a `index.html` |
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
-| `docs/` | Documentación de la v4.9.9: documento técnico (`Agenda_Sueno_v4.9.9_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v4.9.9_castellano.pdf`) y en catalán (`Guia_del_pacient_v4.9.9_catala.pdf`) y auditoría (`auditoria_v4.9.9.md`). Las de versiones anteriores están en `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
-| `tests/`, `package.json` | Pruebas automáticas (113 de la raíz; las de `v4.9.5/`, `v4.9.6/` y `v4.9.7/` van en sus carpetas) |
-| `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
+| `docs/` | Documentación de la v4.9.9: documento técnico (`Agenda_Sueno_v4.9.9_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v4.9.9_castellano.pdf`) y en catalán (`Guia_del_pacient_v4.9.9_catala.pdf`) y auditoría (`auditoria_v4.9.9.md`). Las de otras versiones están en `v4.9.5/docs/`, `v4.9.6/docs/`, `v4.9.7/docs/` y `v5.0.0/docs/` |
+| `tests/`, `package.json` | Pruebas automáticas (113 de la raíz; las de `v4.9.5/`, `v4.9.6/`, `v4.9.7/` y `v5.0.0/` van en sus carpetas) |
+| `v4.9.5/`, `v4.9.6/`, `v4.9.7/`, `v5.0.0/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
 | `.gitignore` | Bloquea la subida accidental de datos clínicos |
 
@@ -103,6 +105,47 @@ dispositivo, la aplicación **fusiona** día a día en vez de sobrescribir.
 ---
 
 ## Novedades recientes
+
+**v5.0.0 (pruebas, en `v5.0.0/`) — Varios diarios por paciente y comparación de diarios.** Sobre la
+v4.9.9, para seguir a un paciente antes y después de una intervención:
+
+- *Varios diarios por paciente*: en la ficha, un selector con todos sus diarios (Diario 1, Diario 2…,
+  con su etiqueta) y «＋ Nuevo diario». Cada diario tiene su fecha de inicio (sin solaparse con los
+  demás), su etiqueta (Basal, Tras TCC-I…) y la intervención desde el anterior. El profesional crea el
+  diario nuevo y, si quiere, abre el acceso del paciente para ese periodo.
+- *Diarios que llegan por archivo o por el enlace*: van al diario que corresponde por fechas. Si se
+  solapa con el abierto o con otro guardado, se fusiona con él; si no, se añade como diario nuevo. En
+  el móvil, un acceso con otra fecha de inicio empieza un diario en blanco y guarda el anterior.
+- *Comparación de diarios* (análisis): solo entre diarios del **mismo sistema de registro** (editor de
+  la noche, rejilla o mixto: el de al menos el 75 % de sus noches) y con **al menos 14 noches y 2 fines
+  de semana completos** (las noches del viernes al sábado y del sábado al domingo). El más antiguo de
+  los elegidos es la referencia; con tres o más, el último se compara también con el anterior.
+- *Por cada métrica* (latencia, WASO, despertares, tiempo total, eficiencia y calidades): medias,
+  diferencia con su intervalo de confianza del 95 % (corregido por la dependencia entre noches), NAP y
+  g de Hedges, y la valoración frente al **umbral de relevancia clínica de la AASM** (Edinger 2021),
+  editable: mejoría clínicamente relevante, no concluyente, pequeña, sin cambios o empeoramiento.
+  Conclusión: respuesta, respuesta mixta, empeoramiento o sin cambios clínicamente relevantes; remisión por diario
+  (eficiencia ≥ 85 %, latencia y WASO ≤ 30 min).
+- *Presentación*: primero un **resumen** (resultado, mantenimiento, remisión y las métricas más
+  significativas en tarjetas) y la **evolución por métrica** (una columna por diario, con el cambio
+  respecto a la referencia en color y con símbolo); después, **gráficos** (cambio en veces el umbral
+  clínico, horario medio y noche a noche) y, plegado, el **detalle estadístico** de cada comparación.
+- *Informe clínico provisional*: apartado «Evolución respecto a los diarios anteriores» y una frase en
+  las conclusiones. *PDF del análisis* con la comparación en **hojas apaisadas**; *Word* con una sección
+  apaisada; *Excel* con la hoja «Comparación» (y su resumen).
+- *Compatibilidad*: un paciente con varios diarios se guarda como de la v5.0.0 y la v4.9.9 no lo
+  sobrescribe; uno con un solo diario sigue siendo de la v4.9.9. El CSV y el JSON llevan la etiqueta y
+  la intervención del diario (el formato de datos sigue en la versión 5).
+- Tres casos de ejemplo nuevos con varios diarios (insomnio con TCC-I y seguimiento, niño de 3 años
+  con extinción gradual y retraso de fase con un diario corto, que no se puede comparar).
+- *Catorce casos para estudiar la evolución* («Evolución 1» a «Evolución 14»): cada uno parte de un caso
+  de la v4.9.9 (su diario es el basal) y sus diarios siguientes son transformaciones controladas de esas
+  noches, con resultado conocido: respuesta con y sin remisión, respuesta mixta, empeoramiento, sin
+  cambios, mejoría pequeña, no concluyente, pérdida de respuesta, respuesta solo por la calidad, bebé,
+  sistemas de registro, aptitud al límite, vacaciones y basal con tendencia. Guía con los resultados
+  exactos y ejercicios en `v5.0.0/docs/casos_evolucion_v5.0.0.md`.
+- La pantalla del paciente no cambia: sirven las guías del paciente de la v4.9.9. Documento técnico
+  (capítulo 11) y auditoría en `v5.0.0/docs/`.
 
 **v4.9.9 — Editor de la noche y pantalla nueva del paciente.** Sobre la v4.9.7, con la regla del MCTQ
 de la v4.9.8 (que no se llegó a publicar):
@@ -190,15 +233,19 @@ las exportaciones.
 ## Varias versiones a la vez
 
 La raíz del sitio publica la versión en uso (v4.9.9). La carpeta `v4.9.5/` guarda la versión anterior
-y las carpetas `v4.9.6/` y `v4.9.7/`, las versiones de pruebas; cada una con su propia página, service
+y las carpetas `v4.9.6/`, `v4.9.7/` y `v5.0.0/`, las versiones de pruebas; cada una con su propia página, service
 worker, manifiesto, documentación (`docs/`) y pruebas automáticas (`tests/`, que `npm test` ejecuta
-junto con las de la raíz). La v4.9.6 y la v4.9.7 parten de la v4.9.5 por separado.
+junto con las de la raíz). La v4.9.6 y la v4.9.7 parten de la v4.9.5 por separado; la v5.0.0, de la
+v4.9.9.
 
 - **Una sola versión por diario.** Cada diario guarda la versión que lo guardó. La v4.9.5, la v4.9.6
   y la v4.9.7 no sobrescriben un diario de la v4.9.9: muestran un aviso para abrirlo en la versión
   principal (si lo hicieran, se perderían las siestas, los acontecimientos con su tipo, el tratamiento
   y las respuestas del editor). Al revés no hay pérdidas: la v4.9.9 lee los diarios de todas las
   versiones anteriores y, al guardarlos, pasan a ser de la v4.9.9.
+- **Varios diarios (v5.0.0).** Un paciente con varios diarios, o con etiqueta o intervención en su
+  diario, se guarda como de la v5.0.0: la v4.9.9 lo muestra con el aviso y no lo sobrescribe (se
+  perderían los demás diarios). Los pacientes con un solo diario siguen guardándose como de la v4.9.9.
 
 - **Mismo navegador, mismos datos.** Las versiones comparten el almacenamiento del navegador
   (mismo dominio): en un dispositivo se ven los mismos pacientes y diarios en todas. Conviene que
