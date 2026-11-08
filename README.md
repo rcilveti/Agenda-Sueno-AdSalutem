@@ -138,6 +138,12 @@ v4.9.9, para seguir a un paciente antes y después de una intervención:
   la intervención del diario (el formato de datos sigue en la versión 5).
 - Tres casos de ejemplo nuevos con varios diarios (insomnio con TCC-I y seguimiento, niño de 3 años
   con extinción gradual y retraso de fase con un diario corto, que no se puede comparar).
+- *Catorce casos para estudiar la evolución* («Evolución 1» a «Evolución 14»): cada uno parte de un caso
+  de la v4.9.9 (su diario es el basal) y sus diarios siguientes son transformaciones controladas de esas
+  noches, con resultado conocido: respuesta con y sin remisión, respuesta mixta, empeoramiento, sin
+  cambios, mejoría pequeña, no concluyente, pérdida de respuesta, respuesta solo por la calidad, bebé,
+  sistemas de registro, aptitud al límite, vacaciones y basal con tendencia. Guía con los resultados
+  exactos y ejercicios en `v5.0.0/docs/casos_evolucion_v5.0.0.md`.
 - La pantalla del paciente no cambia: sirven las guías del paciente de la v4.9.9. Documento técnico
   (capítulo 11) y auditoría en `v5.0.0/docs/`.
 

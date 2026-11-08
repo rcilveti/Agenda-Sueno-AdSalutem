@@ -541,7 +541,7 @@ test('casos de ejemplo: todos se abren en el editor sin errores y guardarlos sin
   const app = await loadApp();
   await loginDoctor(app);
   const ids = app.evj('DEMO_CASES.index.map(c=>c.id)');
-  assert.equal(ids.length, 20);   // v5.0.0: y los 3 de varios diarios
+  assert.equal(ids.length, 34);   // v5.0.0: y los 3 de varios diarios y los 14 de evolución
   for (const id of ids) {
     await app.ev(`selectPatient('${id}')`);
     const n = app.ev('state.length');
@@ -1083,7 +1083,7 @@ test('F · casos de ejemplo al día: ninguna noche fuera de los saltos del despe
     DEMO_CASES.index.forEach(({id})=>DEMO_CASES.records[id].state.forEach((d,i)=>{ if(d&&d.gd){ const t=((u(d.gd.r)-u(d.gd.f))%1440+1440)%1440; if(!F.includes(t)) r.push(id+' '+i+' '+t); } }));
     return r; })()`);
   assert.deepEqual(fuera, []);
-  assert.equal(app.ev('DEMO_CASES.index.length'), 20);   // v5.0.0
+  assert.equal(app.ev('DEMO_CASES.index.length'), 34);   // v5.0.0
   assert.deepEqual(app.errors, []);
 });
 

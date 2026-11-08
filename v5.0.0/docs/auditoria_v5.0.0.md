@@ -36,12 +36,12 @@ El CSV añade `diario_etiqueta` y `diario_intervencion` en los datos del pacient
 
 | Comprobación | Alcance |
 |---|---|
-| Pruebas automáticas (jsdom) | **124 pruebas, 124 superadas**: las 113 de la v4.9.9, copiadas en `v5.0.0/tests/` y adaptadas, y 11 nuevas (`v5.0.0/tests/v500.test.js`). Las de la raíz no cambian (la raíz no se ha tocado) |
+| Pruebas automáticas (jsdom) | **125 pruebas, 125 superadas**: las 113 de la v4.9.9, copiadas en `v5.0.0/tests/` y adaptadas, y 12 nuevas (`v5.0.0/tests/v500.test.js`), una de ellas con el resultado de los 14 casos de evolución. Las de la raíz no cambian (la raíz no se ha tocado) |
 | Navegador real (Playwright, Chromium) | Escritorio a 1300 px, iPhone 13, iPhone SE y tableta (820 px): ficha con el selector de diario, ventana «Nuevo diario», apartado de comparación (resumen, evolución por métrica, gráficos y detalle) y umbrales. Sin errores de JavaScript ni desbordamiento lateral en el móvil |
 | Estadística a mano | Las medias, diferencias e intervalos de confianza del caso de insomnio se recalcularon en Python (SciPy) con los datos de cada noche (apartado 4) |
 | Impresión y exportaciones | PDF del análisis generado con Chromium (hojas apaisadas de la comparación entre las verticales, posición del pie en cada hoja), Word del análisis abierto con LibreOffice (secciones apaisadas), Excel del paciente (hoja «Comparación» con su resumen), CSV y JSON de ida y vuelta |
 | Compatibilidad | La v4.9.9 de la raíz, cargada en las pruebas, abre los pacientes de un solo diario guardados por la v5.0.0 y no sobrescribe los de varios diarios |
-| Casos de ejemplo | Los 20 casos (17 de la v4.9.9 y 3 nuevos con varios diarios) se abren en el editor sin errores y hacen el viaje de ida y vuelta por CSV |
+| Casos de ejemplo | Los 34 casos (17 de la v4.9.9, 3 con varios diarios y 14 de evolución) se abren en el editor sin errores y hacen el viaje de ida y vuelta por CSV |
 
 ## 3. Resultados por área
 
@@ -108,6 +108,15 @@ Se cargan con la marca 18. Si los 17 de la v4.9.9 ya estaban en el navegador, no
 | Insomnio: basal, tras TCC-I y a los 3 meses (mujer, 46 años) | 1. Diario antiguo, de la rejilla (19 noches). 2. Basal (20). 3. Tras TCC-I (19). 4. Seguimiento a los 3 meses (17, abierto) | El 1 no se puede comparar con los demás (otro sistema). 3 frente a 2: **respuesta** (latencia 59 → 16 min, WASO 62 → 4 min, eficiencia 69 → 92 %; el tiempo total de sueño, mejoría no concluyente) y remisión. 4 frente a 2: respuesta. 4 frente a 3: se mantiene |
 | Niño de 3 años: antes y después de la extinción gradual | 1. Basal (20 noches). 2. Tras la extinción gradual (19, abierto) | **Respuesta** (latencia 69 → 14 min, WASO 59 → 2 min) y remisión |
 | Retraso de fase: basal y con melatonina (17 años) | 1. Basal (20 noches). 2. Con melatonina (11, abierto) | El diario 2 **no es apto**: 11 noches (mínimo 14) y 1 fin de semana completo (mínimo 2). No hay comparación |
+
+**Casos para estudiar la evolución (marca 19).** Catorce casos más («Evolución 1» a «Evolución 14»). Cada uno parte de un caso de la v4.9.9: su diario de 21 noches es el basal, sin cambios, y los diarios siguientes se generan transformando esas noches (latencia, despertares, ventana de sueño, calidades, noches sin anotar o anotadas en la rejilla) con un generador reproducible, guardándolas como el editor de la noche. Entre todos recorren las 8 valoraciones, las 4 conclusiones, el mantenimiento y la pérdida de respuesta, los cambios de remisión, los dos avisos, los dos motivos de no aptitud (en el límite exacto), el umbral del 75 % del sistema de registro, el diario abierto mixto, las siestas en menores y la autocorrelación. Una prueba automática fija el resultado de cada uno. La guía `casos_evolucion_v5.0.0.md` da los diarios, el resultado exacto de cada métrica y ejercicios con los umbrales.
+
+Lo que estos casos dejan ver del método, para decidir (detalle en la guía):
+
+- **Diarios con tendencia** (casos 7 y 14): con r₁ acotado a 0,8, las noches efectivas bajan a n/9 (mínimo 2) y la t, con 1-2 grados de libertad, llega a 12,7; los intervalos se vuelven enormes (p. ej., el del tiempo en la cama en el caso 14). Conservador, pero poco interpretable.
+- **«Se mantiene» tras un empeoramiento** (caso 4): la comparación con el anterior solo mira si algo empeora.
+- **Remisión del adulto en un bebé** (caso 10), **respuesta solo por la calidad percibida** (caso 9) y **vacaciones** que dan «respuesta» con solo un aviso (caso 13).
+- **Diario abierto mixto** (caso 11): por defecto no hay comparación hasta quitarlo.
 
 ## 6. Compatibilidad entre versiones
 

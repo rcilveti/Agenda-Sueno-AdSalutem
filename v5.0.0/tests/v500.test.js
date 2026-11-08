@@ -38,9 +38,16 @@ test('v5.0.0: versión, casos de ejemplo con varios diarios y selector de diario
   assert.match(app.doc.getElementById('loginVersion').textContent, /5\.0\.0 \(pruebas\)/);
   await loginDoctor(app);
   const idx = app.evj('DEMO_CASES.index.map(x=>x.id)');
-  assert.equal(idx.length, 20);
-  assert.deepEqual(idx.slice(-3), ['caso-seg-tcci', 'caso-seg-nino', 'caso-seg-retraso']);
+  assert.equal(idx.length, 34);
+  assert.deepEqual(idx.slice(17, 20), ['caso-seg-tcci', 'caso-seg-nino', 'caso-seg-retraso']);
   assert.equal(app.ev('DEMO_V5.length'), 3);
+  // los 14 casos para estudiar la evolución (marca 19), cada uno a partir de un caso de la v4.9.9 (su diario es el basal)
+  assert.equal(app.ev('DEMO_EVO.length'), 14);
+  assert.deepEqual(idx.slice(20).map(x => x.slice(0, 12)), Array(14).fill('caso-evo-').map((x, i) => x + String(i + 1).padStart(2, '0') + '-').map(x => x.slice(0, 12)));
+  assert.ok(app.evj(`DEMO_EVO.every(id=>{ const r=DEMO_CASES.records[id]; return r.ver==='5.0.0'&&r.diarios.length>=1&&r.diarios[0].etiqueta==='Basal'; })`));
+  // el basal de cada caso es el diario del caso de la v4.9.9 del que parte, tal cual
+  assert.ok(app.evj(`(()=>{ const base={'caso-evo-01-respuesta':'caso-ins-conciliacion','caso-evo-08-recaida':'caso-spi-plmd','caso-evo-14-basal-tendencia':'caso-tcci'};
+    return Object.entries(base).every(([e,b])=>JSON.stringify(DEMO_CASES.records[e].diarios[0].state)===JSON.stringify(DEMO_CASES.records[b].state)); })()`));
   await app.ev(`selectPatient('caso-seg-tcci')`);
   const opts = [...app.doc.querySelectorAll('#diarioSel option')].map(o => o.textContent);
   assert.deepEqual(opts, ['Diario 1 · Diario antiguo (rejilla) · 07/10/2024', 'Diario 2 · Basal · 01/09/2025',
@@ -54,13 +61,25 @@ test('v5.0.0: versión, casos de ejemplo con varios diarios y selector de diario
   assert.match(app.doc.getElementById('diarioSel').title, /un solo diario/);
   // los casos de la v4.9.9 no se vuelven a cargar si ya estaban (marca 17): solo los de la v5.0.0 (marca 18)
   const st = app.storage();
-  assert.equal(st.agenda_demo_seeded18, '1');
+  assert.equal(st.agenda_demo_seeded18, '1'); assert.equal(st.agenda_demo_seeded19, '1');
   assert.equal(JSON.parse(st['agendasueno3:caso-normal']).ver, '4.9.9');
   assert.equal(JSON.parse(st['agendasueno3:caso-seg-tcci']).ver, '5.0.0');
   const app2 = await loadApp({ storage: Object.assign({}, st, { 'agendasueno3:caso-normal': JSON.stringify(Object.assign(JSON.parse(st['agendasueno3:caso-normal']), { name: 'tocado' })) }) });
   await loginDoctor(app2);
   assert.equal(JSON.parse(app2.storage()['agendasueno3:caso-normal']).name, 'tocado');
-  assert.deepEqual(app.errors, []); assert.deepEqual(app2.errors, []);
+  // un navegador con las marcas 17 y 18 (v5.0.0 ya abierta antes): solo se cargan los casos de evolución (marca 19)
+  const st3 = {};
+  Object.keys(st).forEach(k => { if (!/^agendasueno3:caso-evo-/.test(k) && k !== 'agenda_demo_seeded19') st3[k] = st[k]; });
+  st3.agenda_patient_index3 = JSON.stringify(JSON.parse(st.agenda_patient_index3).filter(x => !x.id.startsWith('caso-evo-')));
+  st3['agendasueno3:caso-seg-nino'] = JSON.stringify(Object.assign(JSON.parse(st['agendasueno3:caso-seg-nino']), { name: 'tocado' }));
+  const app3 = await loadApp({ storage: st3 });
+  await loginDoctor(app3);
+  const st4 = app3.storage();
+  assert.equal(st4.agenda_demo_seeded19, '1');
+  assert.equal(JSON.parse(st4.agenda_patient_index3).filter(x => x.id.startsWith('caso-evo-')).length, 14);
+  assert.equal(JSON.parse(st4['agendasueno3:caso-evo-03-mixta']).diarios.length, 2);
+  assert.equal(JSON.parse(st4['agendasueno3:caso-seg-nino']).name, 'tocado');   // los de la marca 18 no se tocan
+  assert.deepEqual(app.errors, []); assert.deepEqual(app2.errors, []); assert.deepEqual(app3.errors, []);
 });
 
 test('varios diarios: nuevo diario (sin solaparse), abrir otro, etiqueta e intervención, borrar; versión necesaria', async () => {
@@ -451,5 +470,51 @@ test('Excel del paciente: hoja «Comparación»; Word del análisis: la comparac
   assert.match(txt(D.secciones[1].bloques), /Comparación de diarios del paciente.*Resumen.*Respuesta.*Evolución por métrica.*Detalle estadístico de cada comparación/s);
   assert.doesNotMatch(txt(D.secciones[0].bloques), /Comparación de diarios del paciente/);
   assert.ok(!D.secciones[1].bloques[0].salto && !D.secciones[2].bloques[0].salto);   // cada sección empieza hoja: sin salto de más
+  assert.deepEqual(app.errors, []);
+});
+
+// ---------- casos para estudiar la evolución (marca 19): cada uno da el resultado documentado en
+// v5.0.0/docs/casos_evolucion_v5.0.0.md ----------
+test('casos de evolución: aptitud, sistema, selección por defecto, conclusiones, mantenimiento, remisión y valoraciones clave', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  const caso = async id => { await app.ev(`selectPatient('${id}')`);
+    return app.evj(`(()=>{ const P=_perfilesPaciente(), C=compararDiarios(P,_seleccionPorDefecto(P));
+      const v=(p,k)=>(p.filas.find(r=>r.M.k===k)||{}).val;
+      return {d:P.map(p=>({n:p.dia.n,sis:p.sistema,noches:p.noches,findes:p.findes,apto:p.apto,rem:p.remision?p.remision.ok:null})),
+        sel:_seleccionPorDefecto(P).map(i=>P.find(p=>p.dia.id===i).dia.n),error:C.error,
+        p:(C.pares||[]).map(p=>({par:p.B.dia.n+'-'+p.A.dia.n+(p.tipo==='ref'?'':'a'),g:p.global,peor:p.peor.length,v:Object.fromEntries(p.filas.map(r=>[r.M.k,r.val])),av:p.avisos.length}))}; })()`); };
+  const G = r => r.p.map(p => p.par + ':' + (p.par.endsWith('a') ? (p.peor ? 'pérdida' : 'mantiene') : p.g));
+  let r = await caso('caso-evo-01-respuesta');
+  assert.deepEqual(G(r), ['2-1:respuesta']); assert.equal(r.p[0].v.sol, 'mej-rel'); assert.equal(r.p[0].v.se, 'mej-peq'); assert.deepEqual(r.d.map(x => x.rem), [false, true]);
+  r = await caso('caso-evo-02-sin-remision');
+  assert.deepEqual(G(r), ['2-1:respuesta']); assert.equal(r.p[0].v.waso, 'mej-rel'); assert.deepEqual(r.d.map(x => x.rem), [false, false]);
+  r = await caso('caso-evo-03-mixta');
+  assert.deepEqual(G(r), ['2-1:mixta', '3-1:respuesta', '3-2a:mantiene']); assert.equal(r.p[0].v.tst, 'peor-rel'); assert.equal(r.p[0].v.tib, 'cambio'); assert.equal(r.p[2].v.lat, 'peor-peq');
+  r = await caso('caso-evo-04-empeora');
+  assert.deepEqual(G(r), ['2-1:empeora', '3-1:sin', '3-2a:mantiene']);
+  r = await caso('caso-evo-05-sin-cambios');
+  assert.deepEqual(G(r), ['2-1:sin']); assert.equal(r.p[0].v.sol, 'peor-nc');
+  r = await caso('caso-evo-06-pequena');
+  assert.deepEqual(G(r), ['2-1:sin']); assert.equal(r.p[0].v.waso, 'mej-peq'); assert.deepEqual(r.d.map(x => x.rem), [false, true]);
+  r = await caso('caso-evo-07-no-concluyente');
+  assert.deepEqual(G(r), ['2-1:sin', '3-1:respuesta', '3-2a:mantiene']); assert.equal(r.p[0].v.sol, 'mej-nc'); assert.equal(r.p[1].v.sol, 'mej-rel');
+  assert.deepEqual([r.d[1].noches, r.d[1].findes, r.d[1].apto], [14, 2, true]);
+  r = await caso('caso-evo-08-recaida');
+  assert.deepEqual(G(r), ['2-1:respuesta', '3-1:sin', '3-2a:pérdida']); assert.deepEqual(r.d.map(x => x.rem), [false, true, false]);
+  r = await caso('caso-evo-09-calidad');
+  assert.deepEqual(G(r), ['2-1:respuesta']); assert.deepEqual(Object.entries(r.p[0].v).filter(([, v]) => v === 'mej-rel').map(([k]) => k), ['qs']);
+  r = await caso('caso-evo-10-bebe');
+  assert.deepEqual(G(r), ['2-1:respuesta']); assert.equal(r.p[0].v.nw, 'mej-rel');
+  r = await caso('caso-evo-11-sistemas');
+  assert.deepEqual(r.d.map(x => x.sis), ['editor', 'editor', 'mixto']); assert.deepEqual(r.sel, [3]); assert.deepEqual(r.p, []);
+  r = await caso('caso-evo-12-aptitud');
+  assert.deepEqual(r.d.map(x => [x.noches, x.findes, x.apto]), [[21, 3, true], [16, 1, false], [14, 2, true], [13, 2, false]]);
+  assert.deepEqual(r.sel, [1, 3]); assert.deepEqual(G(r), ['3-1:sin']); assert.equal(r.p[0].v.tst, 'mej-nc'); assert.equal(r.p[0].v.qd, 'mej-rel');
+  r = await caso('caso-evo-13-vacaciones');
+  assert.deepEqual(G(r), ['2-1:respuesta']); assert.equal(r.p[0].v.tst, 'mej-rel');
+  assert.match(app.evj(`(()=>{ const P=_perfilesPaciente(); return compararDiarios(P,_seleccionPorDefecto(P)).pares[0].avisos.join(' '); })()`), /noches antes de festivo distinta \(29 % frente a 100 %\)/);
+  r = await caso('caso-evo-14-basal-tendencia');
+  assert.deepEqual(G(r), ['2-1:respuesta']); assert.equal(r.p[0].v.sol, 'mej-nc'); assert.equal(r.p[0].v.se, 'mej-nc');
   assert.deepEqual(app.errors, []);
 });
