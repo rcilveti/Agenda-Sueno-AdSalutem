@@ -155,9 +155,11 @@ de la v4.9.8 (que no se llegó a publicar):
 - *Editor de la noche*, única forma de anotar, en cuatro pasos (noche · siestas · valoración ·
   notas) y con un eje de 18:00 a 20:00 del día siguiente (sirve para niños que se acuestan antes de
   las 20:00), que se abre con la noche ya encuadrada y con el fondo de la escala horaria del color
-  de cada día (laborable o festivo): acostarse y levantarse de 15 en 15 minutos; latencia,
-  despertares en escalones (5 min hasta media hora, luego 45, 60 y de 30 en 30) y el rato en la cama
-  tras el despertar final, de 5, 10, 15, 20 o 30 minutos y luego de 30 en 30;
+  de cada día (laborable o festivo): acostarse de 15 en 15 minutos y el despertar final como hora
+  (botones de 15 en 15, con el dedo de 5 en 5); latencia, despertares en escalones (5 min hasta
+  media hora, luego 45, 60 y de 30 en 30) y levantarse como el rato en la cama tras el despertar
+  final, de 0, 5, 10, 15, 20 o 30 minutos y luego de 30 en 30 (mover levantarse no mueve el
+  despertar final); sin zoom de la pantalla mientras el editor está abierto;
   acontecimientos con su hora y su tipo (🚽 baño, 💢 dolor, 🔊 ruido, 🌡️ calor o frío,
   😟 preocupación, 😷 tos, 👶 niño, 🍼 toma, 🏷️ otro); siestas del día anterior a la noche, que se
   arrastran con el dedo (hora y duración, opcional); valoración 1–5 obligatoria (el estado del día,

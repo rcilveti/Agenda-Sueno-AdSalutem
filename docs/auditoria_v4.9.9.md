@@ -313,3 +313,15 @@ Comprobado en Chromium (iPhone 13, iPhone SE, Pixel 7 y iPhone 14 Pro Max, en ve
   - Guías del paciente (castellano y catalán): cada noche anotada de la lista muestra su horario, las tres caras de la valoración y el icono de cada acontecimiento.
   - Los datos de los casos de ejemplo no cambian (la valoración de cada día sigue en 1–5), así que no se vuelven a cargar.
 - Pruebas: cuatro nuevas (113 en la raíz), entre ellas la del Word por apartados, con una captura simulada y el .docx generado en Node.
+
+### I · Editor: despertar final y levantarse, sin zoom en el iPhone
+
+1. **Levantarse ya no arrastra el despertar final.** Al retrasar la hora de levantarse (con el dedo o con − y +), el despertar final se movía con ella. Ahora el despertar final es una hora que solo cambia cuando se mueve él, y levantarse se cuenta desde él: es el rato en la cama tras el despertar final.
+2. **Despertar final: + es más tarde y − más temprano.** Sus botones funcionaban al revés, porque cambiaban el rato en la cama. Ahora mueven la hora de 15 en 15 minutos (con el dedo, de 5 en 5), como acostarse, y dicen «−15′» y «+15′». Levantarse va con él y conserva el rato en la cama. Las flechas del teclado hacen lo mismo.
+3. **Levantarse en pasos cortos.** Va a 0 (al despertar), 5, 10, 15, 20 y 30 minutos después del despertar final y, luego, de 30 en 30. Se ha mantenido el paso de 15 minutos, a petición. Cada botón dice el paso que va a dar: «−5′» y «+5′» a los 15 minutos, o «−10′» y «+30′» a los 30. El texto de debajo explica el valor: «Unos 30 min después del despertar final · en la cama unas 8 h 15», o «Al despertar · …» si no hay rato en la cama.
+4. **Sin zoom involuntario en el iPhone.** Al tocar − y + seguidos, el iPhone ampliaba la pantalla (doble toque) y costaba volver. Mientras el editor está abierto, la página no se amplía, ni con doble toque ni con dos dedos. Al cerrarlo, se puede ampliar como antes. Escribir en las notas no amplía, porque ya tenían letra de 16 px.
+
+- **Noches ya anotadas.** Se abren igual, porque el despertar final ya iba de 5 en 5 y el rato en la cama ya estaba en esos escalones. Si no se tocan, se guardan tal cual.
+- **Comprobaciones.** En Chromium con un iPhone 13 simulado: al arrastrar la bolita de levantarse, el despertar final no se mueve; al arrastrar la del despertar final, levantarse va con ella. Falta comprobar el bloqueo del zoom en un iPhone real.
+- **Pruebas.** Dos nuevas y una adaptada (115 en la raíz). La v5.0.0 lleva los mismos cambios.
+- **Pendiente.** Las guías del paciente dicen que la hora de levantarse va «de 15 en 15 minutos», y el documento técnico describe los botones anteriores. No se han vuelto a generar.

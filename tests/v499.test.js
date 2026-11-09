@@ -926,7 +926,8 @@ test('D · despertar final → levantarse: saltos de 5, 10, 15, 20 y 30 minutos 
   assert.deepEqual(app.evj('EditorNoche.ESC_F'), esperado);
   app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
   app.ev(`AgendaPuente.guardar(1,{gd:{b:'23:00',s:15,w:[],f:'06:45',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
-  app.ev('abrirEditorNoche(1)'); app.ev(`document.querySelector('#edCats [data-cat="F"]').click()`);
+  // (noviembre, 2.ª parte) los escalones son los de la hora de levantarse, contados desde el despertar final
+  app.ev('abrirEditorNoche(1)'); app.ev(`document.querySelector('#edCats [data-cat="R"]').click()`);
   const tfa = () => app.ev('EditorNoche.estado().m.R-EditorNoche.estado().m.F');
   assert.equal(tfa(), 15);
   const vistos = [];
@@ -943,8 +944,78 @@ test('D · despertar final → levantarse: saltos de 5, 10, 15, 20 y 30 minutos 
   // una noche anterior con 40 o 50 minutos se propone con el escalón más próximo; sin tocarla, se guarda como estaba
   app.ev(`AgendaPuente.guardar(2,{gd:{b:'23:00',s:15,w:[],f:'06:10',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
   app.ev('abrirEditorNoche(2)'); assert.equal(tfa(), 60);
+  assert.equal(app.ev('EditorNoche.estado().m.F'), 730, 'el despertar final (06:10) se queda; levantarse se propone a las 07:10');
   valorarYGuardar(app);
-  assert.equal(app.ev('state[2].gd.f'), '06:10');
+  assert.equal(app.ev('state[2].gd.f'), '06:10'); assert.equal(app.ev('state[2].gd.r'), '07:00');
+  assert.deepEqual(app.errors, []);
+});
+
+// ---------- noviembre (2.ª parte, misma versión): despertar final y levantarse; zoom del iPhone ----------
+test('E · el despertar final es una hora (+ = más tarde) y levantarse se cuenta desde él: mover levantarse no lo arrastra', async () => {
+  const app = await loadApp();
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
+  app.ev(`AgendaPuente.guardar(1,{gd:{b:'23:00',s:15,w:[{t:'03:00',d:20}],f:'06:45',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  app.ev('abrirEditorNoche(1)');
+  const hr = () => app.evj(`(()=>{ const m=EditorNoche.estado().m, h=x=>{x=(x+1080)%1440; return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0');}; return [h(m.F),h(m.R)]; })()`);
+  const cat = k => app.ev(`document.querySelector('#edCats [data-cat="${k}"]').click()`);
+  const mas = () => app.doc.getElementById('edMas').click(), menos = () => app.doc.getElementById('edMenos').click();
+  // 1. levantarse más tarde: el despertar final no se mueve. Los botones dicen cuánto cambia (escalón siguiente o anterior)
+  const btn = () => [app.doc.getElementById('edMenos').textContent, app.doc.getElementById('edMas').textContent];
+  cat('R');
+  assert.deepEqual(btn(), ['−5′', '+5′']);   // 15 min tras el despertar final: 10 o 20
+  mas(); mas();
+  assert.deepEqual(hr(), ['06:45', '07:15']);
+  assert.deepEqual(btn(), ['−10′', '+30′']);   // 30 min: 20 o 60
+  assert.match(app.doc.getElementById('lecE').textContent, /^Unos 30 min después del despertar final · en la cama unas 8 h 15$/);
+  // 2. el despertar final: + lo retrasa y − lo adelanta (de 15 en 15 min), y levantarse va con él (mismo rato en la cama)
+  cat('F');
+  assert.deepEqual(btn(), ['−15′', '+15′']);
+  assert.equal(app.doc.getElementById('edMas').getAttribute('aria-label'), 'Después');
+  mas();
+  assert.deepEqual(hr(), ['07:00', '07:30']);
+  menos(); menos();
+  assert.deepEqual(hr(), ['06:30', '07:00']);
+  assert.match(app.doc.getElementById('lecE').textContent, /30 min en la cama antes de levantarte/);
+  // no puede ir antes del último despertar (03:00 + 20 min) ni dejar el sueño vacío
+  for (let i = 0; i < 30; i++) menos();
+  assert.deepEqual(hr(), ['03:25', '03:55']);
+  // teclado: → también es más tarde
+  app.ev(`(()=>{ const b=document.querySelector('.bola[data-h="F"]'); b.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true})); })()`);
+  assert.deepEqual(hr(), ['03:40', '04:10']);
+  // 3. levantarse a la vez que el despertar final («Al despertar»)
+  cat('R'); for (let i = 0; i < 6; i++) menos();
+  assert.deepEqual(hr(), ['03:40', '03:40']);
+  assert.deepEqual(btn(), ['−', '+5′']);
+  assert.match(app.doc.getElementById('lecE').textContent, /^Al despertar · en la cama unas/);
+  app.ev('EditorNoche.cerrar(false)');
+  // 4. las noches ya anotadas se abren igual y, sin tocarlas, se guardan como estaban (despertar final a 5 min)
+  app.ev(`AgendaPuente.guardar(2,{gd:{b:'23:15',s:20,w:[],f:'06:50',r:'07:00'},tA:'L',tB:'L',ev:[],qs:4,qd:4,qe:4,trat:'',obs:''})`);
+  app.ev('abrirEditorNoche(2)');
+  assert.deepEqual(hr(), ['06:50', '07:00']);
+  cat('F'); mas();
+  assert.deepEqual(hr(), ['07:05', '07:15']);
+  app.ev('EditorNoche.cerrar(false)');
+  assert.deepEqual(app.errors, []);
+});
+
+test('E · zoom del iPhone: bloqueado mientras el editor está abierto (viewport, gestos y doble toque) y libre al cerrarlo', async () => {
+  const app = await loadApp();
+  const vp = () => app.doc.querySelector('meta[name="viewport"]').getAttribute('content');
+  assert.equal(vp(), 'width=device-width, initial-scale=1.0');
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();`);
+  app.ev('abrirEditorNoche(1)');
+  assert.equal(vp(), 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+  const gesto = t => app.ev(`(()=>{ const e=new Event('${t}',{cancelable:true,bubbles:true}); document.dispatchEvent(e); return e.defaultPrevented; })()`);
+  assert.equal(gesto('gesturestart'), true); assert.equal(gesto('gesturechange'), true); assert.equal(gesto('dblclick'), true);
+  app.ev('EditorNoche.cerrar(false)');
+  assert.equal(vp(), 'width=device-width, initial-scale=1.0');
+  assert.equal(gesto('gesturestart'), false); assert.equal(gesto('dblclick'), false);
+  // abrir y cerrar varias veces no pierde el viewport original
+  app.ev('abrirEditorNoche(1)'); app.ev('abrirEditorNoche(1)'); app.ev('EditorNoche.cerrar(false)');
+  assert.equal(vp(), 'width=device-width, initial-scale=1.0');
+  // sin zoom por doble toque en la caja del editor
+  const css = [...app.doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  assert.match(css, /#ed,#ed button,#ed \.bt\{touch-action:manipulation\}/);
   assert.deepEqual(app.errors, []);
 });
 
