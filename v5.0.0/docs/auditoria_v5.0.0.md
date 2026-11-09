@@ -124,7 +124,7 @@ Lo que estos casos dejan ver del método, para decidir (detalle en la guía):
 - **v5.0.0 → v4.9.9.** Un paciente con un solo diario se sigue guardando como de la v4.9.9 y la v4.9.9 lo abre y lo guarda con normalidad. Uno con varios diarios se guarda como de la v5.0.0: la v4.9.9 lo muestra con el aviso de versión posterior y no lo sobrescribe (se perderían los demás diarios).
 - **Mismo navegador.** Las versiones comparten el almacenamiento del navegador. Los umbrales editados se guardan en una clave propia, que la v4.9.9 no usa.
 - **Archivos.** El CSV y el JSON de la v5.0.0 se leen en la v4.9.9 (ignora la etiqueta y la intervención). Cada archivo lleva un solo diario.
-- **Editor de la noche.** La v5.0.0 lleva los cambios de noviembre del editor de la v4.9.9: mover levantarse no mueve el despertar final, + y − del despertar final en el sentido de la hora, pasos cortos para levantarse y sin zoom en el iPhone. Están en el apartado 9.I de la auditoría de la v4.9.9. Las noches ya anotadas no cambian.
+- **Editor de la noche.** La v5.0.0 lleva los cambios de noviembre del editor de la v4.9.9: mover levantarse no mueve el despertar final, + y − del despertar final en el sentido de la hora, pasos cortos para levantarse y sin zoom en el iPhone. Están en el apartado 9.I de la auditoría de la v4.9.9 y en el apartado 5.12 del documento técnico. Las noches ya anotadas no cambian.
 
 ## 7. Incidencias encontradas y corregidas durante la auditoría
 
@@ -150,7 +150,7 @@ Lo que estos casos dejan ver del método, para decidir (detalle en la guía):
 - Sin cuestionarios (ISI): la respuesta y la remisión se valoran solo con el diario.
 - El pie de página en el margen de cada hoja necesita un navegador que admita los márgenes de página (Chrome y Edge). En Firefox y Safari se imprime el pie de siempre, que en las hojas apaisadas puede quedar a media hoja. Para el PDF del análisis con la comparación, mejor Chrome o Edge.
 - En el iPhone SE, la leyenda de las valoraciones de la rejilla del profesional ensancha la página unos 70 px. Viene de la v4.9.9 y no es de esta versión.
-- Las guías del paciente de la v4.9.9 siguen valiendo, porque su pantalla no cambia, salvo un detalle: dicen que la hora de levantarse va de 15 en 15 minutos (ver el apartado 6). El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
+- Las guías del paciente de la v4.9.9 siguen valiendo, porque su pantalla no cambia (están al día con el editor de noviembre). El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
 
 ## Referencias
 
