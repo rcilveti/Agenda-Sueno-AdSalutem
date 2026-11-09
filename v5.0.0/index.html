@@ -1003,6 +1003,8 @@ table.summary td.cmp-m,table.summary th.cmp-m,.cmp-m{text-align:left!important;f
 #ed button,#ed textarea{font-family:inherit;letter-spacing:normal;text-transform:none}
 /* ---------- editor horizontal ---------- */
 #ed{position:fixed;inset:0;z-index:50;background:rgba(14,30,44,.55)}
+/* v4.9.9 (noviembre): en el editor, sin zoom por doble toque (al tocar −/+ seguido, el iPhone ampliaba la pantalla) */
+#ed,#ed button,#ed .bt{touch-action:manipulation}
 #ed .ed-caja{position:relative;--zoom:#7a5cc0;--lat:#2f6f9e;--wk:#2f7a4d;--term:#5b6b80;
   position:absolute;left:0;top:0;width:100%;height:100%;background:var(--card);display:flex;flex-direction:column;container-type:size;
   padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));gap:5px;overflow:hidden}
@@ -3616,8 +3618,9 @@ function halfOf(el,clientX){const r=el.getBoundingClientRect();return (clientX-r
 
 
 // ===== v4.9.9: EDITOR DE LA NOCHE (única forma de anotar la noche) =====
-// La rejilla ya no se pinta a mano. Cada noche se anota en el editor: horas de acostarse y levantarse de 15 en 15 min;
-// latencia, despertares y tiempo final en la cama como duraciones aproximadas; acontecimientos con su tipo; valoración
+// La rejilla ya no se pinta a mano. Cada noche se anota en el editor: hora de acostarse de 15 en 15 min y despertar
+// final de 5 en 5 (botones de 15 en 15); latencia, despertares y tiempo en la cama tras el despertar final (levantarse)
+// como duraciones aproximadas; acontecimientos con su tipo; valoración
 // (obligatoria) y, si se quiere, tratamiento y observaciones. Se guarda la respuesta del editor (day.gd, a minuto) y,
 // a partir de ella, la rejilla pintada con la regla del registro guiado (para verla, imprimirla y para los índices que
 // trabajan por medias horas). Los diarios anteriores, pintados a mano, se abren en el editor desde su rejilla.
@@ -8918,6 +8921,7 @@ es:{
   despN:'Despertar {n}', unos:'unos {n} min', unosCama:'unos {n} min en la cama',
   'a.S':'Tardé en dormirme','a.F':'Despertar final','a.Wd':'Despertar {n}: duración', despertar:'despertar', ver:'Ver {c} {h}',
   'l.B':'↓ Acostarse · hacia las','l.R':'↑ Levantarse · hacia las','l.cama':'En la cama unas {d}',
+  'l.Rx':'Unos {d} después del despertar final · en la cama unas {t}','l.R0':'Al despertar · en la cama unas {t}',
   'l.S':'Tardaste en dormirte unos','l.Sx':'Basta una aproximación',
   'l.F':'Despertar final · hacia las','l.Fx':'Después, unos {d} en la cama antes de levantarte',
   'l.X0':'Acontecimientos','l.X0x':'Ninguno. Si pasó algo, pulsa «+ Añadir».',
@@ -8977,6 +8981,7 @@ ca:{
   despN:'Despertar {n}', unos:'uns {n} min', unosCama:'uns {n} min al llit',
   'a.S':'Vaig trigar a adormir-me','a.F':'Despertar final','a.Wd':'Despertar {n}: durada', despertar:'despertar', ver:'Veure {c} {h}',
   'l.B':'↓ Anar al llit · cap a les','l.R':'↑ Llevar-se · cap a les','l.cama':'Al llit unes {d}',
+  'l.Rx':'Uns {d} després del despertar final · al llit unes {t}','l.R0':'En despertar-te · al llit unes {t}',
   'l.S':'Vas trigar a adormir-te uns','l.Sx':'N’hi ha prou amb una aproximació',
   'l.F':'Despertar final · cap a les','l.Fx':'Després, uns {d} al llit abans de llevar-te',
   'l.X0':'Esdeveniments','l.X0x':'Cap. Si va passar alguna cosa, prem «+ Afegir».',
@@ -9084,20 +9089,25 @@ const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 // Duraciones en escalones humanos, como en el diario de consenso: de 5 en 5 minutos hasta media hora,
 // de 15 en 15 hasta una hora y de 30 en 30 después
 const ESC=(()=>{const a=[];for(let v=0;v<=30;v+=5)a.push(v);a.push(45,60);for(let v=90;v<=720;v+=30)a.push(v);return a;})();
-// despertar final → levantarse: 5, 10, 15, 20 y 30 minutos, y luego de 30 en 30
+// despertar final → levantarse: 5, 10, 15, 20 y 30 minutos, y luego de 30 en 30 (v4.9.9, noviembre: son los pasos
+// de la hora de levantarse, contados desde el despertar final)
 const ESC_F=(()=>{const a=[0,5,10,15,20];for(let v=30;v<=720;v+=30)a.push(v);return a;})();
 const escalon=(x,min,L)=>{ let best=null; (L||ESC).forEach(v=>{ if(v>=(min||0)&&(best==null||Math.abs(v-x)<Math.abs(best-x))) best=v; }); return best; };
 const hastaEscalon=(tope,min,L)=>{ let r=null; (L||ESC).forEach(v=>{ if(v>=(min||0)&&v<=tope) r=v; }); return r; };   // el mayor escalón que cabe
 const otroEscalon=(v,d,min,L)=>{ L=L||ESC; const i=L.indexOf(escalon(v,min,L)); return Math.max(min||0,L[Math.max(0,Math.min(L.length-1,i+d))]); };
 const r30=x=>Math.round(x/30)*30, c30=x=>Math.ceil(x/30)*30, f30=x=>Math.floor(x/30)*30;
-// Lleva cualquier noche al formato del editor: horas al paso de 15 min, duraciones en escalones y
-// despertares en su media hora, sin solaparse y dentro del sueño
+// Lleva cualquier noche al formato del editor: acostarse al paso de 15 min, despertar final de 5 en 5, duraciones
+// (latencia, despertares y levantarse tras el despertar final) en escalones y despertares en su media hora, sin
+// solaparse y dentro del sueño. v4.9.9 (noviembre): el despertar final es una hora y levantarse se cuenta desde él
+// (antes era al revés: al mover levantarse se arrastraba el despertar final). Las noches ya anotadas no cambian.
 function normalizar(m,p){
-  const rp=x=>Math.round(x/p)*p;
-  const B=Math.max(0,rp(m.B)), R=Math.min(RMAX,Math.max(B+2*p,rp(m.R)));
-  let lat=escalon(m.S-m.B,0), tfa=escalon(m.R-m.F,0,ESC_F);
-  while(B+lat>R-tfa-15&&(lat||tfa)){ if(tfa>=lat) tfa=otroEscalon(tfa,-1,0,ESC_F); else lat=otroEscalon(lat,-1,0); }
-  const S=B+lat, F=R-tfa, W=[]; let fin=S+5;
+  const rp=x=>Math.round(x/p)*p, r5=x=>Math.round(x/5)*5;
+  const B=Math.max(0,rp(m.B));
+  let tfa=escalon(Math.max(0,m.R-m.F),0,ESC_F), F=Math.max(B+15,r5(m.F));
+  if(F+tfa>RMAX){ F=Math.min(F,RMAX); tfa=hastaEscalon(RMAX-F,0,ESC_F)||0; }
+  let lat=escalon(m.S-m.B,0);
+  while(B+lat>F-15&&lat) lat=otroEscalon(lat,-1,0);
+  const S=B+lat, R=F+tfa, W=[]; let fin=S+5;
   m.W.slice().sort((x,y)=>x.a-y.a).forEach(w=>{
     let d=escalon(w.b-w.a,5), a=Math.max(c30(fin),r30(w.a));
     if(a+d>F-5) a=Math.max(c30(fin),f30(F-5-d));
@@ -9157,7 +9167,7 @@ function abrir(i){
   $('edReloj').hidden=!(E.nueva||!relojVisto);
   $('edTitulo').textContent=T('nocheDel',{t:tituloNoche(fechaDe(n.fecha)).l});
   $('edCeja').innerHTML=E.nueva?T('ceja.nueva'):T('ceja.normal');
-  $('ed').hidden=false; document.documentElement.style.overflow='hidden';
+  $('ed').hidden=false; document.documentElement.style.overflow='hidden'; bloquearZoom(true);
   try{ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{}); }catch(e){}
   escribiendo=false; clearTimeout(tEscribe);
   orientar(); irPaso(0,true);
@@ -9330,12 +9340,28 @@ function cerrar(guardar){
       qs:E.q.qs,qd:E.q.qd,qe:E.q.qe,trat:E.trat.trim(),obs:E.obs.trim()};
     if(!P().guardar(E.i,datos)){ irPaso(0,true); aviso(T('noGuardar')); return false; }
     var guardada=E.i; }
-  $('ed').hidden=true; document.documentElement.style.overflow=''; E=null; arrastre=null; zArr=null; escribiendo=false; clearTimeout(tEscribe);
+  $('ed').hidden=true; document.documentElement.style.overflow=''; bloquearZoom(false); E=null; arrastre=null; zArr=null; escribiendo=false; clearTimeout(tEscribe);
   try{ if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
   if(guardar&&P().despues) P().despues(guardada);
   return true;
 }
-const leerPaso=()=>15;   // v4.9.9: horas de acostarse y levantarse, de 15 en 15 min
+const leerPaso=()=>15;   // v4.9.9: hora de acostarse de 15 en 15 min (y −/+ del despertar final)
+// v4.9.9 (noviembre): mientras el editor está abierto, el móvil no hace zoom (el iPhone lo hacía al tocar −/+ seguido o
+// con dos dedos sin querer). Se vuelve a permitir al cerrarlo. En la caja: sin zoom por doble toque (touch-action en el CSS)
+let zoomVista=null;
+const sinGesto=e=>{ if(E) e.preventDefault(); };
+function bloquearZoom(si){
+  const vp=document.querySelector('meta[name="viewport"]');
+  if(si){
+    if(vp&&zoomVista==null){ zoomVista=vp.getAttribute('content')||''; vp.setAttribute('content','width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); }
+    ['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,sinGesto,{passive:false}));
+    document.addEventListener('dblclick',sinGesto,{passive:false});
+  } else {
+    if(vp&&zoomVista!=null){ vp.setAttribute('content',zoomVista); zoomVista=null; }
+    ['gesturestart','gesturechange'].forEach(t=>document.removeEventListener(t,sinGesto));
+    document.removeEventListener('dblclick',sinGesto);
+  }
+}
 let relojVisto=false;
 function cerrarAvisoReloj(){ const a=$('edReloj'); if(a&&!a.hidden){ a.hidden=true; relojVisto=true; } }
 
@@ -9391,17 +9417,17 @@ function construirEscala(){
   $('edLineas').innerHTML=l; $('edHoras').innerHTML=h;
 }
 
-// límites de cada valor según sus vecinos (el orden de la noche no se puede cruzar). Acostarse y levantarse son
-// horas (de 15 en 15 min); dormirse y el final son duraciones contadas desde ellas, y cada despertar
-// tiene su media hora («hacia las…») y su duración.
+// límites de cada valor según sus vecinos (el orden de la noche no se puede cruzar). Acostarse (de 15 en 15 min) y el
+// despertar final (de 5 en 5) son horas; dormirse y levantarse son duraciones contadas desde ellas (la latencia y el
+// rato en la cama tras el despertar final), y cada despertar tiene su media hora («hacia las…») y su duración.
 function limites(){ const m=E.m, W=m.W; return {limS:(W.length?W[0].a:m.F)-5, limF:(W.length?W[W.length-1].b:m.S)+5}; }
 function fijar(k,v,w,borde){
   const m=E.m, p=E.paso, W=m.W, rp=x=>Math.round(x/p)*p, cl=(x,a,b)=>Math.max(a,Math.min(b,x));
   const {limS,limF}=limites();
   if(k==='B'){ const lat=m.S-m.B; let b=cl(rp(v),0,RMAX); if(b+lat>limS) b=Math.floor((limS-lat)/p)*p; if(b<0) return; m.B=b; m.S=b+lat; }
-  else if(k==='R'){ const tfa=m.R-m.F; let r=cl(rp(v),0,RMAX); if(r-tfa<limF) r=Math.ceil((limF+tfa)/p)*p; if(r>RMAX) return; m.R=r; m.F=r-tfa; }
+  else if(k==='R'){ let tfa=escalon(Math.max(0,v-m.F),0,ESC_F); if(m.F+tfa>RMAX) tfa=hastaEscalon(RMAX-m.F,0,ESC_F); if(tfa==null) return; m.R=m.F+tfa; }   // el despertar final no se mueve
   else if(k==='S'){ let lat=escalon(Math.max(0,v-m.B),0); if(m.B+lat>limS) lat=hastaEscalon(limS-m.B,0); if(lat==null) return; m.S=m.B+lat; }
-  else if(k==='F'){ let tfa=escalon(Math.max(0,m.R-v),0,ESC_F); if(m.R-tfa<limF) tfa=hastaEscalon(m.R-limF,0,ESC_F); if(tfa==null) return; m.F=m.R-tfa; }
+  else if(k==='F'){ const tfa=m.R-m.F; let f=Math.max(Math.round(v/5)*5,Math.ceil(limF/5)*5); if(f+tfa>RMAX) f=Math.floor((RMAX-tfa)/5)*5; if(f<limF) return; m.F=f; m.R=f+tfa; }   // levantarse va con él
   else if(k==='X'){ const x=E.ev[w]; if(!x) return; x.a=cl(r30(v-15),0,DIA-30); }
   else if(k==='W'){
     const x=W[w]; if(!x) return; const d=x.b-x.a;
@@ -9411,13 +9437,14 @@ function fijar(k,v,w,borde){
   }
 }
 function valorDe(k,w,borde){ const m=E.m; if(k==='X'){const x=E.ev[w];return x?x.a+15:0;} if(k==='W'){const x=m.W[w];if(!x)return 0;return borde==='b'?x.b:x.a;} return m[k]; }
-// −/+ y teclado: horas al paso; duraciones al escalón siguiente o anterior; despertar, de media en media hora
+// −/+ y teclado: horas al paso (+ = más tarde, también el despertar final); duraciones al escalón siguiente o anterior
+// (levantarse: 0, 5, 10, 15, 20, 30 min… después del despertar final); despertar, de media en media hora
 function pasoDe(k,w,borde,d){
   const m=E.m;
   if(k==='B') fijar('B',m.B+d*E.paso);
-  else if(k==='R') fijar('R',m.R+d*E.paso);
+  else if(k==='R') fijar('R',m.F+otroEscalon(m.R-m.F,d,0,ESC_F));
   else if(k==='S') fijar('S',m.B+otroEscalon(m.S-m.B,d,0));
-  else if(k==='F') fijar('F',m.R-otroEscalon(m.R-m.F,d,0,ESC_F));
+  else if(k==='F') fijar('F',m.F+d*E.paso);
   else if(k==='X'){ const x=E.ev[w]; if(!x) return; fijar('X',x.a+15+d*30,w); }
   else { const x=m.W[w]; if(!x) return; if(borde==='b') fijar('W',x.a+otroEscalon(x.b-x.a,d,5),w,'b'); else fijar('W',x.a+d*30,w,'m'); }
   verValor(valorDe(k,w,borde));
@@ -9513,9 +9540,12 @@ function render(){
   if(!E)return; const m=E.m, s=E.sel;
   $('edCats').innerHTML=CATS.map(c=>`<button type="button" class="cat${s.k===c.k?' on':''}" data-cat="${c.k}">${'BSFR'.includes(c.k)?`<i class="ic" style="background:${c.c}" aria-hidden="true">${c.ic}</i>`:`<i style="background:${c.c}"></i>`}${c.corto?`<span class="l">${catNom(c)}</span><span class="c">${catCorto(c)}</span>`:catNom(c)}</button>`).join('');
   renderBanda();
-  const hora=s.k==='B'||s.k==='R', horaW=(s.k==='W'&&s.borde==='m')||s.k==='X';
-  $('edMenos').textContent=hora?'−'+E.paso+'′':horaW?'−30′':'−'; $('edMas').textContent=hora?'+'+E.paso+'′':horaW?'+30′':'+';
-  $('edMenos').setAttribute('aria-label',hora||horaW?T('antes'):T('menos')); $('edMas').setAttribute('aria-label',hora||horaW?T('despues'):T('mas'));
+  // v4.9.9 (noviembre): el despertar final es una hora (±15′); levantarse muestra el escalón siguiente y el anterior
+  const hora=s.k==='B'||s.k==='F', horaW=(s.k==='W'&&s.borde==='m')||s.k==='X', lev=s.k==='R';
+  const tf=m.R-m.F, bajaR=tf-otroEscalon(tf,-1,0,ESC_F), subeR=otroEscalon(tf,1,0,ESC_F)-tf;
+  $('edMenos').textContent=hora?'−'+E.paso+'′':horaW?'−30′':lev?(bajaR?'−'+bajaR+'′':'−'):'−';
+  $('edMas').textContent=hora?'+'+E.paso+'′':horaW?'+30′':lev?(subeR?'+'+subeR+'′':'+'):'+';
+  $('edMenos').setAttribute('aria-label',hora||horaW||lev?T('antes'):T('menos')); $('edMas').setAttribute('aria-label',hora||horaW||lev?T('despues'):T('mas'));
   renderZoom(); construirEscala();
   // barra de la noche (solo lo que cae dentro del horario visible)
   const tramo=(cls,a,b,extra)=>{ const A=Math.max(a,E.v0), B=Math.min(b,E.v1); return B>A?`<div class="${cls}" ${extra||''} style="left:${pct(A)};width:${len(B-A)}"></div>`:''; };
@@ -9551,7 +9581,7 @@ function render(){
   if(s.k==='B'){q=T('l.B');lh=reloj(m.B);ex=T('l.cama',{d:dur(x.tib)});}
   else if(s.k==='S'){q=T('l.S');lh=dur(x.sol);ex=T('l.Sx');}
   else if(s.k==='F'){q=T('l.F');lh=reloj(m.F);ex=T('l.Fx',{d:dur(x.fin)});}
-  else if(s.k==='R'){q=T('l.R');lh=reloj(m.R);ex=T('l.cama',{d:dur(x.tib)});}
+  else if(s.k==='R'){q=T('l.R');lh=reloj(m.R);ex=m.R>m.F?T('l.Rx',{d:dur(m.R-m.F),t:dur(x.tib)}):T('l.R0',{t:dur(x.tib)});}
   else if(s.k==='X'){ const y=E.ev[s.w];
     if(!y){q=T('l.X0');lh='—';ex=T('l.X0x');}
     else{ q=T('l.X',{nom:evNom(y.q)}); lh=reloj(y.a); ex=T('l.Xx',{n:s.w+1}); } }
@@ -9644,7 +9674,7 @@ $('edPista').addEventListener('keydown',e=>{
   const el=e.target.closest('[data-h]'); if(!el||!E)return;
   const d=e.key==='ArrowRight'||e.key==='ArrowUp'?1:e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:0; if(!d)return;
   e.preventDefault(); const k=el.dataset.h, w=+(el.dataset.w||0), b=el.dataset.b||'a'; E.sel={k,w,borde:b};
-  pasoDe(k,w,b,k==='F'?-d:d); render();   // el final: a la derecha, menos rato en la cama
+  pasoDe(k,w,b,d); render();   // v4.9.9 (noviembre): a la derecha, más tarde (también el despertar final)
   const f=k==='X'?document.querySelector(`.evento[data-w="${w}"]`):document.querySelector(`.bola[data-h="${k}"]${k==='W'?`[data-w="${w}"][data-b="${b}"]`:''}`); if(f)f.focus({preventScroll:true});
 });
 function paso(d){ const s=E.sel; if((s.k==='W'&&!E.m.W[s.w])||(s.k==='X'&&!E.ev[s.w]))return; cerrarAvisoReloj(); pasoDe(s.k,s.w,s.borde,d); render(); }
