@@ -1,4 +1,4 @@
-/* Agenda de Sueño — service worker (v4.9.9)
+/* Agenda de Sueño — service worker (v5.0.0)
  * Hace que la aplicación funcione sin conexión una vez abierta por primera vez.
  *  - La página (navegación): primero la red, y si no hay conexión, la copia guardada.
  *    Así las actualizaciones llegan en cuanto hay red y sin red la app sigue abriéndose.
@@ -7,12 +7,12 @@
  * Los datos del diario NO pasan por aquí: viven en el almacenamiento del navegador
  * (localStorage) y nunca se envían a ningún servidor.
  * Debe publicarse en la MISMA carpeta que la página (p. ej. junto a index.html). Cada carpeta del sitio con
- * su propia versión (la raíz, /v4.9.6/…) tiene su service worker y su copia, sin pisarse entre sí.
+ * su propia versión (la raíz, /v4.9.9/…) tiene su service worker y su copia, sin pisarse entre sí.
  */
 'use strict';
-const VERSION = '4.9.9';
+const VERSION = '5.0.0';
 // El nombre de la copia lleva la carpeta del service worker: así pueden convivir versiones publicadas en
-// carpetas distintas del mismo sitio (la raíz y, por ejemplo, /v4.9.6/) sin borrarse la copia sin conexión.
+// carpetas distintas del mismo sitio (la raíz y, por ejemplo, /v4.9.9/) sin borrarse la copia sin conexión.
 const SCOPE = (self.registration && self.registration.scope) || self.location.href.replace(/[^/]*$/, '');
 const PREFIJO = 'agenda-sueno-';
 const CACHE = PREFIJO + VERSION + '@' + SCOPE;

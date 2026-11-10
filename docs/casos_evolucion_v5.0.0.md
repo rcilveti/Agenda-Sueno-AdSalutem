@@ -1,6 +1,6 @@
 # Casos para estudiar la evolución entre diarios (v5.0.0)
 
-Versión de pruebas 5.0.0 · noviembre de 2026 · datos ficticios
+Versión 5.0.0 · noviembre de 2026 · datos ficticios
 
 Catorce casos de ejemplo («Evolución 1» a «Evolución 14» en la lista de pacientes) para estudiar cómo la aplicación compara varios diarios del mismo paciente. Cada uno parte de un caso de ejemplo de la v4.9.9: **su diario de 21 noches es el diario basal, tal cual**, y los diarios siguientes se han obtenido transformando esas mismas noches de forma controlada (latencia, despertares, ventana de sueño, calidades, noches sin anotar, noches anotadas en la rejilla). Así se sabe qué cambia y cuánto, y se puede comprobar qué concluye la aplicación.
 

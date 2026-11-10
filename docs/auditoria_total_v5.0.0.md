@@ -1,6 +1,6 @@
 # Auditoría total de la Agenda de Sueño v5.0.0 (pruebas)
 
-10 de noviembre de 2026 · modo piloto, solo datos ficticios · se audita `v5.0.0/index.html` tal como está publicado (con el editor de noviembre)
+10 de noviembre de 2026 · modo piloto, solo datos ficticios · se auditó la v5.0.0 tal como estaba publicada en `v5.0.0/` (con el editor de noviembre); tras las correcciones del apartado 8, esa versión pasó a ser la principal y ocupa la raíz del sitio
 
 Esta auditoría no cambia la aplicación: solo comprueba y describe. Complementa la auditoría de la versión (`auditoria_v5.0.0.md`), que explica qué hace la v5.0.0.
 
@@ -18,7 +18,7 @@ La v5.0.0 calcula bien y es estable en el uso normal de una sola ventana. No est
 
 | Área | Comprobación | Resultado |
 |---|---|---|
-| Pruebas automáticas | Las 127 pruebas de `v5.0.0/tests/` (17 min) | 127 superadas |
+| Pruebas automáticas | Las 127 pruebas de la v5.0.0 (17 min) | 127 superadas |
 | Estadística | Recalculada en Python (SciPy) para los 17 casos con varios diarios: 26 comparaciones, 260 filas (media, DE, diferencia, IC 95 %, NAP, g) | Medias, DE, diferencias, NAP y g idénticas. IC: ver B1 |
 | Fines de semana y remisión | Recalculados con el calendario para los 43 diarios de esos casos | Idénticos (salvo M2) |
 | Veredictos falsos | Simulación: dos diarios de 21 noches sin cambio real, 2.000 repeticiones por caso y dos modelos | Apartado 5 |
@@ -124,7 +124,7 @@ No son fallos, pero conviene conocerlos antes de usar la comparación en la cons
 
 ## 8. Correcciones aplicadas (10 de noviembre de 2026)
 
-Se han aplicado en el orden del apartado 7, sin cambiar el número de versión. Cada corrección tiene su prueba automática en `v5.0.0/tests/v500_auditoria.test.js` (10 pruebas), y las sondas de esta auditoría se han repetido sobre la versión corregida. La v4.9.9 no cambia.
+Se han aplicado en el orden del apartado 7, sin cambiar el número de versión. Cada corrección tiene su prueba automática en `tests/v500_auditoria.test.js` (10 pruebas), y las sondas de esta auditoría se han repetido sobre la versión corregida. La v4.9.9 no cambia.
 
 | N.º | Estado | Qué hace ahora |
 |---|---|---|
@@ -134,7 +134,7 @@ Se han aplicado en el orden del apartado 7, sin cambiar el número de versión. 
 | M2 | Corregido | Sin eficiencia, latencia o WASO, la remisión por diario es «—» (no valorable). |
 | M3 | Corregido | En el móvil del paciente, un diario anterior guardado se muestra en un aviso («Tienes un diario anterior guardado: empezó el… y tiene N noches anotadas»), con un botón para enviarlo. Queda anotado cuándo se envió. |
 | M4 | Corregido | La ventana «Nuevo diario» se cierra con Escape, el tabulador no sale de ella y el foco vuelve al botón. Los 16 campos de umbrales tienen nombre. El texto secundario pasa a #5c6b7f (contraste de 4,5:1 o más). Las cajas con desplazamiento se recorren con el teclado. |
-| M5 | Sin cambio de programa | Es una decisión de despliegue: ver la nota de abajo. |
+| M5 | Resuelto | El 10 de noviembre de 2026 la v5.0.0 pasó a ser la versión principal y ocupa la raíz del sitio: todos los pacientes pasan a ella a la vez. La v4.9.9 queda en `/v4.9.9/`. |
 | B1 | Corregido | El cuantil de la t es exacto con cualquier número de grados de libertad (diferencia con SciPy: 0,000 % en las 246 filas). |
 | B2 | Corregido | Las fechas imposibles se descartan y los registros de una copia se sanean al restaurar y al abrir (estados, identificadores repetidos, textos). |
 | B3 | Corregido | Cada diario tiene su color con hasta 12 diarios. |
@@ -146,11 +146,11 @@ Se han aplicado en el orden del apartado 7, sin cambiar el número de versión. 
 
 **B4, pendiente.** Para añadir la comprobación de integridad hay que calcular la huella de los tres archivos tal como los sirve cdnjs, y desde este entorno no se puede llegar a cdnjs. Una huella equivocada dejaría la aplicación sin Excel ni Word, así que no se ha puesto a ciegas.
 
-**M5, por decidir.** Mientras las dos versiones compartan la memoria del navegador, un paciente con la v4.9.9 instalada no puede anotar en ella después de recibir un segundo diario creado en la v5.0.0. Opciones: pasar a todos los pacientes a la v5.0.0 a la vez, o no crear segundos diarios a pacientes que sigan en la v4.9.9.
+**M5, resuelto.** Se eligió pasar a todos los pacientes a la vez: desde el 10 de noviembre de 2026, la v5.0.0 es la versión principal y ocupa la dirección de siempre, así que las aplicaciones instaladas se actualizan solas. Los diarios de la v4.9.9 se abren enteros y, mientras un paciente tenga un solo diario, su registro se sigue guardando como de la v4.9.9 y puede volver a abrirse en `/v4.9.9/`. Una prueba automática recorre ese camino de ida y vuelta.
 
 **Lo que queda de accesibilidad, heredado de versiones anteriores y fuera de la v5.0.0:** las celdas de comentario de la rejilla no tienen nombre accesible (21) y la marca de festivo es blanca sobre naranja (2,5:1).
 
-**Comprobación tras corregir.** Las 137 pruebas de `v5.0.0/tests/` pasan (127 anteriores y 10 nuevas). Sondas de la auditoría repetidas: dos ventanas, copia antigua, copia mal formada, fecha solapada, remisión sin datos, 120 operaciones aleatorias y las 260 filas de estadística, sin fallos. En Chromium: axe-core sin incidencias en la ventana de diario ni en los umbrales, y sin errores de JavaScript en los cuatro móviles simulados.
+**Comprobación tras corregir.** Las 137 pruebas de la v5.0.0 pasan (127 anteriores y 10 nuevas). Sondas de la auditoría repetidas: dos ventanas, copia antigua, copia mal formada, fecha solapada, remisión sin datos, 120 operaciones aleatorias y las 260 filas de estadística, sin fallos. En Chromium: axe-core sin incidencias en la ventana de diario ni en los umbrales, y sin errores de JavaScript en los cuatro móviles simulados.
 
 ## Referencias
 

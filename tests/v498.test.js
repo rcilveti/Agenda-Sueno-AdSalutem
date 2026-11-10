@@ -26,7 +26,7 @@ const celda = (app, d) => app.evj(`(()=>{ const tr=document.querySelector('#grid
 test('MCTQ: los casos de ejemplo regenerados con el editor (v4.9.9) conservan los tipos de noche y quedan cerca del análisis de la v4.9.7', { skip: !V497 }, async () => {
   const a = await loadApp(); await loginDoctor(a);
   const b = await loadApp({ file: V497 }); await loginDoctor(b);
-  const ids = a.evj('DEMO_CASES.index.map(c=>c.id)');
+  const ids = a.evj('DEMO_CASES.index.map(c=>c.id)').filter(id=>!/^caso-(seg|evo)-/.test(id));   // v5.0.0: los 17 de la v4.9.9
   assert.equal(ids.length, 17);
   for (const id of ids) {
     await a.ev(`selectPatient('${id}')`); await b.ev(`selectPatient('${id}')`);

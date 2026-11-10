@@ -10,7 +10,8 @@ const fs = require('fs');
 const path = require('path');
 const { loadApp } = require('./harness');
 
-const RAIZ_499 = path.join(__dirname, '..', '..', 'index.html');   // la v4.9.9 (versión principal)
+// la v4.9.9: en su carpeta desde que la v5.0.0 pasó a la raíz; antes, en la raíz
+const RAIZ_499 = [path.join(__dirname, '..', 'v4.9.9', 'index.html'), path.join(__dirname, '..', '..', 'index.html')].find(f => fs.existsSync(f)) || '';
 async function loginDoctor(app) {
   app.doc.getElementById('luser').value = 'medico';
   app.doc.getElementById('lpass').value = 'clinica';
@@ -35,7 +36,7 @@ async function pacienteConDiario(app, id, inicio, opts = {}) {
 test('v5.0.0: versión, casos de ejemplo con varios diarios y selector de diario en la ficha', async () => {
   const app = await loadApp();
   assert.equal(app.ev('APP_VERSION'), '5.0.0');
-  assert.match(app.doc.getElementById('loginVersion').textContent, /5\.0\.0 \(pruebas\)/);
+  assert.match(app.doc.getElementById('loginVersion').textContent, /^Versión 5\.0\.0 · /);   // versión principal: sin la etiqueta «(pruebas)»
   await loginDoctor(app);
   const idx = app.evj('DEMO_CASES.index.map(x=>x.id)');
   assert.equal(idx.length, 34);
@@ -474,7 +475,7 @@ test('Excel del paciente: hoja «Comparación»; Word del análisis: la comparac
 });
 
 // ---------- casos para estudiar la evolución (marca 19): cada uno da el resultado documentado en
-// v5.0.0/docs/casos_evolucion_v5.0.0.md ----------
+// docs/casos_evolucion_v5.0.0.md ----------
 test('casos de evolución: aptitud, sistema, selección por defecto, conclusiones, mantenimiento, remisión y valoraciones clave', async () => {
   const app = await loadApp();
   await loginDoctor(app);
@@ -517,4 +518,44 @@ test('casos de evolución: aptitud, sistema, selección por defecto, conclusione
   r = await caso('caso-evo-14-basal-tendencia');
   assert.deepEqual(G(r), ['2-1:respuesta']); assert.equal(r.p[0].v.sol, 'mej-nc'); assert.equal(r.p[0].v.se, 'mej-nc');
   assert.deepEqual(app.errors, []);
+});
+
+// la v5.0.0 pasa a ser la versión principal (noviembre de 2026) ----------
+
+test('un diario anotado en la v4.9.9 se abre entero en la v5.0.0 de la raíz, y mientras tenga un solo diario se puede volver a la v4.9.9', { skip: !RAIZ_499 }, async () => {
+  // 1 · el profesional anota un diario completo en la v4.9.9 (la carpeta /v4.9.9/)
+  const v4 = await loadApp({ file: RAIZ_499, quiet: true });
+  assert.equal(v4.ev('APP_VERSION'), '4.9.9');
+  await loginDoctor(v4);
+  await v4.ev(`(async()=>{ patient='pac-paso'; await upsertIndex(patient,'Paso de versión');
+    await saveRec(patient,{patient,name:'Paso de versión',start:'2026-02-02',birth:'1979-04-04',sex:'F',cat:'demo',state:Array.from({length:DAYS},blankDay)});
+    await populatePatients(); await selectPatient(patient); })()`);
+  v4.ev(`(()=>{ for(let d=0;d<DAYS;d++) AgendaPuente.guardar(d,{gd:{b:'23:30',s:35+(d%4)*5,w:[{a:180,d:20}],f:'06:45',r:'07:00'},ev:[],sie:null,qs:3,qd:3,qe:4,trat:'melatonina',obs:'nota '+d}); })()`);
+  await v4.sleep(80); v4.ev('flushAutoSave()'); await v4.sleep(250);
+  assert.equal(JSON.parse(v4.storage()['agendasueno3:pac-paso']).ver, '4.9.9');
+
+  // 2 · el mismo navegador abre la raíz, que ya es la v5.0.0: es lo que ocurre cuando la app instalada se actualiza
+  const app = await loadApp({ storage: v4.storage() });
+  assert.equal(app.ev('APP_VERSION'), '5.0.0');
+  await loginDoctor(app);
+  await app.ev(`selectPatient('pac-paso')`);
+  assert.equal(app.ev(`$('start').value`), '2026-02-02');
+  assert.equal(app.ev('_diasConDatos(state)'), 21);
+  assert.equal(app.ev(`(state.find(d=>d.trat)||{}).trat`), 'melatonina');
+  assert.ok(!app.doc.getElementById('avisoVersion') || !/posterior a esta/.test(app.doc.getElementById('avisoVersion').textContent));
+  const p = app.evj(`(()=>{ const p=_perfilesPaciente()[0]; return {noches:p.noches,apto:p.apto,sistema:p.sistema,waso:Math.round(p.media('waso'))}; })()`);
+  assert.deepEqual(p, { noches: 21, apto: true, sistema: 'editor', waso: 0 });
+
+  // 3 · con un solo diario, la v5.0.0 lo sigue guardando como de la v4.9.9: la vuelta atrás no se cierra
+  app.doc.getElementById('saveBtn').click(); await app.sleep(400);
+  assert.equal(JSON.parse(app.storage()['agendasueno3:pac-paso']).ver, '4.9.9');
+  const v4b = await loadApp({ file: RAIZ_499, storage: app.storage(), quiet: true });
+  await loginDoctor(v4b);
+  await v4b.ev(`selectPatient('pac-paso')`);
+  assert.equal(v4b.ev('_diasConDatos(state)'), 21);
+
+  // 4 · al crear el segundo diario pasa a ser de la v5.0.0 y la v4.9.9 ya no lo sobrescribe
+  await app.ev(`crearDiarioNuevo({inicio:'2026-04-20',etiqueta:'Post',intervencion:'TCC-I'})`);
+  assert.equal(JSON.parse(app.storage()['agendasueno3:pac-paso']).ver, '5.0.0');
+  assert.deepEqual(app.errors, []); assert.deepEqual(v4.errors, []);
 });

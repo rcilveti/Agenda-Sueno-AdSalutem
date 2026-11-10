@@ -1,6 +1,6 @@
 # Auditoría de la Agenda de Sueño v5.0.0 (pruebas)
 
-Noviembre de 2026 · modo piloto, solo datos ficticios · versión de pruebas en `v5.0.0/` (la versión en uso sigue siendo la v4.9.9, en la raíz)
+Noviembre de 2026 · modo piloto, solo datos ficticios · versión principal desde el 10 de noviembre de 2026, en la raíz del sitio (la v4.9.9 queda en `v4.9.9/`)
 
 ## 1. Qué es la v5.0.0
 
@@ -16,7 +16,7 @@ La v5.0.0 parte de la v4.9.9 y permite seguir a un paciente con **varios diarios
 
 | Tema | Decisión |
 |---|---|
-| Dónde se publica | En `/v5.0.0/`, como versión de pruebas. La raíz sigue con la v4.9.9 |
+| Dónde se publica | Al prepararla, en `/v5.0.0/` como versión de pruebas. Tras la auditoría total y sus correcciones, el 10 de noviembre de 2026 pasó a la raíz del sitio como versión principal, y la v4.9.9 a `/v4.9.9/` |
 | Fin de semana registrado | Las dos noches anotadas: la del viernes al sábado y la del sábado al domingo |
 | Sistema de registro de un diario | **Editor** si al menos el 75 % de sus noches se anotó en el editor de la noche; **rejilla** si al menos el 75 % se anotó en la rejilla; **mixto** en otro caso |
 | Quién crea los diarios | El profesional, desde la ficha («＋ Nuevo diario»). Al crearlo puede abrir el acceso del paciente para ese periodo |
@@ -36,7 +36,7 @@ El CSV añade `diario_etiqueta` y `diario_intervencion` en los datos del pacient
 
 | Comprobación | Alcance |
 |---|---|
-| Pruebas automáticas (jsdom) | **137 pruebas, 137 superadas**: las 115 de la v4.9.9, copiadas en `v5.0.0/tests/` y adaptadas, 12 de la v5.0.0 (`v5.0.0/tests/v500.test.js`), una de ellas con el resultado de los 14 casos de evolución, y 10 de las correcciones de la auditoría total (`v5.0.0/tests/v500_auditoria.test.js`). Las de la raíz no cambian (la raíz no se ha tocado) |
+| Pruebas automáticas (jsdom) | **137 pruebas, 137 superadas**: las 115 de la v4.9.9, copiadas en `tests/` y adaptadas, 13 de la v5.0.0 (`tests/v500.test.js`), una de ellas con el resultado de los 14 casos de evolución, y 10 de las correcciones de la auditoría total (`tests/v500_auditoria.test.js`). Con la v5.0.0 en la raíz son 138, más las 115 de `v4.9.9/tests/`. Las de la raíz no cambian (la raíz no se ha tocado) |
 | Navegador real (Playwright, Chromium) | Escritorio a 1300 px, iPhone 13, iPhone SE y tableta (820 px): ficha con el selector de diario, ventana «Nuevo diario», apartado de comparación (resumen, evolución por métrica, gráficos y detalle) y umbrales. Sin errores de JavaScript ni desbordamiento lateral en el móvil |
 | Estadística a mano | Las medias, diferencias e intervalos de confianza del caso de insomnio se recalcularon en Python (SciPy) con los datos de cada noche (apartado 4) |
 | Impresión y exportaciones | PDF del análisis generado con Chromium (hojas apaisadas de la comparación entre las verticales, posición del pie en cada hoja), Word del análisis abierto con LibreOffice (secciones apaisadas), Excel del paciente (hoja «Comparación» con su resumen), CSV y JSON de ida y vuelta |
@@ -150,7 +150,8 @@ Lo que estos casos dejan ver del método, para decidir (detalle en la guía):
 - Sin cuestionarios (ISI): la respuesta y la remisión se valoran solo con el diario.
 - El pie de página en el margen de cada hoja necesita un navegador que admita los márgenes de página (Chrome y Edge). En Firefox y Safari se imprime el pie de siempre, que en las hojas apaisadas puede quedar a media hoja. Para el PDF del análisis con la comparación, mejor Chrome o Edge.
 - En el iPhone SE, la leyenda de las valoraciones de la rejilla del profesional ensancha la página unos 70 px. Viene de la v4.9.9 y no es de esta versión.
-- Las guías del paciente de la v4.9.9 siguen valiendo, porque su pantalla no cambia (están al día con el editor de noviembre). El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
+- Las guías del paciente de la v5.0.0 tienen el mismo contenido que las de la v4.9.9, porque la pantalla del paciente no cambia. El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
+- **Paso a versión principal (10 de noviembre de 2026).** La v5.0.0 ocupa la dirección de siempre: las aplicaciones instaladas se ponen al día solas la próxima vez que se abren con conexión, porque el service worker de la raíz cambia de número. Los diarios anotados con la v4.9.9 se abren enteros, y mientras un paciente tenga un solo diario su registro se sigue guardando como de la v4.9.9, así que puede volver a abrirse en `/v4.9.9/`. En cuanto tiene un segundo diario pasa a ser de la v5.0.0 y la v4.9.9 ya no lo sobrescribe. Hay una prueba automática de todo este recorrido.
 
 ## Referencias
 

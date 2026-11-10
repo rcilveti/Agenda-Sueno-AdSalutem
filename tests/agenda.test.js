@@ -33,13 +33,15 @@ async function pasarPrimerAcceso(app, modo = 'privado') {
   return false;
 }
 
-test('arranque sin errores, versión 4.9.9 y modo piloto', async () => {
+test('arranque sin errores, versión 5.0.0 y modo piloto', async () => {
   const app = await loadApp();
   assert.deepEqual(app.errors, []);
-  assert.equal(app.ev('APP_VERSION'), '4.9.9');
+  assert.equal(app.ev('APP_VERSION'), '5.0.0');
   assert.equal(app.ev('DATA_SCHEMA'), 5);   // v4.9.7: factores, respuestas guiadas, ventana de sueño e hitos (4 es de la v4.9.6)
   assert.equal(app.ev('MODO_PILOTO'), true);
-  assert.match(app.doc.getElementById('loginVersion').textContent, /4\.9\.9/);
+  // desde noviembre de 2026 la v5.0.0 es la versión principal: ya no lleva la etiqueta «(pruebas)»
+  assert.match(app.doc.getElementById('loginVersion').textContent, /^Versión 5\.0\.0 · /);
+  assert.doesNotMatch(app.doc.getElementById('loginVersion').textContent, /pruebas/);
 });
 
 test('escHtml escapa los caracteres peligrosos', async () => {
@@ -47,11 +49,11 @@ test('escHtml escapa los caracteres peligrosos', async () => {
   assert.equal(app.ev(`escHtml('<a href="x">&\\'')`), '&lt;a href=&quot;x&quot;&gt;&amp;&#39;');
 });
 
-test('ida y vuelta CSV de los 17 casos de demostración (incluidas marcas de tiempo, escala de calidad, factores y respuestas guiadas)', async () => {
+test('ida y vuelta CSV de los 34 casos de demostración (v5.0.0: con los de varios diarios y los de evolución) (incluidas marcas de tiempo, escala de calidad, factores y respuestas guiadas)', async () => {
   const app = await loadApp();
   await loginDoctor(app);
   const ids = app.ev('DEMO_CASES.index.map(x=>x.id)');
-  assert.equal(ids.length, 17);
+  assert.equal(ids.length, 34);
   for (const id of ids) {
     await app.ev(`selectPatient(${JSON.stringify(id)})`);
     // marcas de tiempo artificiales en dos días para comprobar que viajan en el CSV

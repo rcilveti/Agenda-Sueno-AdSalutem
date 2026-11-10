@@ -114,7 +114,7 @@ test('un código mal escrito no crea ninguna cuenta y orienta al paciente', asyn
   assert.equal(JSON.parse(movil.win.localStorage.getItem('agenda_accounts') || '{"patients":{}}').patients[malo], undefined);
 });
 
-test('PDF del análisis: no despliega apartados, sin comparación de diarios si el paciente tiene uno solo, y añade la rejilla como anexo', async () => {
+test('PDF del análisis: no despliega apartados, mueve el longitudinal tras las métricas y añade la rejilla como anexo', async () => {
   const app = await loadApp();
   await login(app, 'medico', 'clinica');
   app.ev(`document.querySelector('nav.tabs button[data-view="analisis"]').click()`);
@@ -126,8 +126,7 @@ test('PDF del análisis: no despliega apartados, sin comparación de diarios si 
   // v4.9.7: el resumen para la consulta va abierto (encabeza el análisis); el resto, como estaban
   assert.deepEqual(abiertos, ['__resumen__', 'Calidad percibida']);
   const orden = app.evj(`[...document.querySelectorAll('#analisisContent>*')].map(e=>e.id||e.className.split(' ')[0])`);
-  assert.equal(orden.indexOf('cmpBlock'), -1, 'v5.0.0: con un solo diario no hay comparación de diarios (sustituye al análisis longitudinal)');
-  assert.equal(orden.indexOf('longitBlock'), -1);
+  assert.ok(orden.indexOf('longitBlock') > orden.lastIndexOf('kgroup'), 'el bloque longitudinal debe ir tras las métricas');
   assert.equal(orden[orden.length - 1], 'annexGrid');
   const anexo = app.doc.getElementById('annexGrid');
   assert.equal(anexo.querySelectorAll('tbody tr').length, 21);
@@ -165,7 +164,7 @@ test('PDF del análisis por páginas: cada grupo desplegado empieza hoja y el in
   await login(app, 'medico', 'clinica');
   await app.ev(`selectPatient('caso-ins-mantenimiento')`);
   await imprimirAnalisis(app, null);   // todos los apartados desplegados
-  assert.deepEqual(app.evj(ORDEN_PDF), ["print-head", "__resumen__", "kg:Duración y continuidad del sueño", "¶ Tendencias a lo largo del registro", "¶ kg:Horarios del sueño", "Indicadores de regularidad", "¶ Calidad percibida", "Salud del sueño (índice compuesto RU-SATED)", "¶ kg:Ritmo circadiano", "Cronotipo y estimación de DLMO", "Comparativa laborables vs. festivos", "¶ Resumen por día, semana y total", "¶ Noches fuera de su patrón habitual", "Acontecimientos anotados", "¶ Informe clínico provisional", "Acontecimientos reportados", "¶ Referencias", "annexGrid"]);   // v4.9.9: los acontecimientos reportados siguen a las conclusiones; v5.0.0: la comparación de diarios, en su hoja
+  assert.deepEqual(app.evj(ORDEN_PDF), ["print-head", "__resumen__", "kg:Duración y continuidad del sueño", "¶ Tendencias a lo largo del registro", "¶ kg:Horarios del sueño", "Indicadores de regularidad", "¶ Calidad percibida", "Salud del sueño (índice compuesto RU-SATED)", "¶ kg:Ritmo circadiano", "Cronotipo y estimación de DLMO", "Comparativa laborables vs. festivos", "¶ Resumen por día, semana y total", "¶ Noches fuera de su patrón habitual", "Acontecimientos anotados", "¶ Informe clínico provisional", "Acontecimientos reportados", "¶ Referencias", "annexGrid"]);   // v4.9.9: los acontecimientos reportados siguen a las conclusiones
   // informe en dos hojas: la valoración, y en la segunda conclusiones, recomendaciones y plan
   assert.ok(app.ev(`!!document.querySelector('.pg-informe .clinrep>.clin-parte1+.clin-final')`));
   assert.match(app.ev(`document.querySelector('.pg-informe .clin-final').textContent`), /Conclusiones clínicas[\s\S]*Recomendaciones[\s\S]*Propuesta de plan terapéutico/);
