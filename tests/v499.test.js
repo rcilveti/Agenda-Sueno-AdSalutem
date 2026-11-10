@@ -541,7 +541,7 @@ test('casos de ejemplo: todos se abren en el editor sin errores y guardarlos sin
   const app = await loadApp();
   await loginDoctor(app);
   const ids = app.evj('DEMO_CASES.index.map(c=>c.id)');
-  assert.equal(ids.length, 17);
+  assert.equal(ids.length, 34);   // v5.0.0: y los 3 de varios diarios y los 14 de evolución
   for (const id of ids) {
     await app.ev(`selectPatient('${id}')`);
     const n = app.ev('state.length');
@@ -708,7 +708,9 @@ test('catalán: el editor entero en catalán (pasos, días, valoración, siestas
   assert.deepEqual(app.errors, []);
 });
 
-test('una sola versión por diario: la v4.9.9 guarda su versión y una versión anterior no sobrescribe ese diario', { skip: !require('fs').existsSync(require('path').join(__dirname, '..', 'v4.9.5', 'index.html')) }, async () => {
+// las carpetas de las versiones anteriores cuelgan de la raíz del repositorio, esté esta prueba en /tests/ o en /v4.9.9/tests/
+const VIEJA = v => [require('path').join(__dirname, '..', v, 'index.html'), require('path').join(__dirname, '..', '..', v, 'index.html')].find(f => require('fs').existsSync(f)) || '';
+test('una sola versión por diario: la v4.9.9 guarda su versión y una versión anterior no sobrescribe ese diario', { skip: !VIEJA('v4.9.5') }, async () => {
   const path = require('path');
   const app = await loadApp();
   await loginDoctor(app);
@@ -719,9 +721,9 @@ test('una sola versión por diario: la v4.9.9 guarda su versión y una versión 
   const rec = () => JSON.parse(app.storage()['agendasueno3:caso-normal']);
   assert.equal(rec().ver, '4.9.9');
   for (const v of ['v4.9.5', 'v4.9.6', 'v4.9.7']) {
-    const vieja = await loadApp({ file: path.join(__dirname, '..', v, 'index.html'), storage: app.storage() });
+    const vieja = await loadApp({ file: VIEJA(v), storage: app.storage() });
     // al cargar sus casos de ejemplo (que ahora son de la v4.9.9) no los sobrescribe ni avisa
-    const limpia = await loadApp({ file: path.join(__dirname, '..', v, 'index.html'), storage: st0 });
+    const limpia = await loadApp({ file: VIEJA(v), storage: st0 });
     await loginDoctor(limpia);
     assert.equal(limpia.ev('window._sembrandoDemo'), false);
     assert.equal(JSON.parse(limpia.storage()['agendasueno3:caso-tcci']).ver, '4.9.9', v + ': casos de la v4.9.9 intactos');
@@ -745,11 +747,11 @@ test('una sola versión por diario: la v4.9.9 guarda su versión y una versión 
     await vieja.ev(`selectPatient('caso-pseudoinsomnio')`);
     assert.equal(JSON.parse(vieja.storage()['agendasueno3:caso-pseudoinsomnio'] || '{}').ver === '4.9.9', true);
   }
-  // la v4.9.9 tampoco sobrescribe un diario de una versión posterior
-  app.ev(`localStorage.setItem('agendasueno3:caso-normal',JSON.stringify({...JSON.parse(localStorage.getItem('agendasueno3:caso-normal')),ver:'5.0.0'}))`);
+  // la v5.0.0 tampoco sobrescribe un diario de una versión posterior (la v5.0.0 guarda los suyos de un solo diario como de la v4.9.9)
+  app.ev(`localStorage.setItem('agendasueno3:caso-normal',JSON.stringify({...JSON.parse(localStorage.getItem('agendasueno3:caso-normal')),ver:'5.1.0'}))`);
   await app.ev(`selectPatient('caso-normal')`);
   app.doc.getElementById('saveBtn').click(); await app.sleep(400);
-  assert.equal(rec().ver, '5.0.0');
+  assert.equal(rec().ver, '5.1.0');
   assert.ok(app.doc.getElementById('avisoVersion'));
 });
 
@@ -1154,7 +1156,7 @@ test('F · casos de ejemplo al día: ninguna noche fuera de los saltos del despe
     DEMO_CASES.index.forEach(({id})=>DEMO_CASES.records[id].state.forEach((d,i)=>{ if(d&&d.gd){ const t=((u(d.gd.r)-u(d.gd.f))%1440+1440)%1440; if(!F.includes(t)) r.push(id+' '+i+' '+t); } }));
     return r; })()`);
   assert.deepEqual(fuera, []);
-  assert.equal(app.ev('DEMO_CASES.index.length'), 17);
+  assert.equal(app.ev('DEMO_CASES.index.length'), 34);   // v5.0.0
   assert.deepEqual(app.errors, []);
 });
 
@@ -1234,7 +1236,8 @@ test('G · PDF del análisis: las referencias, en una sola hoja; «Acontecimient
   assert.match(app.ev('_ajustarHojasPdf.toString()'), /details\.pg-refs\[open\]/);   // y, si no cupiera, zoom
   // el informe clínico: sus conclusiones empiezan hoja y lo siguiente va a continuación
   const orden = app.evj(`[...document.querySelectorAll('#analisisContent>*')].map(e=>e.dataset.sectitle||e.id)`);
-  assert.ok(orden.indexOf('Acontecimientos reportados') === orden.indexOf('Informe clínico provisional') + 2, orden.join(' | '));
+  // v5.0.0: ya no está el bloque de comparación longitudinal entre ambos (la comparación de diarios va arriba)
+  assert.ok(orden.indexOf('Acontecimientos reportados') === orden.indexOf('Informe clínico provisional') + 1, orden.join(' | '));
   assert.deepEqual(app.errors, []);
 });
 
@@ -1320,7 +1323,7 @@ test('G · Word del análisis sin html2canvas (todo editable, como antes) = PDF 
     .map(e=>e.dataset.sectitle==='__resumen__'?'Resumen para la consulta':e.dataset.sectitle||((e.querySelector('.kgh')||{}).textContent)||(e.id==='annexGrid'?'Anexo · Diario de sueño':null)).filter(Boolean)`);
   app.win.dispatchEvent(new app.win.Event('afterprint'));
   const { html, nombre, D } = await wordAnalisis(app);
-  assert.match(nombre, /_analisis_completo_v4_9_9\.doc$/);
+  assert.match(nombre, /_analisis_completo_v5_0_0\.doc$/);
   const txt = textoBloques(D.secciones[0].bloques) + ' ' + textoBloques(D.secciones[1].bloques);
   let pos = -1;
   for (const t of ['Agenda de Sueño — Informe de análisis', ...ordenPdf]) {

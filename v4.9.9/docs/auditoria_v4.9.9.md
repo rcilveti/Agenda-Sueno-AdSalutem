@@ -2,6 +2,11 @@
 
 Noviembre de 2026 · modo piloto, solo datos ficticios
 
+> Desde el 10 de noviembre de 2026, la versión principal es la **v5.0.0** (varios diarios por paciente
+> y comparación de diarios), que ocupa la raíz del sitio. La v4.9.9 queda disponible en la carpeta
+> `v4.9.9/` y congelada en la rama `version-4.9.9`. Un diario anotado con esta versión se abre entero
+> en la v5.0.0 y, mientras el paciente tenga un solo diario, puede volver a abrirse aquí.
+
 ## 1. Qué es la v4.9.9
 
 La v4.9.9 parte de la v4.9.8 (regla del MCTQ) y cambia la forma de anotar:

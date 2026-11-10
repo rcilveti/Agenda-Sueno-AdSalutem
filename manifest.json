@@ -1,7 +1,7 @@
 {
   "name": "Agenda de Sueño — AdSalutem",
   "short_name": "Agenda Sueño",
-  "description": "Diario de sueño digital de tres semanas",
+  "description": "Diario de sueño digital de tres semanas, con varios diarios por paciente",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
