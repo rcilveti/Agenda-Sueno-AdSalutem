@@ -122,6 +122,36 @@ No son fallos, pero conviene conocerlos antes de usar la comparación en la cons
 3. M3 y M5: decidir el paso de la v4.9.9 a la v5.0.0 y qué hace el móvil del paciente con un diario guardado.
 4. M4 y las de gravedad baja.
 
+## 8. Correcciones aplicadas (10 de noviembre de 2026)
+
+Se han aplicado en el orden del apartado 7, sin cambiar el número de versión. Cada corrección tiene su prueba automática en `v5.0.0/tests/v500_auditoria.test.js` (10 pruebas), y las sondas de esta auditoría se han repetido sobre la versión corregida. La v4.9.9 no cambia.
+
+| N.º | Estado | Qué hace ahora |
+|---|---|---|
+| A1 | Corregido | Lo que se anota se guarda siempre en su diario, por su identificador. Si otra ventana ha abierto otro diario del paciente, el cambio va al diario al que pertenece, la pantalla se recarga y avisa. Además, una ventana se pone al día cuando otra guarda. |
+| A2 | Corregido | Al restaurar, cada diario de la copia sustituye al diario del paciente de las mismas fechas o, si no coincide con ninguno, se añade. Los diarios que no están en la copia se conservan. El aviso lo dice así. |
+| M1 | Corregido | «Inicio del registro» rechaza una fecha que se solape con otro diario del paciente y explica por qué. |
+| M2 | Corregido | Sin eficiencia, latencia o WASO, la remisión por diario es «—» (no valorable). |
+| M3 | Corregido | En el móvil del paciente, un diario anterior guardado se muestra en un aviso («Tienes un diario anterior guardado: empezó el… y tiene N noches anotadas»), con un botón para enviarlo. Queda anotado cuándo se envió. |
+| M4 | Corregido | La ventana «Nuevo diario» se cierra con Escape, el tabulador no sale de ella y el foco vuelve al botón. Los 16 campos de umbrales tienen nombre. El texto secundario pasa a #5c6b7f (contraste de 4,5:1 o más). Las cajas con desplazamiento se recorren con el teclado. |
+| M5 | Sin cambio de programa | Es una decisión de despliegue: ver la nota de abajo. |
+| B1 | Corregido | El cuantil de la t es exacto con cualquier número de grados de libertad (diferencia con SciPy: 0,000 % en las 246 filas). |
+| B2 | Corregido | Las fechas imposibles se descartan y los registros de una copia se sanean al restaurar y al abrir (estados, identificadores repetidos, textos). |
+| B3 | Corregido | Cada diario tiene su color con hasta 12 diarios. |
+| B4 | **Pendiente** | Ver la nota de abajo. |
+| B5 | Sin cambio | Los casos de ejemplo ya se cargan solo en el equipo del profesional (desde la v4.9.0): no ocupan memoria en el móvil del paciente. Sacarlos del archivo obligaría a repartir la aplicación en dos archivos. |
+| B6 | Corregido | Los avisos nuevos salen también en catalán. |
+| B7 | Corregido | Cifras de pruebas actualizadas (137). La guía de los casos de evolución y el documento técnico llevan los intervalos de confianza exactos (cambian en los casos 7 y 14; ningún resultado cambia). |
+| B8 | Corregido | La leyenda de la calidad baja de línea en pantallas estrechas (la página ya no se ensancha en el iPhone SE). Las casillas de la comparación miden 24 px. |
+
+**B4, pendiente.** Para añadir la comprobación de integridad hay que calcular la huella de los tres archivos tal como los sirve cdnjs, y desde este entorno no se puede llegar a cdnjs. Una huella equivocada dejaría la aplicación sin Excel ni Word, así que no se ha puesto a ciegas.
+
+**M5, por decidir.** Mientras las dos versiones compartan la memoria del navegador, un paciente con la v4.9.9 instalada no puede anotar en ella después de recibir un segundo diario creado en la v5.0.0. Opciones: pasar a todos los pacientes a la v5.0.0 a la vez, o no crear segundos diarios a pacientes que sigan en la v4.9.9.
+
+**Lo que queda de accesibilidad, heredado de versiones anteriores y fuera de la v5.0.0:** las celdas de comentario de la rejilla no tienen nombre accesible (21) y la marca de festivo es blanca sobre naranja (2,5:1).
+
+**Comprobación tras corregir.** Las 137 pruebas de `v5.0.0/tests/` pasan (127 anteriores y 10 nuevas). Sondas de la auditoría repetidas: dos ventanas, copia antigua, copia mal formada, fecha solapada, remisión sin datos, 120 operaciones aleatorias y las 260 filas de estadística, sin fallos. En Chromium: axe-core sin incidencias en la ventana de diario ni en los umbrales, y sin errores de JavaScript en los cuatro móviles simulados.
+
 ## Referencias
 
 - Edinger JD, et al. Behavioral and psychological treatments for chronic insomnia disorder in adults: an American Academy of Sleep Medicine systematic review, meta-analysis, and GRADE assessment. *J Clin Sleep Med.* 2021;17(2):263-298. https://doi.org/10.5664/jcsm.8988 (consultado en PubMed)
