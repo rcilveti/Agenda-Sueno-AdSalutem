@@ -244,7 +244,7 @@ test('aptitud para comparar: 14 noches, 2 fines de semana completos y el sistema
 test('estadística: diferencia con IC del 95 % (Welch, noches efectivas), NAP y g de Hedges', async () => {
   const app = await loadApp();
   const t = x => app.ev(`_cmT(${x})`);
-  assert.equal(t(10), 2.228); assert.equal(t(2), 4.303);
+  assert.ok(Math.abs(t(10) - 2.2281) < 0.0005); assert.ok(Math.abs(t(2) - 4.3027) < 0.0005);   // cuantil exacto (auditoría de noviembre)
   assert.ok(Math.abs(t(30) - 2.042) < 0.002); assert.ok(Math.abs(t(1e6) - 1.960) < 0.001);
   // series sin autocorrelación positiva (alternas): noches efectivas = noches
   const A = [60, 40, 60, 40, 60, 40, 60, 40, 60, 40, 60, 40, 60, 40];

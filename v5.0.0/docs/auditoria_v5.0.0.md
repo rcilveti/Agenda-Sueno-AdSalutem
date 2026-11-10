@@ -36,7 +36,7 @@ El CSV añade `diario_etiqueta` y `diario_intervencion` en los datos del pacient
 
 | Comprobación | Alcance |
 |---|---|
-| Pruebas automáticas (jsdom) | **125 pruebas, 125 superadas**: las 113 de la v4.9.9, copiadas en `v5.0.0/tests/` y adaptadas, y 12 nuevas (`v5.0.0/tests/v500.test.js`), una de ellas con el resultado de los 14 casos de evolución. Las de la raíz no cambian (la raíz no se ha tocado) |
+| Pruebas automáticas (jsdom) | **137 pruebas, 137 superadas**: las 115 de la v4.9.9, copiadas en `v5.0.0/tests/` y adaptadas, 12 de la v5.0.0 (`v5.0.0/tests/v500.test.js`), una de ellas con el resultado de los 14 casos de evolución, y 10 de las correcciones de la auditoría total (`v5.0.0/tests/v500_auditoria.test.js`). Las de la raíz no cambian (la raíz no se ha tocado) |
 | Navegador real (Playwright, Chromium) | Escritorio a 1300 px, iPhone 13, iPhone SE y tableta (820 px): ficha con el selector de diario, ventana «Nuevo diario», apartado de comparación (resumen, evolución por métrica, gráficos y detalle) y umbrales. Sin errores de JavaScript ni desbordamiento lateral en el móvil |
 | Estadística a mano | Las medias, diferencias e intervalos de confianza del caso de insomnio se recalcularon en Python (SciPy) con los datos de cada noche (apartado 4) |
 | Impresión y exportaciones | PDF del análisis generado con Chromium (hojas apaisadas de la comparación entre las verticales, posición del pie en cada hoja), Word del análisis abierto con LibreOffice (secciones apaisadas), Excel del paciente (hoja «Comparación» con su resumen), CSV y JSON de ida y vuelta |
@@ -97,7 +97,7 @@ Recalculado en Python (SciPy, cuantil exacto de la t) con las noches del caso de
 | Eficiencia (%) | 68,89 → 92,01; +23,12 (IC 19,59 a 26,65) | Idéntico |
 | Tiempo total de sueño (min) | 340,25 → 363,16; +22,91 (IC −1,22 a 47,04) | Idéntico |
 
-Las pruebas automáticas comprueban además el cuantil de la t (tabla hasta 10 grados de libertad y aproximación de Cornish-Fisher por encima), el NAP con empates, la g de Hedges y que la autocorrelación positiva reduce las noches efectivas.
+Las pruebas automáticas comprueban además el cuantil de la t (exacto con cualquier número de grados de libertad desde la auditoría total), el NAP con empates, la g de Hedges y que la autocorrelación positiva reduce las noches efectivas.
 
 ## 5. Casos de ejemplo nuevos (datos ficticios)
 
@@ -124,7 +124,7 @@ Lo que estos casos dejan ver del método, para decidir (detalle en la guía):
 - **v5.0.0 → v4.9.9.** Un paciente con un solo diario se sigue guardando como de la v4.9.9 y la v4.9.9 lo abre y lo guarda con normalidad. Uno con varios diarios se guarda como de la v5.0.0: la v4.9.9 lo muestra con el aviso de versión posterior y no lo sobrescribe (se perderían los demás diarios).
 - **Mismo navegador.** Las versiones comparten el almacenamiento del navegador. Los umbrales editados se guardan en una clave propia, que la v4.9.9 no usa.
 - **Archivos.** El CSV y el JSON de la v5.0.0 se leen en la v4.9.9 (ignora la etiqueta y la intervención). Cada archivo lleva un solo diario.
-- **Editor de la noche.** La v5.0.0 lleva los cambios de noviembre del editor de la v4.9.9: mover levantarse no mueve el despertar final, + y − del despertar final en el sentido de la hora, pasos cortos para levantarse y sin zoom en el iPhone. Están en el apartado 9.I de la auditoría de la v4.9.9. Las noches ya anotadas no cambian.
+- **Editor de la noche.** La v5.0.0 lleva los cambios de noviembre del editor de la v4.9.9: mover levantarse no mueve el despertar final, + y − del despertar final en el sentido de la hora, pasos cortos para levantarse y sin zoom en el iPhone. Están en el apartado 9.I de la auditoría de la v4.9.9 y en el apartado 5.12 del documento técnico. Las noches ya anotadas no cambian.
 
 ## 7. Incidencias encontradas y corregidas durante la auditoría
 
@@ -150,7 +150,7 @@ Lo que estos casos dejan ver del método, para decidir (detalle en la guía):
 - Sin cuestionarios (ISI): la respuesta y la remisión se valoran solo con el diario.
 - El pie de página en el margen de cada hoja necesita un navegador que admita los márgenes de página (Chrome y Edge). En Firefox y Safari se imprime el pie de siempre, que en las hojas apaisadas puede quedar a media hoja. Para el PDF del análisis con la comparación, mejor Chrome o Edge.
 - En el iPhone SE, la leyenda de las valoraciones de la rejilla del profesional ensancha la página unos 70 px. Viene de la v4.9.9 y no es de esta versión.
-- Las guías del paciente de la v4.9.9 siguen valiendo, porque su pantalla no cambia, salvo un detalle: dicen que la hora de levantarse va de 15 en 15 minutos (ver el apartado 6). El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
+- Las guías del paciente de la v4.9.9 siguen valiendo, porque su pantalla no cambia (están al día con el editor de noviembre). El capítulo 11 del documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`) describe la versión.
 
 ## Referencias
 

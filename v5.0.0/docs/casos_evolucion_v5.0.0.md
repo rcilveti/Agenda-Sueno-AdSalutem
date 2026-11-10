@@ -260,7 +260,7 @@ Recordatorio de las reglas: un cambio es **clínicamente relevante** si alcanza 
 
 | Métrica | Umbral | Antes → después | Cambio (IC 95 %) | Veces el umbral (+: mejora) | Valoración |
 |---|---|---|---|---|---|
-| Latencia de sueño ● | −20 min | 40 → 64 | +24 min (−37 a +85 min) | −1,2× | ? Empeoramiento no concluyente |
+| Latencia de sueño ● | −20 min | 40 → 64 | +24 min (−36 a +84 min) | −1,2× | ? Empeoramiento no concluyente |
 | WASO ● | −20 min | 134 → 116 | −18 min (−54 a +18 min) | +0,9× | Sin cambios |
 | Despertares ● | −0,5 | 2,4 → 2,4 | 0,0 (−0,6 a +0,6) | 0,0× | Sin cambios |
 | Tiempo total de sueño ● | +15 min | 4h 25min → 4h 19min | −6 min (−64 a +52 min) | −0,4× | Sin cambios |
@@ -321,7 +321,7 @@ Recordatorio de las reglas: un cambio es **clínicamente relevante** si alcanza 
 
 | Métrica | Umbral | Antes → después | Cambio (IC 95 %) | Veces el umbral (+: mejora) | Valoración |
 |---|---|---|---|---|---|
-| Latencia de sueño ● | −20 min | 72 → 41 | −31 min (−183 a +122 min) | +1,5× | ? Mejoría no concluyente |
+| Latencia de sueño ● | −20 min | 72 → 41 | −31 min (−147 a +86 min) | +1,5× | ? Mejoría no concluyente |
 | WASO ● | −20 min | 0 → 1 | +1 min (−1 a +4 min) | −0,1× | Sin cambios |
 | Despertares ● | −0,5 | 0,0 → 0,1 | +0,1 (−0,1 a +0,4) | −0,3× | Sin cambios |
 | Tiempo total de sueño ● | +15 min | 6h 41min → 6h 40min | −2 min (−26 a +23 min) | −0,1× | Sin cambios |
@@ -351,7 +351,7 @@ Recordatorio de las reglas: un cambio es **clínicamente relevante** si alcanza 
 
 | Métrica | Umbral | Antes → después | Cambio (IC 95 %) | Veces el umbral (+: mejora) | Valoración |
 |---|---|---|---|---|---|
-| Latencia de sueño ● | −20 min | 41 → 44 | +2 min (−168 a +173 min) | −0,1× | Sin cambios |
+| Latencia de sueño ● | −20 min | 41 → 44 | +2 min (−165 a +170 min) | −0,1× | Sin cambios |
 | WASO ● | −20 min | 1 → 0 | −1 min (−4 a +1 min) | +0,1× | Sin cambios |
 | Despertares ● | −0,5 | 0,1 → 0,0 | −0,1 (−0,4 a +0,1) | +0,3× | Sin cambios |
 | Tiempo total de sueño ● | +15 min | 6h 40min → 6h 40min | 0 min (−23 a +23 min) | 0,0× | Sin cambios |
@@ -568,22 +568,22 @@ Recordatorio de las reglas: un cambio es **clínicamente relevante** si alcanza 
 
 | Métrica | Umbral | Antes → después | Cambio (IC 95 %) | Veces el umbral (+: mejora) | Valoración |
 |---|---|---|---|---|---|
-| Latencia de sueño ● | −20 min | 31 → 11 | −20 min (−61 a +21 min) | +1,0× | ? Mejoría no concluyente |
+| Latencia de sueño ● | −20 min | 31 → 11 | −20 min (−60 a +19 min) | +1,0× | ? Mejoría no concluyente |
 | WASO ● | −20 min | 28 → 1 | −27 min (−53 a 0 min) | +1,3× | ✓ Mejoría clínicamente relevante |
 | Despertares ● | −0,5 | 0,8 → 0,1 | −0,7 (−1,1 a −0,4) | +1,4× | ✓ Mejoría clínicamente relevante |
 | Tiempo total de sueño ● | +15 min | 5h 40min → 6h 40min | +60 min (+42 a +79 min) | +4,0× | ✓ Mejoría clínicamente relevante |
-| Eficiencia ● | +10 puntos | 80 → 95 | +15,1 puntos (−14,2 a +44,5 puntos) | +1,5× | ? Mejoría no concluyente |
-| Calidad del sueño ● | g ≥ 0,5 | 5,8 → 7,7 | +1,9 (−7,4 a +11,3) | +1,3× | ? Mejoría no concluyente |
+| Eficiencia ● | +10 puntos | 80 → 95 | +15,1 puntos (−13,3 a +43,6 puntos) | +1,5× | ? Mejoría no concluyente |
+| Calidad del sueño ● | g ≥ 0,5 | 5,8 → 7,7 | +1,9 (−7,1 a +10,9) | +1,3× | ? Mejoría no concluyente |
 | Calidad al despertar | g ≥ 0,5 | 4,3 → 6,2 | +1,9 (−1,3 a +5,1) | +1,6× | ? Mejoría no concluyente |
 | Estado durante el día | g ≥ 0,5 | 4,2 → 6,1 | +1,9 (−1,4 a +5,2) | +1,7× | ? Mejoría no concluyente |
-| Del despertar a levantarse | — | 35 → 7 | −28 min (−142 a +86 min) | — | Sin cambios |
-| Tiempo en la cama | — | 7h 14min → 7h 00min | −14 min (−391 a +362 min) | — | Sin cambios |
+| Del despertar a levantarse | — | 35 → 7 | −28 min (−119 a +64 min) | — | Sin cambios |
+| Tiempo en la cama | — | 7h 14min → 7h 00min | −14 min (−289 a +260 min) | — | Sin cambios |
 
 ## Observaciones sobre el método (para revisar)
 
 Lo que estos casos dejan ver y conviene decidir si se cambia:
 
-1. **Intervalos muy anchos con diarios en tendencia** (casos 7 y 14). Si un diario mejora de una semana a otra, la autocorrelación de un día al siguiente es alta; con r₁ acotado a 0,8, las noches efectivas bajan a n/9 (con un mínimo de 2) y la t de Student, con 1 o 2 grados de libertad, llega a 12,7. En el caso 14, por ejemplo, el IC del tiempo en la cama va de −391 a +362 min y el de la calidad del sueño de −7,4 a +11,3 (en una escala de 10). Es conservador (no da por buena una mejoría que puede ser solo la tendencia), pero los números son poco interpretables. Opciones: acotar r₁ a 0,5, poner un mínimo de noches efectivas (p. ej., n/4) o avisar en la comparación cuando un diario tiene tendencia.
+1. **Intervalos muy anchos con diarios en tendencia** (casos 7 y 14). Si un diario mejora de una semana a otra, la autocorrelación de un día al siguiente es alta; con r₁ acotado a 0,8, las noches efectivas bajan a n/9 (con un mínimo de 2) y la t de Student, con 1 o 2 grados de libertad, llega a 12,7. En el caso 14, por ejemplo, el IC del tiempo en la cama va de −289 a +260 min y el de la calidad del sueño de −7,1 a +10,9 (en una escala de 10). Es conservador (no da por buena una mejoría que puede ser solo la tendencia), pero los números son poco interpretables. Opciones: acotar r₁ a 0,5, poner un mínimo de noches efectivas (p. ej., n/4) o avisar en la comparación cuando un diario tiene tendencia.
 2. **«Se mantiene» tras un empeoramiento** (caso 4). La comparación con el diario anterior solo mira si algo empeora; si el diario anterior era un empeoramiento y el último se recupera, el resumen dice «Frente al diario anterior: se mantiene». Mejor algo como «mejora respecto al anterior» cuando el anterior no era una respuesta.
 3. **Criterios de remisión del adulto en niños** (caso 10). La remisión por diario (Lichstein) es la del insomnio del adulto; en un bebé, con siestas y despertares propios de la edad, es solo orientativa. Podría no mostrarse por debajo de cierta edad o indicarse que no aplica.
 4. **Respuesta solo por la calidad percibida** (caso 9). La calidad del sueño cuenta para la respuesta: un cambio subjetivo sin cambio en el sueño anotado da «respuesta». Es coherente con la AASM (que incluye la calidad), pero conviene tenerlo presente o que el resumen lo diga.
