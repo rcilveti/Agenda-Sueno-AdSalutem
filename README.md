@@ -27,8 +27,8 @@ en cuanto tiene un segundo diario, pasa a ser de la v5.0.0 y la v4.9.9 ya no lo 
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.7/
 
 **Vídeos para el paciente:** tres, con voz y con todo escrito también en pantalla —
-empezar el diario (1:36), anotar una noche laborable y una festiva (2:11) y enviarlo al
-médico (1:10). Una sola dirección que enviar por WhatsApp:
+empezar el diario (1:34), anotar una noche laborable y una festiva (2:11) y enviarlo al
+médico (1:09). Una sola dirección que enviar por WhatsApp:
 https://rcilveti.github.io/Agenda-Sueno-AdSalutem/docs/videos/
 
 ---
