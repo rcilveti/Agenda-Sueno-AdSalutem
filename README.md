@@ -18,6 +18,10 @@ en cuanto tiene un segundo diario, pasa a ser de la v5.0.0 y la v4.9.9 ya no lo 
 
 - v4.9.9 (la anterior versión en uso: un diario por paciente) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.9/
+
+**Vídeos para el paciente** (tres, de un minuto cada uno: empezar el diario, anotar una noche y
+enviarlo). Una sola dirección que enviar por WhatsApp:
+https://rcilveti.github.io/Agenda-Sueno-AdSalutem/docs/videos/
 - v4.9.5 (rejilla pintada a mano) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.5/
 - v4.9.6 (pruebas: modelo mixto, rejilla + minutos de la noche) en
@@ -54,7 +58,7 @@ la web de GitHub, no confíes en él**: revisa siempre qué subes antes de confi
 | `sw.js` | Hace que la app funcione sin conexión y recibe las actualizaciones. Debe estar junto a `index.html` |
 | `manifest.json` | Permite instalarla como app en el móvil |
 | `icon-192.png`, `icon-512.png` | Iconos de la app instalada |
-| `docs/` | Documentación de la v5.0.0: documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v5.0.0_castellano.pdf`) y en catalán (`Guia_del_pacient_v5.0.0_catala.pdf`), auditoría de la versión (`auditoria_v5.0.0.md`), auditoría total con sus correcciones (`auditoria_total_v5.0.0.md`) y casos para estudiar la evolución (`casos_evolucion_v5.0.0.md`). Las de otras versiones están en `v4.9.9/docs/`, `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
+| `docs/` | Documentación de la v5.0.0: documento técnico (`Agenda_Sueno_v5.0.0_documento_tecnico.pdf`), guía del paciente en castellano (`Guia_del_paciente_v5.0.0_castellano.pdf`) y en catalán (`Guia_del_pacient_v5.0.0_catala.pdf`), auditoría de la versión (`auditoria_v5.0.0.md`), auditoría total con sus correcciones (`auditoria_total_v5.0.0.md`), casos para estudiar la evolución (`casos_evolucion_v5.0.0.md`) y los vídeos del paciente con su página (`videos/`). Las de otras versiones están en `v4.9.9/docs/`, `v4.9.5/docs/`, `v4.9.6/docs/` y `v4.9.7/docs/` |
 | `tests/`, `package.json` | Pruebas automáticas (137 de la raíz; las de `v4.9.5/`, `v4.9.6/`, `v4.9.7/` y `v4.9.9/` van en sus carpetas) |
 | `v4.9.9/`, `v4.9.5/`, `v4.9.6/`, `v4.9.7/` | Otras versiones, cada una con su página, service worker, manifiesto, iconos, documentación y pruebas |
 | `.github/workflows/tests.yml` | Ejecuta las pruebas en GitHub cada vez que se sube un cambio (pestaña *Actions*) |
