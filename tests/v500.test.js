@@ -559,3 +559,34 @@ test('un diario anotado en la v4.9.9 se abre entero en la v5.0.0 de la raíz, y 
   assert.equal(JSON.parse(app.storage()['agendasueno3:pac-paso']).ver, '5.0.0');
   assert.deepEqual(app.errors, []); assert.deepEqual(v4.errors, []);
 });
+
+test('el aviso de debajo del editor dice los escalones de lo que se está anotando, en castellano y en catalán', async () => {
+  const app = await loadApp();
+  await loginDoctor(app);
+  await pacienteConDiario(app, 'aviso', '2026-02-02');
+  await app.ev(`abrirEditorNoche(3)`); await app.sleep(300);
+  const nota = k => { app.doc.querySelector(`#edCats [data-cat="${k}"]`).click();
+    return app.ev(`(document.querySelector('#edDesp .nota')||{}).textContent||''`); };
+
+  // acostarse: solo de 15 en 15; el despertar final, de 15 con los botones y de 5 con el dedo
+  assert.equal(nota('B'), 'Basta una aproximación: la hora va de 15 en 15 min.');
+  assert.equal(nota('F'), 'Basta una aproximación: con − y +, de 15 en 15 min; arrastrando, de 5 en 5.');
+  // latencia y levantarse tienen escalones distintos entre sí
+  assert.equal(nota('S'), 'Basta una aproximación: de 5 en 5 min hasta media hora, y luego 45, 60 y de 30 en 30.');
+  assert.equal(nota('R'), 'Basta una aproximación: al despertar, 5, 10, 15, 20 o 30 min, y luego de 30 en 30.');
+  // ya no se dice lo de antes, que no valía para levantarse
+  for (const k of ['B', 'S', 'F', 'R']) assert.doesNotMatch(nota(k), /luego de 15 y de 30/);
+
+  // despertares y acontecimientos llevan sus propios controles, no el aviso
+  app.doc.querySelector('#edCats [data-cat="W"]').click();
+  assert.equal(app.ev(`!!document.querySelector('#edDesp .nota')`), false);
+  app.doc.querySelector('#edCats [data-cat="X"]').click();
+  assert.equal(app.ev(`!!document.querySelector('#edDesp .nota')`), false);
+
+  // en catalán
+  app.ev(`setLang('ca')`); await app.sleep(200);
+  await app.ev(`abrirEditorNoche(3)`); await app.sleep(300);
+  assert.equal(nota('B'), 'N’hi ha prou amb una aproximació: l’hora va de 15 en 15 min.');
+  assert.match(nota('R'), /^N’hi ha prou amb una aproximació: en despertar-te, 5, 10, 15, 20 o 30 min/);
+  assert.deepEqual(app.errors, []);
+});
