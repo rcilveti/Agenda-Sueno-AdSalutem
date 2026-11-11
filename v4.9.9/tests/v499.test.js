@@ -1364,3 +1364,27 @@ test('G · Word del análisis sin html2canvas (todo editable, como antes) = PDF 
   assert.equal(app.doc.body.getAttribute('data-print'), null);
   assert.deepEqual(app.errors, []);
 });
+
+test('el aviso de debajo del editor dice los escalones de lo que se está anotando, en castellano y en catalán', async () => {
+  const app = await loadApp();
+  app.ev(`initState();startDate=new Date('2026-03-02T00:00:00');buildBody();abrirEditorNoche(3);`);
+  const nota = k => { app.doc.querySelector(`#edCats [data-cat="${k}"]`).click();
+    return app.ev(`(document.querySelector('#edDesp .nota')||{}).textContent||''`); };
+
+  // cada cosa tiene sus escalones: la hora de acostarse no va como la latencia, ni como levantarse
+  assert.equal(nota('B'), 'Basta una aproximación: la hora va de 15 en 15 min.');
+  assert.equal(nota('S'), 'Basta una aproximación: de 5 en 5 min hasta media hora, y luego 45, 60 y de 30 en 30.');
+  assert.equal(nota('F'), 'Basta una aproximación: con − y +, de 15 en 15 min; arrastrando, de 5 en 5.');
+  assert.equal(nota('R'), 'Basta una aproximación: al despertar, 5, 10, 15, 20 o 30 min, y luego de 30 en 30.');
+  for (const k of ['B', 'S', 'F', 'R']) assert.doesNotMatch(nota(k), /luego de 15 y de 30/);
+
+  // los despertares y los acontecimientos llevan sus propios controles, no el aviso
+  for (const k of ['W', 'X']) { app.doc.querySelector(`#edCats [data-cat="${k}"]`).click();
+    assert.equal(app.ev(`!!document.querySelector('#edDesp .nota')`), false); }
+
+  app.ev(`setLang('ca')`); await app.sleep(200);
+  app.ev('abrirEditorNoche(3)');
+  assert.equal(nota('B'), 'N’hi ha prou amb una aproximació: l’hora va de 15 en 15 min.');
+  assert.match(nota('R'), /^N’hi ha prou amb una aproximació: en despertar-te, 5, 10, 15, 20 o 30 min/);
+  assert.deepEqual(app.errors, []);
+});

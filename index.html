@@ -9180,7 +9180,11 @@ es:{
   anadir:'+ Añadir', evAnt:'Acontecimiento anterior', evSig:'Acontecimiento siguiente', despAnt:'Despertar anterior', despSig:'Despertar siguiente',
   nDeM:'{a} de {b}', ninguno:'Ninguno', quitar:'Quitar', hora:'Hora', duracion:'Duración', 'seg.aria':'Qué cambian − y +',
   'tipo.aria':'{nom}. Toca para cambiar qué fue.',
-  nota:'Basta una aproximación: horas de {p} en {p} min; duraciones de 5 en 5 hasta media hora, luego de 15 y de 30.',
+  // v5.0.0 (noviembre): el aviso de debajo dice los escalones de lo que se está anotando, que no son los mismos para cada cosa
+  'nota.B':'Basta una aproximación: la hora va de {p} en {p} min.',
+  'nota.S':'Basta una aproximación: de 5 en 5 min hasta media hora, y luego 45, 60 y de 30 en 30.',
+  'nota.F':'Basta una aproximación: con − y +, de {p} en {p} min; arrastrando, de 5 en 5.',
+  'nota.R':'Basta una aproximación: al despertar, 5, 10, 15, 20 o 30 min, y luego de 30 en 30.',
   'r.cama':'En la cama','r.camaC':'Cama','r.lat':'Latencia','r.latC':'Lat.','r.desp':'Despertares','r.despC':'Desp.',
   'r.dorm':'Dormido/a','r.dormC':'Dormido','r.efic':'Eficiencia','r.eficC':'Efic.',
   evN:'Acontecimiento {n}: {nom}',
@@ -9240,7 +9244,10 @@ ca:{
   anadir:'+ Afegir', evAnt:'Esdeveniment anterior', evSig:'Esdeveniment següent', despAnt:'Despertar anterior', despSig:'Despertar següent',
   nDeM:'{a} de {b}', ninguno:'Cap', quitar:'Treure', hora:'Hora', duracion:'Durada', 'seg.aria':'Què canvien − i +',
   'tipo.aria':'{nom}. Toca per canviar què va ser.',
-  nota:'N’hi ha prou amb una aproximació: hores de {p} en {p} min; durades de 5 en 5 fins a mitja hora, després de 15 i de 30.',
+  'nota.B':'N’hi ha prou amb una aproximació: l’hora va de {p} en {p} min.',
+  'nota.S':'N’hi ha prou amb una aproximació: de 5 en 5 min fins a mitja hora, i després 45, 60 i de 30 en 30.',
+  'nota.F':'N’hi ha prou amb una aproximació: amb − i +, de {p} en {p} min; arrossegant, de 5 en 5.',
+  'nota.R':'N’hi ha prou amb una aproximació: en despertar-te, 5, 10, 15, 20 o 30 min, i després de 30 en 30.',
   'r.cama':'Al llit','r.camaC':'Llit','r.lat':'Latència','r.latC':'Lat.','r.desp':'Despertars','r.despC':'Desp.',
   'r.dorm':'Adormit/da','r.dormC':'Adormit','r.efic':'Eficiència','r.eficC':'Efic.',
   evN:'Esdeveniment {n}: {nom}',
@@ -9854,7 +9861,7 @@ function render(){
       `<div class="seg" id="dBorde" role="group" aria-label="${T('seg.aria')}"><button type="button" data-b="m" class="${s.borde==='m'?'on':''}">${T('hora')}</button><button type="button" data-b="b" class="${s.borde==='b'?'on':''}">${T('duracion')}</button></div><span class="sep"></span>`
       :`<span class="num">${T('ninguno')}</span>`)+
       `<button type="button" class="bt" id="dMas">${T('anadir')}</button><button type="button" class="bt" id="dQuitar"${w?'':' disabled'}>${T('quitar')}</button><span class="aviso"></span>`;
-  } else $('edDesp').innerHTML=`<span class="nota">${T('nota',{p:E.paso})}</span>`;
+  } else $('edDesp').innerHTML=`<span class="nota">${T('nota.'+s.k,{p:E.paso})}</span>`;
   const it=(l,c,v)=>`<span class="m"><span class="l">${l}</span><span class="c">${c}</span><b>${v}</b></span>`;
   $('edResumen').innerHTML=[it(T('r.cama'),T('r.camaC'),dur(x.tib)),it(T('r.lat'),T('r.latC'),x.sol+' min'),it(T('r.desp'),T('r.despC'),x.nw?x.nw+' · '+x.waso+' min':'0'),it(T('r.dorm'),T('r.dormC'),dur(x.tst)),it(T('r.efic'),T('r.eficC'),Math.round(x.se)+' %')].join('<i class="dv"></i>');
 }
