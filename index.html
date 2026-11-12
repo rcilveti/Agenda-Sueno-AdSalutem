@@ -3891,8 +3891,16 @@ function _fmtRegDate(str){
 }
 async function populatePatients(){
   let idx=await getIndex();
-  // v4.8.1: el paciente de demostración solo existe en la versión piloto
-  if(MODO_PILOTO&&!idx.find(x=>x.id==='paciente-demo')){idx=await upsertIndex('paciente-demo','Paciente Demo');}
+  // v4.8.1: el paciente de demostración solo existe en la versión piloto.
+  // v5.0.0 (noviembre): y solo se lista si tiene un registro detrás. Antes se añadía al índice en
+  // cada repintado, aunque estuviera vacío: quedaba en la lista una ficha que no se podía abrir y
+  // que la copia de seguridad saltaba por no tener nada dentro. Si la heredas vacía, se retira; en
+  // cuanto el paciente de demostración anota algo, vuelve a aparecer sola.
+  if(MODO_PILOTO){
+    const enIndice=!!idx.find(x=>x.id==='paciente-demo'), conDatos=!!(await load('paciente-demo'));
+    if(conDatos&&!enIndice){ idx=await upsertIndex('paciente-demo','Paciente Demo'); }
+    else if(!conDatos&&enIndice){ idx=idx.filter(x=>x.id!=='paciente-demo'); await saveIndex(idx); }
+  }
   // categoría seleccionada en el filtro de la cabecera del diario (solo profesional)
   const filterCat = $("catFilter") ? $("catFilter").value : 'all';
   // resolver categoría, edad y fecha de inicio de cada paciente (desde su registro)
@@ -3975,6 +3983,17 @@ async function populatePatients(){
 }
 
 // ===== COPIA DE SEGURIDAD COMPLETA (A1) =====
+// v5.0.0: sello de fecha y hora locales para el nombre del archivo (2026-11-12_1547) y, al
+// restaurar, la misma fecha y hora en lenguaje corriente, para saber qué copia se está cargando.
+function _selloArchivo(d){
+  const n=d||new Date(), p=v=>String(v).padStart(2,'0');
+  return n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+'_'+p(n.getHours())+p(n.getMinutes());
+}
+function _selloLegible(iso){
+  const d=new Date(iso); if(isNaN(d))return String(iso||'').slice(0,10);
+  const p=v=>String(v).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' a las '+p(d.getHours())+':'+p(d.getMinutes());
+}
 // Exporta los diarios íntegros (ficha + rejilla completa) en un único JSON restaurable.
 // Sin argumentos exporta TODOS; con una lista de ids, solo esos (copia parcial, v4.5).
 async function exportBackup(onlyIds){
@@ -3992,7 +4011,9 @@ async function exportBackup(onlyIds){
     let keyring=fullRing;
     if(soloSel && fullRing){keyring={};for(const id of Object.keys(fullRing))if(records[id])keyring[id]=fullRing[id];}
     const payload={app:'agenda-sueno',type:'backup',schema:2,version:APP_VERSION,exported:new Date().toISOString(),index:idx,records,keyring};
-    const fecha=new Date().toISOString().slice(0,10);
+    // v5.0.0 (noviembre): el nombre lleva la fecha Y la hora (local) de la copia. Con solo la fecha,
+    // dos copias del mismo día se llamaban igual y no se sabía cuál era la última.
+    const fecha=_selloArchivo();
     const nCl=Object.keys(keyring||{}).length;
     if(nCl){
       alert('La copia incluye las claves personales de '+nCl+' paciente(s), sin cifrar.\n\n'+
@@ -4010,7 +4031,8 @@ async function restoreBackup(file){
     const obj=JSON.parse(txt);
     if(!obj||obj.type!=='backup'||!obj.records){toast('El archivo no es una copia de seguridad válida',false);return;}
     const n=Object.keys(obj.records).length;
-    if(!confirm('La copia contiene '+n+' paciente(s) (exportada el '+String(obj.exported||'').slice(0,10)+').\n\nLos diarios de la copia sustituyen a los de las mismas fechas de cada paciente. Los demás diarios y pacientes se conservan. ¿Restaurar?'))return;
+    if(!confirm('La copia contiene '+n+' paciente(s) y se hizo el '+_selloLegible(obj.exported)+
+      (obj.version?' con la versión '+obj.version:'')+'.\n\nLos diarios de la copia sustituyen a los de las mismas fechas de cada paciente. Los demás diarios y pacientes se conservan. ¿Restaurar?'))return;
     let idx=await getIndex();
     for(const [id,rec0] of Object.entries(obj.records)){
       const rec=await _recParaRestaurar(id,rec0);   // v5.0.0: cada diario de la copia, a su sitio por fechas
