@@ -590,3 +590,54 @@ test('el aviso de debajo del editor dice los escalones de lo que se está anotan
   assert.match(nota('R'), /^N’hi ha prou amb una aproximació: en despertar-te, 5, 10, 15, 20 o 30 min/);
   assert.deepEqual(app.errors, []);
 });
+
+test('el paciente de demostración solo sale en la lista si tiene algo anotado, y la ficha vacía heredada se retira', async () => {
+  // antes de noviembre de 2026 la lista se lo inventaba en cada repintado: una ficha sin registro
+  // detrás, que no se podía abrir y que la copia de seguridad saltaba
+  const app = await loadApp({ storage: { agenda_patient_index3: JSON.stringify([{ id: 'paciente-demo', name: 'Paciente Demo' }]) } });
+  await loginDoctor(app);
+  assert.equal(await app.evj(`getIndex().then(i=>i.some(x=>x.id==='paciente-demo'))`), false);
+  assert.equal(app.ev(`!!document.querySelector('.pcard[data-pid="paciente-demo"]')`), false);
+  // y no vuelve al repintar
+  await app.ev(`populatePatients()`);
+  assert.equal(await app.evj(`getIndex().then(i=>i.some(x=>x.id==='paciente-demo'))`), false);
+
+  // en cuanto el paciente de demostración anota una noche, su ficha aparece sola
+  await app.ev(`(async()=>{ await saveRec('paciente-demo',{patient:'paciente-demo',name:'Paciente Demo',
+    start:'2026-11-02',birth:null,sex:null,cat:'tx',state:Array.from({length:DAYS},blankDay)});
+    await populatePatients(); })()`);
+  assert.equal(await app.evj(`getIndex().then(i=>i.some(x=>x.id==='paciente-demo'))`), true);
+  assert.equal(app.ev(`!!document.querySelector('.pcard[data-pid="paciente-demo"]')`), true);
+  assert.deepEqual(app.errors, []);
+});
+
+test('la copia de seguridad lleva la fecha y la hora en el nombre, y todos los diarios con registro dentro', async () => {
+  const app = await loadApp({ quiet: true });
+  await loginDoctor(app);
+  await pacienteConDiario(app, 'copia-01', '2026-03-02');
+  const cap = await app.evj(`(async()=>{ const org=dl; let c=null; dl=(txt,name)=>{c={txt,name}};
+    try{ await exportBackup(); } finally { dl=org; } return c; })()`);
+
+  // nombre: copia_seguridad_agenda_sueno_2026-11-12_1547_v5_0_0.json
+  assert.match(cap.name, /^copia_seguridad_agenda_sueno_\d{4}-\d{2}-\d{2}_\d{4}_v5_0_0\.json$/);
+  const ahora = new Date(), dos = n => String(n).padStart(2, '0');
+  assert.ok(cap.name.includes(`_${ahora.getFullYear()}-${dos(ahora.getMonth() + 1)}-${dos(ahora.getDate())}_`), cap.name);
+
+  const copia = JSON.parse(cap.txt);
+  assert.equal(copia.type, 'backup');
+  assert.equal(copia.version, '5.0.0');
+  // la hora también va dentro del archivo, que es lo que lee el cuadro de restaurar
+  assert.match(copia.exported, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+  // los casos de ejemplo y el diario propio; ninguna ficha sin registro
+  const ids = Object.keys(copia.records);
+  assert.ok(ids.includes('copia-01'), 'falta el diario propio');
+  assert.ok(ids.filter(i => /^caso-/.test(i)).length >= 30, 'faltan casos de ejemplo: ' + ids.length);
+  assert.ok(!ids.includes('paciente-demo'));
+  assert.deepEqual((await app.evj('getIndex()')).map(x => x.id).filter(i => !ids.includes(i)), []);
+
+  // la copia parcial dice en el nombre cuántos lleva
+  const sel = await app.evj(`(async()=>{ const org=dl; let c=null; dl=(txt,name)=>{c={txt,name}};
+    try{ await exportBackup(['copia-01']); } finally { dl=org; } return c; })()`);
+  assert.match(sel.name, /^copia_seguridad_agenda_sueno_\d{4}-\d{2}-\d{2}_\d{4}_seleccion_1_v5_0_0\.json$/);
+  assert.deepEqual(Object.keys(JSON.parse(sel.txt).records), ['copia-01']);
+});

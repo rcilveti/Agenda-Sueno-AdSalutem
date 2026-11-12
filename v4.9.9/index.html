@@ -3834,6 +3834,18 @@ async function populatePatients(){
 // ===== COPIA DE SEGURIDAD COMPLETA (A1) =====
 // Exporta los diarios íntegros (ficha + rejilla completa) en un único JSON restaurable.
 // Sin argumentos exporta TODOS; con una lista de ids, solo esos (copia parcial, v4.5).
+// Noviembre de 2026 (igual que en la v5.0.0): sello de fecha y hora locales para el nombre del
+// archivo (2026-11-12_1547) y, al restaurar, la misma fecha y hora en lenguaje corriente. Con
+// solo la fecha, dos copias del mismo día se llamaban igual y no se sabía cuál era la última.
+function _selloArchivo(d){
+  const n=d||new Date(), p=v=>String(v).padStart(2,'0');
+  return n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+'_'+p(n.getHours())+p(n.getMinutes());
+}
+function _selloLegible(iso){
+  const d=new Date(iso); if(isNaN(d))return String(iso||'').slice(0,10);
+  const p=v=>String(v).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' a las '+p(d.getHours())+':'+p(d.getMinutes());
+}
 async function exportBackup(onlyIds){
   try{
     const soloSel = Array.isArray(onlyIds) && onlyIds.length>0;
@@ -3849,7 +3861,7 @@ async function exportBackup(onlyIds){
     let keyring=fullRing;
     if(soloSel && fullRing){keyring={};for(const id of Object.keys(fullRing))if(records[id])keyring[id]=fullRing[id];}
     const payload={app:'agenda-sueno',type:'backup',schema:2,version:APP_VERSION,exported:new Date().toISOString(),index:idx,records,keyring};
-    const fecha=new Date().toISOString().slice(0,10);
+    const fecha=_selloArchivo();
     const nCl=Object.keys(keyring||{}).length;
     if(nCl){
       alert('La copia incluye las claves personales de '+nCl+' paciente(s), sin cifrar.\n\n'+
@@ -3867,7 +3879,8 @@ async function restoreBackup(file){
     const obj=JSON.parse(txt);
     if(!obj||obj.type!=='backup'||!obj.records){toast('El archivo no es una copia de seguridad válida',false);return;}
     const n=Object.keys(obj.records).length;
-    if(!confirm('La copia contiene '+n+' diario(s) (exportada el '+String(obj.exported||'').slice(0,10)+').\n\nSe añadirán o actualizarán sobre los existentes, sin borrar nada. ¿Restaurar?'))return;
+    if(!confirm('La copia contiene '+n+' diario(s) y se hizo el '+_selloLegible(obj.exported)+
+      (obj.version?' con la versión '+obj.version:'')+'.\n\nSe añadirán o actualizarán sobre los existentes, sin borrar nada. ¿Restaurar?'))return;
     let idx=await getIndex();
     for(const [id,rec] of Object.entries(obj.records)){
       await saveRec(id,rec);
