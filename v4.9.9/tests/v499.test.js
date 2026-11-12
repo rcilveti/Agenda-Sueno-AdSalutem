@@ -1388,3 +1388,15 @@ test('el aviso de debajo del editor dice los escalones de lo que se está anotan
   assert.match(nota('R'), /^N’hi ha prou amb una aproximació: en despertar-te, 5, 10, 15, 20 o 30 min/);
   assert.deepEqual(app.errors, []);
 });
+
+test('la copia de seguridad lleva la fecha y la hora en el nombre, como en la v5.0.0', async () => {
+  // antes solo llevaba la fecha: dos copias del mismo día se llamaban igual
+  const app = await loadApp({ quiet: true });
+  await loginDoctor(app);
+  const cap = await app.evj(`(async()=>{ const org=dl; let c=null; dl=(txt,name)=>{c={txt,name}};
+    try{ await exportBackup(); } finally { dl=org; } return c; })()`);
+  assert.match(cap.name, /^copia_seguridad_agenda_sueno_\d{4}-\d{2}-\d{2}_\d{4}_v4_9_9\.json$/);
+  const ahora = new Date(), dos = n => String(n).padStart(2, '0');
+  assert.ok(cap.name.includes(`_${ahora.getFullYear()}-${dos(ahora.getMonth() + 1)}-${dos(ahora.getDate())}_`), cap.name);
+  assert.equal(JSON.parse(cap.txt).type, 'backup');
+});
