@@ -18,10 +18,6 @@ en cuanto tiene un segundo diario, pasa a ser de la v5.0.0 y la v4.9.9 ya no lo 
 
 - v4.9.9 (la anterior versión en uso: un diario por paciente) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.9/
-
-**Vídeos para el paciente** (tres, de un minuto cada uno: empezar el diario, anotar una noche y
-enviarlo). Una sola dirección que enviar por WhatsApp:
-https://rcilveti.github.io/Agenda-Sueno-AdSalutem/docs/videos/
 - v4.9.5 (rejilla pintada a mano) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.5/
 - v4.9.6 (pruebas: modelo mixto, rejilla + minutos de la noche) en
@@ -29,6 +25,13 @@ https://rcilveti.github.io/Agenda-Sueno-AdSalutem/docs/videos/
 - v4.9.7 (pruebas: recordatorio diario, registro con preguntas, factores del día,
   ventana de sueño e hitos, tendencias, patrón propio y resumen para la consulta) en
   https://rcilveti.github.io/Agenda-Sueno-AdSalutem/v4.9.7/
+
+**Vídeos para el paciente.** Tres cortos, sin voz y con todo escrito en pantalla —empezar el
+diario (1:00), anotar una noche laborable y una festiva (1:42) y enviarlo al médico (0:52)— y un
+cuarto, con voz, que es el tutorial largo del editor: un día entero de principio a fin, con los
+despertares, los acontecimientos, la siesta, las valoraciones y las notas (5:39). Una sola
+dirección que enviar por WhatsApp:
+https://rcilveti.github.io/Agenda-Sueno-AdSalutem/docs/videos/
 
 ---
 
