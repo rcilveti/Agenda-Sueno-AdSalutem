@@ -4010,13 +4010,24 @@ async function exportBackup(onlyIds){
     const fullRing=await getKeyring();
     let keyring=fullRing;
     if(soloSel && fullRing){keyring={};for(const id of Object.keys(fullRing))if(records[id])keyring[id]=fullRing[id];}
-    const payload={app:'agenda-sueno',type:'backup',schema:2,version:APP_VERSION,exported:new Date().toISOString(),index:idx,records,keyring};
+    // v5.0.0 (noviembre): los CÓDIGOS DE ACCESO de los pacientes viajan también en la copia. Sin
+    // ellos, al restaurar en otro navegador los diarios llegaban enteros pero ningún paciente tenía
+    // código ni QR: había que emitirle uno nuevo a cada uno, y los enlaces y los QR ya repartidos
+    // dejaban de servir. Solo los de los pacientes que lleva la copia, y nunca la cuenta demo.
+    const cuentas=await ensureAccounts(), accesos={};
+    for(const [pin,pa] of Object.entries(cuentas.patients||{})){
+      if(!pa||!pa.id||!records[pa.id]||!_esCodigoAcceso(pin))continue;
+      accesos[pin]={id:pa.id,name:pa.name||pa.id,pass:pa.pass||pin,expires:pa.expires||''};
+    }
+    const payload={app:'agenda-sueno',type:'backup',schema:3,version:APP_VERSION,exported:new Date().toISOString(),index:idx,records,keyring,accesos};
     // v5.0.0 (noviembre): el nombre lleva la fecha Y la hora (local) de la copia. Con solo la fecha,
     // dos copias del mismo día se llamaban igual y no se sabía cuál era la última.
     const fecha=_selloArchivo();
-    const nCl=Object.keys(keyring||{}).length;
-    if(nCl){
-      alert('La copia incluye las claves personales de '+nCl+' paciente(s), sin cifrar.\n\n'+
+    const nCl=Object.keys(keyring||{}).length, nAcc=Object.keys(accesos).length;
+    if(nCl||nAcc){
+      const que=[nAcc?'los códigos de acceso de '+nAcc+' paciente(s)':'',
+                 nCl?'las claves personales de '+nCl+' paciente(s)':''].filter(Boolean).join(' y ');
+      alert('La copia incluye '+que+', sin cifrar.\n\n'+
             'Guárdala en una ubicación protegida de la unidad, nunca en una carpeta compartida '+
             'ni en un repositorio. Quien tenga este archivo puede abrir todos los diarios.');
     }
@@ -4051,10 +4062,27 @@ async function restoreBackup(file){
       }
       try{await rawSet(KEYS_STORE,JSON.stringify(actual));}catch(e){console.error('restore keyring',e);}
     }
+    // v5.0.0 (noviembre): y los códigos de acceso, para que los QR ya repartidos sigan valiendo en
+    // el navegador nuevo. Un código que apunte a otro paciente no se pisa nunca; del mismo paciente
+    // se queda el de caducidad más larga, así que restaurar dos veces la misma copia no cambia nada.
+    let nAccesos=0;
+    if(obj.accesos&&typeof obj.accesos==='object'){
+      const cad=v=>{const ms=Date.parse(v||'');return isNaN(ms)?0:ms;};
+      const cuentas=await ensureAccounts();
+      if(!cuentas.patients)cuentas.patients={};
+      for(const [pin,pa] of Object.entries(obj.accesos)){
+        if(!pa||!pa.id||!_esCodigoAcceso(pin))continue;
+        const ya=cuentas.patients[pin];
+        if(ya&&(ya.id!==pa.id||cad(ya.expires)>=cad(pa.expires)))continue;
+        cuentas.patients[pin]={id:pa.id,name:pa.name||pa.id,pass:pa.pass||pin,expires:pa.expires||''};
+        nAccesos++;
+      }
+      if(nAccesos)await saveAccounts(cuentas);
+    }
     // si el paciente en pantalla estaba en la copia, recargar su versión restaurada para no trabajar con datos obsoletos
     if(patient && obj.records[patient]){await selectPatient(patient);}
     await populatePatients();
-    toast('Copia restaurada: '+n+' diario(s)'+(nClaves?' y '+nClaves+' clave(s)':''));
+    toast('Copia restaurada: '+n+' diario(s)'+(nAccesos?', '+nAccesos+' código(s) de acceso':'')+(nClaves?' y '+nClaves+' clave(s)':''));
   }catch(e){console.error('restore',e);toast('No se pudo restaurar la copia',false);}
 }
 $("backupBtn")&&$("backupBtn").addEventListener('click',exportBackup);

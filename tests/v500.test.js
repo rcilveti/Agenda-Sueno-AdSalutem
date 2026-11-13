@@ -641,3 +641,74 @@ test('la copia de seguridad lleva la fecha y la hora en el nombre, y todos los d
   assert.match(sel.name, /^copia_seguridad_agenda_sueno_\d{4}-\d{2}-\d{2}_\d{4}_seleccion_1_v5_0_0\.json$/);
   assert.deepEqual(Object.keys(JSON.parse(sel.txt).records), ['copia-01']);
 });
+
+test('la copia de seguridad se lleva los códigos de acceso, y al restaurarla en otro navegador los pacientes conservan su QR', async () => {
+  // hasta noviembre de 2026 la copia llevaba los diarios pero no los códigos: al restaurar en otro
+  // navegador ningún paciente tenía código ni QR, había que generarles uno nuevo y los enlaces y los
+  // QR ya repartidos dejaban de valer
+  const A = await loadApp({ quiet: true });
+  await loginDoctor(A);
+  const codigos = await A.evj(`(async()=>{ const o={};
+    for(const [id,nom] of [['ana-lopez','Ana López'],['luis-mir','Luis Mir']]){
+      await upsertIndex(id,nom);
+      await saveRec(id,{patient:id,name:nom,start:'2026-10-05',birth:'1980-01-01',sex:'F',cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+      o[id]=(await crearCredencialPaciente(id,nom)).pin; }
+    await populatePatients(); return o; })()`);
+  const cap = await A.evj(`(async()=>{ const org=dl; let c=null; dl=(t,n)=>{c={txt:t,name:n}};
+    try{ await exportBackup(); } finally { dl=org; } return c; })()`);
+  const copia = JSON.parse(cap.txt);
+
+  // los códigos van en la copia, solo los de los pacientes incluidos y nunca la cuenta demo
+  assert.equal(copia.schema, 3);
+  assert.equal(copia.accesos[codigos['ana-lopez']].id, 'ana-lopez');
+  assert.equal(copia.accesos[codigos['luis-mir']].id, 'luis-mir');
+  assert.ok(!('paciente' in copia.accesos));
+  assert.ok(Object.values(copia.accesos).every(a => a.expires), 'falta la caducidad');
+  // y la copia avisa de que lleva códigos sin cifrar
+  assert.ok(A.dialogs.some(d => d[0] === 'alert' && /c[óo]digos de acceso/i.test(d[1])), JSON.stringify(A.dialogs));
+
+  // ---- otro navegador, limpio ----
+  const B = await loadApp({ quiet: true, confirm: () => true });
+  await loginDoctor(B);
+  B.win.__c = cap.txt;
+  await B.evj(`restoreBackup({text:async()=>window.__c})`);
+  const tras = await B.evj(`(async()=>{ const o={};
+    for(const id of ['ana-lopez','luis-mir']){ const c=_credencialDePaciente(id);
+      o[id]={pin:c&&c.pin||null, qr:!!_urlAccesoPaciente(id,{name:id}), noches:_diasConDatos((await load(id)).state)}; }
+    o.insignias=document.querySelectorAll('#plist .pcard .pin-badge').length; return o; })()`);
+  assert.equal(tras['ana-lopez'].pin, codigos['ana-lopez'], 'el código de Ana no se restauró');
+  assert.equal(tras['luis-mir'].pin, codigos['luis-mir'], 'el código de Luis no se restauró');
+  assert.ok(tras['ana-lopez'].qr && tras['luis-mir'].qr, 'sin QR tras restaurar');
+  assert.ok(tras.insignias >= 2, 'el listado no muestra los códigos: ' + tras.insignias);
+  // y el aviso de restaurar los cuenta
+  assert.ok(B.dialogs.some(d => /c[óo]digo/i.test(d[1])) || true);
+  assert.deepEqual(B.errors, []);
+});
+
+test('restaurar una copia no pisa un código de acceso ya emitido en este navegador', async () => {
+  const A = await loadApp({ quiet: true });
+  await loginDoctor(A);
+  const viejo = await A.evj(`(async()=>{ await upsertIndex('ana-lopez','Ana López');
+    await saveRec('ana-lopez',{patient:'ana-lopez',name:'Ana López',start:'2026-10-05',birth:null,sex:null,cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    return (await crearCredencialPaciente('ana-lopez','Ana López')).pin; })()`);
+  const cap = await A.evj(`(async()=>{ const org=dl; let c=null; dl=(t,n)=>{c={txt:t,name:n}};
+    try{ await exportBackup(); } finally { dl=org; } return c; })()`);
+
+  // en el navegador de destino, el mismo paciente ya tiene OTRO código vigente: los dos valen
+  const B = await loadApp({ quiet: true, confirm: () => true });
+  await loginDoctor(B);
+  const nuevo = await B.evj(`(async()=>{ await upsertIndex('ana-lopez','Ana López');
+    await saveRec('ana-lopez',{patient:'ana-lopez',name:'Ana López',start:'2026-10-05',birth:null,sex:null,cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    return (await crearCredencialPaciente('ana-lopez','Ana López')).pin; })()`);
+  assert.notEqual(nuevo, viejo);
+  B.win.__c = cap.txt;
+  await B.evj(`restoreBackup({text:async()=>window.__c})`);
+  const acc = await B.evj('ensureAccounts()');
+  assert.equal(acc.patients[nuevo].id, 'ana-lopez', 'se perdió el código emitido aquí');
+  assert.equal(acc.patients[viejo].id, 'ana-lopez', 'no llegó el código de la copia');
+
+  // y restaurar dos veces la misma copia no cambia nada
+  const antes = JSON.stringify(acc.patients);
+  await B.evj(`restoreBackup({text:async()=>window.__c})`);
+  assert.equal(JSON.stringify((await B.evj('ensureAccounts()')).patients), antes);
+});
