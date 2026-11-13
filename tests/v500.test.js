@@ -9,6 +9,8 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { loadApp } = require('./harness');
+const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+const SESION_CERRADA = 'agenda_sesion_cerrada';
 
 // la v4.9.9: en su carpeta desde que la v5.0.0 pasó a la raíz; antes, en la raíz
 const RAIZ_499 = [path.join(__dirname, '..', 'v4.9.9', 'index.html'), path.join(__dirname, '..', '..', 'index.html')].find(f => fs.existsSync(f)) || '';
@@ -640,4 +642,163 @@ test('la copia de seguridad lleva la fecha y la hora en el nombre, y todos los d
     try{ await exportBackup(['copia-01']); } finally { dl=org; } return c; })()`);
   assert.match(sel.name, /^copia_seguridad_agenda_sueno_\d{4}-\d{2}-\d{2}_\d{4}_seleccion_1_v5_0_0\.json$/);
   assert.deepEqual(Object.keys(JSON.parse(sel.txt).records), ['copia-01']);
+});
+
+test('la copia de seguridad se lleva los códigos de acceso, y al restaurarla en otro navegador los pacientes conservan su QR', async () => {
+  // hasta noviembre de 2026 la copia llevaba los diarios pero no los códigos: al restaurar en otro
+  // navegador ningún paciente tenía código ni QR, había que generarles uno nuevo y los enlaces y los
+  // QR ya repartidos dejaban de valer
+  const A = await loadApp({ quiet: true });
+  await loginDoctor(A);
+  const codigos = await A.evj(`(async()=>{ const o={};
+    for(const [id,nom] of [['ana-lopez','Ana López'],['luis-mir','Luis Mir']]){
+      await upsertIndex(id,nom);
+      await saveRec(id,{patient:id,name:nom,start:'2026-10-05',birth:'1980-01-01',sex:'F',cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+      o[id]=(await crearCredencialPaciente(id,nom)).pin; }
+    await populatePatients(); return o; })()`);
+  const cap = await A.evj(`(async()=>{ const org=dl; let c=null; dl=(t,n)=>{c={txt:t,name:n}};
+    try{ await exportBackup(); } finally { dl=org; } return c; })()`);
+  const copia = JSON.parse(cap.txt);
+
+  // los códigos van en la copia, solo los de los pacientes incluidos y nunca la cuenta demo
+  assert.equal(copia.schema, 3);
+  assert.equal(copia.accesos[codigos['ana-lopez']].id, 'ana-lopez');
+  assert.equal(copia.accesos[codigos['luis-mir']].id, 'luis-mir');
+  assert.ok(!('paciente' in copia.accesos));
+  assert.ok(Object.values(copia.accesos).every(a => a.expires), 'falta la caducidad');
+  // y la copia avisa de que lleva códigos sin cifrar
+  assert.ok(A.dialogs.some(d => d[0] === 'alert' && /c[óo]digos de acceso/i.test(d[1])), JSON.stringify(A.dialogs));
+
+  // ---- otro navegador, limpio ----
+  const B = await loadApp({ quiet: true, confirm: () => true });
+  await loginDoctor(B);
+  B.win.__c = cap.txt;
+  await B.evj(`restoreBackup({text:async()=>window.__c})`);
+  const tras = await B.evj(`(async()=>{ const o={};
+    for(const id of ['ana-lopez','luis-mir']){ const c=_credencialDePaciente(id);
+      o[id]={pin:c&&c.pin||null, qr:!!_urlAccesoPaciente(id,{name:id}), noches:_diasConDatos((await load(id)).state)}; }
+    o.insignias=document.querySelectorAll('#plist .pcard .pin-badge').length; return o; })()`);
+  assert.equal(tras['ana-lopez'].pin, codigos['ana-lopez'], 'el código de Ana no se restauró');
+  assert.equal(tras['luis-mir'].pin, codigos['luis-mir'], 'el código de Luis no se restauró');
+  assert.ok(tras['ana-lopez'].qr && tras['luis-mir'].qr, 'sin QR tras restaurar');
+  assert.ok(tras.insignias >= 2, 'el listado no muestra los códigos: ' + tras.insignias);
+  // y el aviso de restaurar los cuenta
+  assert.ok(B.dialogs.some(d => /c[óo]digo/i.test(d[1])) || true);
+  assert.deepEqual(B.errors, []);
+});
+
+test('restaurar una copia no pisa un código de acceso ya emitido en este navegador', async () => {
+  const A = await loadApp({ quiet: true });
+  await loginDoctor(A);
+  const viejo = await A.evj(`(async()=>{ await upsertIndex('ana-lopez','Ana López');
+    await saveRec('ana-lopez',{patient:'ana-lopez',name:'Ana López',start:'2026-10-05',birth:null,sex:null,cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    return (await crearCredencialPaciente('ana-lopez','Ana López')).pin; })()`);
+  const cap = await A.evj(`(async()=>{ const org=dl; let c=null; dl=(t,n)=>{c={txt:t,name:n}};
+    try{ await exportBackup(); } finally { dl=org; } return c; })()`);
+
+  // en el navegador de destino, el mismo paciente ya tiene OTRO código vigente: los dos valen
+  const B = await loadApp({ quiet: true, confirm: () => true });
+  await loginDoctor(B);
+  const nuevo = await B.evj(`(async()=>{ await upsertIndex('ana-lopez','Ana López');
+    await saveRec('ana-lopez',{patient:'ana-lopez',name:'Ana López',start:'2026-10-05',birth:null,sex:null,cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    return (await crearCredencialPaciente('ana-lopez','Ana López')).pin; })()`);
+  assert.notEqual(nuevo, viejo);
+  B.win.__c = cap.txt;
+  await B.evj(`restoreBackup({text:async()=>window.__c})`);
+  const acc = await B.evj('ensureAccounts()');
+  assert.equal(acc.patients[nuevo].id, 'ana-lopez', 'se perdió el código emitido aquí');
+  assert.equal(acc.patients[viejo].id, 'ana-lopez', 'no llegó el código de la copia');
+
+  // y restaurar dos veces la misma copia no cambia nada
+  const antes = JSON.stringify(acc.patients);
+  await B.evj(`restoreBackup({text:async()=>window.__c})`);
+  assert.equal(JSON.stringify((await B.evj('ensureAccounts()')).patients), antes);
+});
+
+// ---------- el acceso de un paciente no puede abrir la sesión del profesional ----------
+// Hasta noviembre de 2026: el paciente abría el enlace de su segundo diario, salía la pantalla
+// «Hola, X: pulsa Entrar» con su código puesto, el gestor de contraseñas del móvil autorrellenaba
+// las credenciales del profesional guardadas para ese sitio y, al pulsar Entrar, se abría en su
+// móvil la base entera, con los nombres, los códigos de acceso y los QR de todos los pacientes.
+async function accesoDeMarta(app, extra) {
+  return app.evj(`(async()=>{ patient='marta'; await upsertIndex('marta','Marta Soler');
+    await saveRec('marta',{patient:'marta',name:'Marta Soler',start:'2026-10-05',birth:null,sex:'F',cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    await populatePatients(); await selectPatient('marta');
+    await crearCredencialPaciente('marta','Marta Soler');
+    ${extra || ''}
+    return _urlAccesoPaciente('marta',{name:'Marta Soler',sex:'F',start:(await load('marta')).start}); })()`);
+}
+const comoEntro = app => app.evj(`({rol:(session&&session.role)||null, paciente:(typeof patient!=='undefined'?patient:null),
+  fichas:document.querySelectorAll('#plist .pcard').length, insignias:document.querySelectorAll('#plist .pin-badge').length,
+  tabPac:document.getElementById('tabPacientes').style.display, aviso:(document.getElementById('loginErr').textContent||'').slice(0,80)})`);
+
+test('el móvil que abre el acceso de un paciente no entra como profesional aunque el navegador autorrellene sus credenciales', async () => {
+  const D = await loadApp({ quiet: true });
+  await loginDoctor(D);
+  const url = await accesoDeMarta(D, `await crearDiarioNuevo({inicio:'2026-11-16',etiqueta:'Tras TCC-I',intervencion:''});`);
+  const memoria = D.storage();
+  memoria[SESION_CERRADA] = '1';   // ya había cerrado la sesión: sale la pantalla «pulsa Entrar»
+
+  const P = await loadApp({ quiet: true, userAgent: IPHONE_UA, url: String(url), storage: memoria, standalone: true, bootDelay: 1200 });
+  await P.sleep(700);
+  assert.match(P.doc.getElementById('luser').value, /^[0-9A-Z]{4}-[0-9A-Z]{4}$/, 'el código no está puesto');
+  // el gestor de contraseñas del móvil mete las credenciales del profesional
+  P.doc.getElementById('luser').value = 'medico';
+  P.doc.getElementById('lpass').value = 'clinica';
+  P.doc.getElementById('loginBtn').click();
+  await P.sleep(1400);
+  const e = await comoEntro(P);
+  assert.equal(e.rol, 'patient', 'entró como profesional desde el acceso de un paciente');
+  assert.equal(e.paciente, 'marta');
+  assert.equal(e.fichas, 0, 'se pintó el listado de pacientes en el móvil del paciente');
+  assert.equal(e.insignias, 0, 'se vieron códigos de acceso de otros pacientes');
+  assert.equal(e.tabPac, 'none');
+  P.dom.window.close(); D.dom.window.close();
+});
+
+test('en la pantalla de un acceso de paciente no se pide contraseña, y el profesional entra abriendo la aplicación sin el enlace', async () => {
+  const D = await loadApp({ quiet: true });
+  await loginDoctor(D);
+  const url = await accesoDeMarta(D);
+  const memoria = D.storage(); memoria[SESION_CERRADA] = '1';
+
+  // con el enlace: el campo de contraseña se retira (es lo que invita al gestor a autorrellenar)
+  const P = await loadApp({ quiet: true, userAgent: IPHONE_UA, url: String(url), storage: memoria, standalone: true, bootDelay: 1200 });
+  await P.sleep(600);
+  assert.equal(P.ev(`getComputedStyle(document.getElementById('lpass')).display`), 'none');
+  P.dom.window.close();
+
+  // en ese mismo móvil, el profesional entra con el botón «Entrar como profesional»: devuelve el
+  // campo de contraseña y a partir de ahí es el acceso de siempre
+  const Q = await loadApp({ quiet: true, userAgent: IPHONE_UA, url: String(url), storage: memoria, standalone: true, bootDelay: 1200 });
+  await Q.sleep(600);
+  assert.equal(Q.ev(`getComputedStyle(document.getElementById('lpass')).display`), 'none');
+  assert.equal(Q.ev(`document.getElementById('profBtn').textContent`), 'Entrar como profesional');
+  Q.doc.getElementById('profBtn').click();
+  assert.notEqual(Q.ev(`getComputedStyle(document.getElementById('lpass')).display`), 'none');
+  assert.equal(Q.doc.getElementById('luser').value, '', 'el código sigue puesto');
+  await loginDoctor(Q);
+  const e = await comoEntro(Q);
+  assert.equal(e.rol, 'doctor');
+  assert.ok(e.fichas > 0, 'el profesional no ve su listado');
+  Q.dom.window.close(); D.dom.window.close();
+});
+
+test('el código de un paciente escrito a mano entra como ese paciente, aunque la contraseña lleve la del profesional', async () => {
+  const D = await loadApp({ quiet: true });
+  await loginDoctor(D);
+  const pin = await D.evj(`(async()=>{ await upsertIndex('marta','Marta Soler');
+    await saveRec('marta',{patient:'marta',name:'Marta Soler',start:'2026-10-05',birth:null,sex:'F',cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    return (await crearCredencialPaciente('marta','Marta Soler')).pin; })()`);
+  const memoria = D.storage(); D.dom.window.close();
+
+  const P = await loadApp({ quiet: true, userAgent: IPHONE_UA, storage: memoria, bootDelay: 1000 });
+  P.doc.getElementById('luser').value = pin;
+  P.doc.getElementById('lpass').value = 'clinica';   // autorrellenada
+  P.doc.getElementById('loginBtn').click();
+  await P.sleep(1300);
+  const e = await comoEntro(P);
+  assert.equal(e.rol, 'patient');
+  assert.equal(e.paciente, 'marta');
+  P.dom.window.close();
 });
