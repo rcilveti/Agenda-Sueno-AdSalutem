@@ -1793,6 +1793,7 @@ es:{
   'print.gridNote':'Franja de 20:00 a 20:00 · ↓ acostarse · ↑ levantarse · ✕ o icono: acontecimiento · calidad de 1 (muy mala) a 5 (muy buena)',
   'login.wrong':'Usuario o contraseña incorrectos.',
   'login.helloEnter':'Hola, {nombre}. Tu acceso está listo: pulsa «Entrar».',
+  'login.asPro':'Entrar como profesional',
   'login.readyEnter':'Tu acceso está listo: pulsa «Entrar».',
   'login.welcomeHtml':'👋 <b>Bienvenido/a.</b> Para activar tu diario, escanea una vez el <b>código QR</b> que te dio tu profesional. Después entrarás con solo abrir este icono.',
   'install.ios':'Para instalar en tu iPhone o iPad:\n\n1. Pulsa el botón Compartir (el cuadrado con la flecha, abajo en el centro).\n2. Desliza y pulsa «Añadir a pantalla de inicio».\n3. Pulsa «Añadir».\n\nDespués abre siempre la app desde su icono.',
@@ -1973,6 +1974,7 @@ ca:{
   'print.gridNote':'Franja de 20:00 a 20:00 · ↓ anar al llit · ↑ llevar-se · ✕ o icona: esdeveniment · qualitat de l\'1 (molt dolenta) al 5 (molt bona)',
   'login.wrong':'Usuari o contrasenya incorrectes.',
   'login.helloEnter':'Hola, {nombre}. El teu accés és a punt: prem «Entrar».',
+  'login.asPro':'Entrar com a professional',
   'login.readyEnter':'El teu accés és a punt: prem «Entrar».',
   'login.welcomeHtml':'👋 <b>Benvingut/da.</b> Per activar el teu diari, escaneja un cop el <b>codi QR</b> que et va donar el teu professional. Després hi entraràs només obrint aquesta icona.',
   'install.ios':'Per instal·lar-la a l\'iPhone o a l\'iPad:\n\n1. Prem el botó Compartir (el quadrat amb la fletxa, a baix al centre).\n2. Llisca i prem «Afegeix a la pantalla d\'inici».\n3. Prem «Afegeix».\n\nDesprés obre sempre l\'aplicació des de la seva icona.',
@@ -2342,6 +2344,19 @@ $("loginBtn").onclick=async()=>{
   const bloq=minutosBloqueo();
   if(bloq>0){ err.textContent=t('login.locked',{min:bloq}); return; }
   const acc=await ensureAccounts();
+  // v5.0.0 (noviembre): si la pantalla llegó con el código de un paciente puesto, «Entrar» entra
+  // como ese paciente y no se mira ninguna cuenta de profesional (ver _modoAccesoPaciente). Solo
+  // cede el paso si en el campo hay OTRO código de paciente escrito a mano.
+  if(_accesoPreparado){
+    const n=_normCodigo(uRaw), otro=n&&n!==_normCodigo(_accesoPreparado.pin)&&acc.patients[n];
+    const pa=acc.patients[_accesoPreparado.pin];
+    if(!otro&&pa){
+      if(pa.expires&&Date.now()>new Date(pa.expires).getTime()){ err.textContent=t('login.expired'); return; }
+      limpiarFallos();
+      session={role:'patient',name:pa.name,patientId:pa.id,code:_normCodigo(_accesoPreparado.pin)};
+      enterApp(); return;
+    }
+  }
   // v4.3.7: una sola pantalla. El rol se decide por las credenciales:
   // 1º se comprueba si es una cuenta de profesional; si no, si es un código de paciente vigente.
   const d=acc.doctors[u];
@@ -2533,6 +2548,35 @@ async function sesionGuardadaValida(){
 }
 // Pantalla de acceso del móvil: si en este dispositivo hay un único acceso de paciente, se
 // escribe solo; basta con pulsar «Entrar».
+// ===== v5.0.0 (noviembre): PANTALLA DE ACCESO DE UN PACIENTE =====
+// Cuando la pantalla llega con el código de un paciente puesto (por su enlace o porque en este
+// móvil solo hay un acceso registrado), la contraseña se retira y «Entrar» entra como ese
+// paciente, pase lo que pase en los campos. Antes no: el gestor de contraseñas del móvil
+// autorrellenaba el usuario y la contraseña del PROFESIONAL guardados para este sitio, la
+// comprobación del profesional iba primero y, al pulsar «Entrar», se abría en el móvil del
+// paciente la base entera, con los nombres, los códigos de acceso y los QR de todos los pacientes.
+// Para entrar como profesional en ese mismo dispositivo está el botón que se añade debajo.
+let _accesoPreparado=null;   // {pin, nombre}
+function _modoAccesoPaciente(info){
+  _accesoPreparado=info||null;
+  const lp=$("lpass"), lab=document.querySelector('label[for="lpass"]');
+  if(lp){ lp.style.display=info?'none':''; if(info) lp.value=''; }
+  if(lab) lab.style.display=info?'none':'';
+  let b=$("profBtn");
+  if(info&&!b){
+    b=document.createElement('button');
+    b.id='profBtn'; b.type='button'; b.className='btn sec';
+    b.style.cssText='margin-top:10px;font-size:.8rem;padding:6px 12px';
+    b.addEventListener('click',()=>{
+      _modoAccesoPaciente(null);
+      if($("luser")){ $("luser").value=''; try{$("luser").focus();}catch(e){} }
+      if($("loginErr")){ $("loginErr").textContent=''; $("loginErr").style.color=''; }
+    });
+    const cont=$("loginFields"); if(cont) cont.appendChild(b);
+  }
+  if(b){ b.textContent=t('login.asPro'); b.style.display=info?'':'none'; }
+}
+
 async function prerrellenarAccesoUnico(){
   try{
     if(!(_esMovil()||_esAppInstalada()))return false;
@@ -2543,6 +2587,7 @@ async function prerrellenarAccesoUnico(){
     if(vig.length!==1)return false;
     const [k,pa]=vig[0];
     $("luser").value=_fmtCodigo(k); $("lpass").value='';
+    _modoAccesoPaciente({pin:k,nombre:pa.name});
     const hint=$("loginErr");
     if(hint){hint.style.color='#2c5e35';hint.style.whiteSpace='pre-wrap';hint.textContent=t('login.helloEnter',{nombre:pa.name});}
     return true;
@@ -8976,6 +9021,8 @@ async function _prepararAccesoDesdeEnlace(){
         if(!_esMovil()||instalada)_limpiarFragmento();
         if($("luser"))$("luser").value=_fmtCodigo(A.pin);
         if($("lpass"))$("lpass").value='';
+        // esta pantalla es el acceso de ESTE paciente: ni contraseña ni sesión de profesional
+        if(pa) _modoAccesoPaciente({pin:A.pin,nombre:pa.name});
         const vigente=pa && !(pa.expires&&Date.now()>new Date(pa.expires).getTime());
         // Entrada automática tras escanear el QR en el navegador (intención explícita) y, desde la
         // v4.9.2, también en la app instalada, salvo que el paciente haya cerrado la sesión: en ese

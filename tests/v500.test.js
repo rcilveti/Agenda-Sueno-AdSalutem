@@ -9,6 +9,8 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { loadApp } = require('./harness');
+const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+const SESION_CERRADA = 'agenda_sesion_cerrada';
 
 // la v4.9.9: en su carpeta desde que la v5.0.0 pasó a la raíz; antes, en la raíz
 const RAIZ_499 = [path.join(__dirname, '..', 'v4.9.9', 'index.html'), path.join(__dirname, '..', '..', 'index.html')].find(f => fs.existsSync(f)) || '';
@@ -711,4 +713,92 @@ test('restaurar una copia no pisa un código de acceso ya emitido en este navega
   const antes = JSON.stringify(acc.patients);
   await B.evj(`restoreBackup({text:async()=>window.__c})`);
   assert.equal(JSON.stringify((await B.evj('ensureAccounts()')).patients), antes);
+});
+
+// ---------- el acceso de un paciente no puede abrir la sesión del profesional ----------
+// Hasta noviembre de 2026: el paciente abría el enlace de su segundo diario, salía la pantalla
+// «Hola, X: pulsa Entrar» con su código puesto, el gestor de contraseñas del móvil autorrellenaba
+// las credenciales del profesional guardadas para ese sitio y, al pulsar Entrar, se abría en su
+// móvil la base entera, con los nombres, los códigos de acceso y los QR de todos los pacientes.
+async function accesoDeMarta(app, extra) {
+  return app.evj(`(async()=>{ patient='marta'; await upsertIndex('marta','Marta Soler');
+    await saveRec('marta',{patient:'marta',name:'Marta Soler',start:'2026-10-05',birth:null,sex:'F',cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    await populatePatients(); await selectPatient('marta');
+    await crearCredencialPaciente('marta','Marta Soler');
+    ${extra || ''}
+    return _urlAccesoPaciente('marta',{name:'Marta Soler',sex:'F',start:(await load('marta')).start}); })()`);
+}
+const comoEntro = app => app.evj(`({rol:(session&&session.role)||null, paciente:(typeof patient!=='undefined'?patient:null),
+  fichas:document.querySelectorAll('#plist .pcard').length, insignias:document.querySelectorAll('#plist .pin-badge').length,
+  tabPac:document.getElementById('tabPacientes').style.display, aviso:(document.getElementById('loginErr').textContent||'').slice(0,80)})`);
+
+test('el móvil que abre el acceso de un paciente no entra como profesional aunque el navegador autorrellene sus credenciales', async () => {
+  const D = await loadApp({ quiet: true });
+  await loginDoctor(D);
+  const url = await accesoDeMarta(D, `await crearDiarioNuevo({inicio:'2026-11-16',etiqueta:'Tras TCC-I',intervencion:''});`);
+  const memoria = D.storage();
+  memoria[SESION_CERRADA] = '1';   // ya había cerrado la sesión: sale la pantalla «pulsa Entrar»
+
+  const P = await loadApp({ quiet: true, userAgent: IPHONE_UA, url: String(url), storage: memoria, standalone: true, bootDelay: 1200 });
+  await P.sleep(700);
+  assert.match(P.doc.getElementById('luser').value, /^[0-9A-Z]{4}-[0-9A-Z]{4}$/, 'el código no está puesto');
+  // el gestor de contraseñas del móvil mete las credenciales del profesional
+  P.doc.getElementById('luser').value = 'medico';
+  P.doc.getElementById('lpass').value = 'clinica';
+  P.doc.getElementById('loginBtn').click();
+  await P.sleep(1400);
+  const e = await comoEntro(P);
+  assert.equal(e.rol, 'patient', 'entró como profesional desde el acceso de un paciente');
+  assert.equal(e.paciente, 'marta');
+  assert.equal(e.fichas, 0, 'se pintó el listado de pacientes en el móvil del paciente');
+  assert.equal(e.insignias, 0, 'se vieron códigos de acceso de otros pacientes');
+  assert.equal(e.tabPac, 'none');
+  P.dom.window.close(); D.dom.window.close();
+});
+
+test('en la pantalla de un acceso de paciente no se pide contraseña, y el profesional entra abriendo la aplicación sin el enlace', async () => {
+  const D = await loadApp({ quiet: true });
+  await loginDoctor(D);
+  const url = await accesoDeMarta(D);
+  const memoria = D.storage(); memoria[SESION_CERRADA] = '1';
+
+  // con el enlace: el campo de contraseña se retira (es lo que invita al gestor a autorrellenar)
+  const P = await loadApp({ quiet: true, userAgent: IPHONE_UA, url: String(url), storage: memoria, standalone: true, bootDelay: 1200 });
+  await P.sleep(600);
+  assert.equal(P.ev(`getComputedStyle(document.getElementById('lpass')).display`), 'none');
+  P.dom.window.close();
+
+  // en ese mismo móvil, el profesional entra con el botón «Entrar como profesional»: devuelve el
+  // campo de contraseña y a partir de ahí es el acceso de siempre
+  const Q = await loadApp({ quiet: true, userAgent: IPHONE_UA, url: String(url), storage: memoria, standalone: true, bootDelay: 1200 });
+  await Q.sleep(600);
+  assert.equal(Q.ev(`getComputedStyle(document.getElementById('lpass')).display`), 'none');
+  assert.equal(Q.ev(`document.getElementById('profBtn').textContent`), 'Entrar como profesional');
+  Q.doc.getElementById('profBtn').click();
+  assert.notEqual(Q.ev(`getComputedStyle(document.getElementById('lpass')).display`), 'none');
+  assert.equal(Q.doc.getElementById('luser').value, '', 'el código sigue puesto');
+  await loginDoctor(Q);
+  const e = await comoEntro(Q);
+  assert.equal(e.rol, 'doctor');
+  assert.ok(e.fichas > 0, 'el profesional no ve su listado');
+  Q.dom.window.close(); D.dom.window.close();
+});
+
+test('el código de un paciente escrito a mano entra como ese paciente, aunque la contraseña lleve la del profesional', async () => {
+  const D = await loadApp({ quiet: true });
+  await loginDoctor(D);
+  const pin = await D.evj(`(async()=>{ await upsertIndex('marta','Marta Soler');
+    await saveRec('marta',{patient:'marta',name:'Marta Soler',start:'2026-10-05',birth:null,sex:'F',cat:'adulto',state:Array.from({length:DAYS},blankDay)});
+    return (await crearCredencialPaciente('marta','Marta Soler')).pin; })()`);
+  const memoria = D.storage(); D.dom.window.close();
+
+  const P = await loadApp({ quiet: true, userAgent: IPHONE_UA, storage: memoria, bootDelay: 1000 });
+  P.doc.getElementById('luser').value = pin;
+  P.doc.getElementById('lpass').value = 'clinica';   // autorrellenada
+  P.doc.getElementById('loginBtn').click();
+  await P.sleep(1300);
+  const e = await comoEntro(P);
+  assert.equal(e.rol, 'patient');
+  assert.equal(e.paciente, 'marta');
+  P.dom.window.close();
 });
