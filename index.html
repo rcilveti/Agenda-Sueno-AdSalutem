@@ -9481,9 +9481,12 @@ const CATS=[
   {k:'B',ic:'↓',c:'#143f5e',pos:'arriba'},
   {k:'S',ic:'z',c:'#2f6f9e',pos:'abajo'},
   {k:'W',ic:'!',c:'#2f7a4d',pos:'medio'},   // v4.9.9: verde oscuro (el naranja se confundía con el fondo de los festivos)
+  // v5.0.0 (noviembre): los acontecimientos van aquí, pegados a los despertares, y no al final de la
+  // fila detrás de «Levantarse». Se anotan a la vez («me desperté y fue por un ruido»), así que la
+  // fila sigue ahora el orden en que se vive la noche y se puede recorrer de izquierda a derecha.
+  {k:'X',corto:1,ic:'',c:'#7b818a',pos:'evento'},
   {k:'F',corto:1,ic:'☀',c:'#2f6f9e',pos:'abajo'},
   {k:'R',ic:'↑',c:'#143f5e',pos:'arriba'},
-  {k:'X',corto:1,ic:'',c:'#7b818a',pos:'evento'},
 ];
 const catNom=c=>T('c.'+c.k), catCorto=c=>T('c.'+c.k+'c');
 const COL={lat:'#2f6f9e',w:'#2b6e46',term:'#5b6b80'};

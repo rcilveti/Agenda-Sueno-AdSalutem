@@ -802,3 +802,26 @@ test('el código de un paciente escrito a mano entra como ese paciente, aunque l
   assert.equal(e.paciente, 'marta');
   P.dom.window.close();
 });
+
+test('las pestañas del editor van en el orden de la noche, con los acontecimientos antes del despertar final', async () => {
+  // noviembre de 2026: «Acontecimientos» estaba al final de la fila, detrás de «Levantarse», pero se
+  // anota junto con los despertares. Ahora la fila sigue el orden en que se vive la noche.
+  const app = await loadApp({ quiet: true });
+  await loginDoctor(app);
+  await pacienteConDiario(app, 'orden-01', '2026-03-02');
+  await app.ev(`abrirEditorNoche(3)`);
+  await app.sleep(200);
+  // JSON.parse: los arrays que devuelve la ventana de jsdom no son los de aquí
+  const orden = () => JSON.parse(app.ev(`JSON.stringify([...document.querySelectorAll('#edCats [data-cat]')].map(b=>b.dataset.cat))`));
+  assert.deepEqual(orden(), ['B', 'S', 'W', 'X', 'F', 'R']);
+  // y los nombres visibles, en los dos idiomas
+  // los nombres en el orden de la fila: se quita el icono y, si lo hay, se usa el rótulo largo
+  const nombres = () => JSON.parse(app.ev(`JSON.stringify([...document.querySelectorAll('#edCats [data-cat]')].map(b=>{
+    const c=b.cloneNode(true), i=c.querySelector('i'); if(i)i.remove();
+    const l=c.querySelector('.l'); return (l||c).textContent.trim(); }))`));
+  assert.deepEqual(nombres(), ['Acostarse', 'Latencia', 'Despertares', 'Acontecimientos', 'Despertar final', 'Levantarse']);
+  await app.ev(`setLang('ca');abrirEditorNoche(3)`);
+  await app.sleep(200);
+  assert.deepEqual(nombres(), ['Anar al llit', 'Latència', 'Despertars', 'Esdeveniments', 'Despertar final', 'Llevar-se']);
+  assert.deepEqual(app.errors, []);
+});
