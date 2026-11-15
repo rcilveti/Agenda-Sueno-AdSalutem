@@ -29,7 +29,7 @@ en cuanto tiene un segundo diario, pasa a ser de la v5.0.0 y la v4.9.9 ya no lo 
 **Vídeos para el paciente.** Tres cortos, sin voz y con todo escrito en pantalla —empezar el
 diario (1:00), anotar una noche laborable y una festiva (1:42) y enviarlo al médico (0:52)— y un
 cuarto, con voz, que es el tutorial largo del editor: un día entero de principio a fin, con los
-despertares, los acontecimientos, la siesta, las valoraciones y las notas (5:39). Una sola
+despertares, los acontecimientos, la siesta, las valoraciones y las notas (5:40). Una sola
 dirección que enviar por WhatsApp:
 https://rcilveti.github.io/Agenda-Sueno-AdSalutem/docs/videos/
 
@@ -158,8 +158,13 @@ diarios.** Sobre la v4.9.9, para seguir a un paciente antes y después de una in
   sistemas de registro, aptitud al límite, vacaciones y basal con tendencia. Guía con los resultados
   exactos y ejercicios en `docs/casos_evolucion_v5.0.0.md`.
 - La pantalla del paciente no cambia, salvo un aviso nuevo: si en el móvil queda un diario anterior
-  guardado, se ve y se puede enviar. Las guías del paciente de la v5.0.0 tienen el mismo contenido que
-  las de la v4.9.9. Documento técnico (capítulo 11) y auditorías en `docs/`.
+  guardado, se ve y se puede enviar. Documento técnico (capítulo 11) y auditorías en `docs/`.
+- *Orden de las pestañas del editor* (15 de noviembre de 2026): «Acontecimientos» pasa de estar al
+  final de la fila, detrás de «Levantarse», a estar junto a «Despertares». La fila sigue así el orden
+  en que se vive la noche —acostarse, latencia, despertares, acontecimientos, despertar final,
+  levantarse— y se puede recorrer de izquierda a derecha sin volver atrás, que es como se anota: uno
+  se despierta y a la vez sabe por qué. Las noches ya anotadas no cambian: solo cambia el orden de los
+  botones. Las guías del paciente y los vídeos 2 y 4 están rehechos con el orden nuevo.
 - *Auditoría total y correcciones* (`docs/auditoria_total_v5.0.0.md`): se revisó la versión entera
   —estadística recalculada en Python, veredictos falsos simulados, datos hostiles, zonas horarias,
   navegador real y accesibilidad— y se corrigieron quince hallazgos, entre ellos dos que perdían
